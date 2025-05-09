@@ -28,4 +28,9 @@ class Role extends Model
     {
         return $this->belongsToMany(Page::class, 'role_page');
     }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class, 'roles_id');
+    }
 }

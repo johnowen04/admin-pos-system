@@ -28,4 +28,10 @@ class Outlet extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    //Relationships
+    public function employees()
+    {
+        return $this->belongsToMany(Employee::class, 'employee_outlet', 'outlets_id', 'nip');
+    }
 }

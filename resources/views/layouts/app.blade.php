@@ -61,11 +61,23 @@
                     'active' => request()->is('outlet*'),
                 ],
                 [
-                    'name' => 'Role',
-                    'link' => 'role',
+                    'name' => 'Employee',
+                    'link' => 'employee',
                     'icon' => 'fas fa-user',
-                    'route' => 'role.index',
-                    'active' => request()->is('role*'),
+                    'route' => 'employee.index',
+                    'active' => request()->is('employee*') || request()->is('role*'),
+                    'children' => [
+                        [
+                            'name' => 'Role',
+                            'route' => 'role.index',
+                            'active' => request()->is('role'),
+                        ],
+                        [
+                            'name' => 'Employee',
+                            'route' => 'employee.index',
+                            'active' => request()->is('employee'),
+                        ],
+                    ],
                 ],
             ]; ?>
 
