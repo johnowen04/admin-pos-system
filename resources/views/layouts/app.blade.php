@@ -53,6 +53,13 @@
                     'route' => 'dashboard',
                     'active' => request()->is('/'),
                 ],
+                [
+                    'name' => 'Outlet',
+                    'link' => 'outlet',
+                    'icon' => 'fas fa-building',
+                    'route' => 'outlet.index',
+                    'active' => request()->is('outlet*'),
+                ],
             ]; ?>
 
             <x-sidebar :menuItems="$menuItems" />
