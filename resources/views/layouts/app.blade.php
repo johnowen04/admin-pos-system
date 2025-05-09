@@ -60,6 +60,13 @@
                     'route' => 'outlet.index',
                     'active' => request()->is('outlet*'),
                 ],
+                [
+                    'name' => 'Role',
+                    'link' => 'role',
+                    'icon' => 'fas fa-user',
+                    'route' => 'role.index',
+                    'active' => request()->is('role*'),
+                ],
             ]; ?>
 
             <x-sidebar :menuItems="$menuItems" />
