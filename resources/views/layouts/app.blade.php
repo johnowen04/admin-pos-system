@@ -86,6 +86,13 @@
                     'route' => 'unit.index',
                     'active' => request()->is('unit*'),
                 ],
+                [
+                    'name' => 'Department',
+                    'link' => 'department',
+                    'icon' => 'fas fa-box-open',
+                    'route' => 'department.index',
+                    'active' => request()->is('department*'),
+                ],
             ]; ?>
 
             <x-sidebar :menuItems="$menuItems" />
