@@ -87,18 +87,28 @@
                     'active' => request()->is('unit*'),
                 ],
                 [
-                    'name' => 'Department',
-                    'link' => 'department',
+                    'name' => 'Product',
+                    'link' => 'product',
                     'icon' => 'fas fa-box-open',
-                    'route' => 'department.index',
-                    'active' => request()->is('department*'),
-                ],
-                [
-                    'name' => 'Category',
-                    'link' => 'category',
-                    'icon' => 'fas fa-box-open',
-                    'route' => 'category.index',
-                    'active' => request()->is('category*'),
+                    'route' => 'product.index',
+                    'active' => request()->is('product*') || request()->is('category*') || request()->is('department*'),
+                    'children' => [
+                        [
+                            'name' => 'Department',
+                            'route' => 'department.index',
+                            'active' => request()->is('department'),
+                        ],
+                        [
+                            'name' => 'Category',
+                            'route' => 'category.index',
+                            'active' => request()->is('category'),
+                        ],
+                        [
+                            'name' => 'Product',
+                            'route' => 'product.index',
+                            'active' => request()->is('product'),
+                        ],
+                    ],
                 ],
             ]; ?>
 

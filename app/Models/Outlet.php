@@ -39,4 +39,10 @@ class Outlet extends Model
     {
         return $this->belongsToMany(Category::class, 'outlet_category', 'outlets_id', 'categories_id');
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'outlet_product', 'outlets_id', 'sku')
+            ->withPivot('quantity');
+    }
 }
