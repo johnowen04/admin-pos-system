@@ -144,6 +144,13 @@
                         'route' => 'sales.index',
                         'active' => request()->is('sales*'),
                     ],
+                    [
+                        'name' => 'POS',
+                        'link' => 'pos',
+                        'icon' => 'fas fa-shopping-bag',
+                        'route' => 'pos.index',
+                        'active' => request()->is('pos*'),
+                    ],
                 ]; ?>
 
                 <x-sidebar :menuItems="$menuItems" />
@@ -161,6 +168,14 @@
                     <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
                         <div class="container-fluid">
 
+                            @if (Route::is('pos.*'))
+                                <!-- Active Outlet Section -->
+                                <span class="profile-outlet">
+                                    <span class="fw-bold">Active Outlet:
+                                        {{ Auth::user()->employee->outlets[0]->name }}</span>
+                                </span>
+                            @endif
+                            
                             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
                                 <li class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none">
                                     <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"
@@ -175,7 +190,7 @@
                                         </form>
                                     </ul>
                                 </li>
-                                
+
                                 <li class="nav-item topbar-user dropdown hidden-caret">
                                     <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#"
                                         aria-expanded="false">
@@ -199,7 +214,6 @@
                                                     <div class="u-text">
                                                         <h4>{{ Auth::user()->name }}</h4>
                                                         <p class="text-muted">{{ Auth::user()->email }}</p>
-                                                        <p class="text-muted">{{ Auth::user()->employee->nip }}</p>
                                                     </div>
                                                 </div>
                                             </li>

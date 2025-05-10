@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
+use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
@@ -23,6 +24,10 @@ Route::middleware('guest')->group(function () {
 Route::get('/logout', function () {
     return redirect()->route('login');
 });
+
+Route::get('/pos', [POSController::class, 'index'])->name('pos.index')->middleware('auth');
+Route::post('/pos/payment', [POSController::class, 'payment'])->name('pos.payment')->middleware('auth');
+Route::post('/pos/receipt', [POSController::class, 'receipt'])->name('pos.receipt')->middleware('auth');
 
 Route::get('/dashboard', function () {
     return view('index');
