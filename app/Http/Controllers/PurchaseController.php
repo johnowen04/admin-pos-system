@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\PurchaseInvoices;
+use App\Services\InventoryService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
@@ -44,11 +45,12 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         // Validate the request
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'outlets' => 'required|array',
             'invoice_number' => 'required|string|unique:purchase_invoices,invoice_number',
             'grand_total' => 'required|numeric|min:0', // Validate grand total
             'description' => 'nullable|string',
+            'nip' => 'required|string',
             'products' => 'required|array',
             'products.*.sku' => 'required|string|exists:products,sku',
             'products.*.quantity' => 'required|numeric|min:1',
@@ -57,19 +59,22 @@ class PurchaseController extends Controller
 
         // Create the purchase invoice
         $purchaseInvoice = PurchaseInvoices::create([
-            'outlets_id' => $validated['outlets'][0], // Assuming single outlet selection
-            'invoice_number' => $validated['invoice_number'],
-            'grand_total' => $validated['grand_total'],
-            'description' => $validated['description'],
+            'outlets_id' => $validatedData['outlets'][0], // Assuming single outlet selection
+            'invoice_number' => $validatedData['invoice_number'],
+            'grand_total' => $validatedData['grand_total'],
+            'description' => $validatedData['description'],
+            'nip' => $validatedData['nip'],
         ]);
 
         // Attach products to the purchase invoice
-        foreach ($validated['products'] as $product) {
+        foreach ($validatedData['products'] as $product) {
             $purchaseInvoice->products()->attach($product['sku'], [
                 'quantity' => $product['quantity'],
                 'unit_price' => $product['unit_price'],
                 'total_price' => $product['quantity'] * $product['unit_price'],
             ]);
+
+            InventoryService::syncProductStock($product['sku'], $validatedData['outlets'][0], $product['quantity']);
         }
 
         return redirect()->route('purchase.index')->with('success', 'Purchase invoice created successfully.');
@@ -114,6 +119,7 @@ class PurchaseController extends Controller
             'invoice_number' => 'required|string|unique:purchase_invoices,invoice_number,' . $id,
             'grand_total' => 'required|numeric|min:0', // Validate grand total
             'description' => 'nullable|string',
+            'nip' => 'required|string',
             'products' => 'required|array',
             'products.*.sku' => 'required|string|exists:products,sku',
             'products.*.quantity' => 'required|numeric|min:1',
@@ -129,6 +135,7 @@ class PurchaseController extends Controller
             'invoice_number' => $validated['invoice_number'],
             'grand_total' => $validated['grand_total'],
             'description' => $validated['description'],
+            'nip' => $validated['nip'],
         ]);
 
         // Sync products with the purchase invoice
@@ -139,6 +146,22 @@ class PurchaseController extends Controller
                 'unit_price' => $product['unit_price'],
                 'total_price' => $product['quantity'] * $product['unit_price'],
             ];
+
+            $product = Product::find($product['sku']);
+
+            // Check if the product already exists in the outlet
+            $existingQuantity = $product->outlets()
+                ->where('outlets_id', $validated['outlets'][0])
+                ->first()
+                ->pivot
+                ->quantity ?? 0;
+
+            // Update or create the stock entry
+            $product->outlets()->syncWithoutDetaching([
+                $validated['outlets'][0] => [
+                    'quantity' => $existingQuantity + $product['quantity'],
+                ],
+            ]);
         }
         $purchaseInvoice->products()->sync($products);
 

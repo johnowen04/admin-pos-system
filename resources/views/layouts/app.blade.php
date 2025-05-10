@@ -192,6 +192,7 @@
                                                     <div class="u-text">
                                                         <h4>{{ Auth::user()->name }}</h4>
                                                         <p class="text-muted">{{ Auth::user()->email }}</p>
+                                                        <p class="text-muted">{{ Auth::user()->employee->nip }}</p>
                                                     </div>
                                                 </div>
                                             </li>

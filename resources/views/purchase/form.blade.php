@@ -42,7 +42,7 @@
                     <label for="purchaseInvoiceNumber">Purchase Invoice Number</label>
                     <input type="text" class="form-control" id="purchaseInvoiceNumber" name="invoice_number"
                         placeholder="Ex: PU/251225/001, PU/010125/005, etc"
-                        value="{{ old('name', $purchaseInvoice->invoice_number ?? '') }}" required />
+                        value="{{ old('invoice_number', $purchaseInvoice->invoice_number ?? '') }}" required />
                 </div>
 
                 <div class="form-group">
@@ -51,6 +51,9 @@
                         placeholder="Ex: lorem ipsum dolor sit amet etc"
                         value="{{ old('description', $product->description ?? '') }}" />
                 </div>
+
+                <!-- Hidden input for NIP -->
+                <input type="hidden" name="nip" value="{{ Auth::user()->employee->nip }}">
 
             </div>
         </div>
