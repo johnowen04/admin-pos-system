@@ -125,6 +125,13 @@
                         ],
                     ],
                 ],
+                [
+                    'name' => 'Purchase',
+                    'link' => 'purchase',
+                    'icon' => 'fas fa-building',
+                    'route' => 'purchase.index',
+                    'active' => request()->is('purchase*'),
+                ],
             ]; ?>
 
             <x-sidebar :menuItems="$menuItems" />

@@ -50,4 +50,11 @@ class Product extends Model
         return $this->belongsToMany(Outlet::class, 'outlet_product', 'sku', 'outlets_id')
             ->withPivot('quantity');
     }
+
+    public function purchaseInvoices()
+    {
+        return $this->belongsToMany(PurchaseInvoices::class, 'purchase_invoice_product', 'sku', 'purchase_invoice_id')
+            ->withPivot('quantity', 'unit_price', 'total_price')
+            ->withTimestamps();
+    }
 }
