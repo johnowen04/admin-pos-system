@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\BaseUnit;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -18,8 +19,12 @@ class DatabaseSeeder extends Seeder
         $this->call([
             OutletSeeder::class,
             RoleSeeder::class,
-            UnitSeeder::class,
             EmployeeSeeder::class,
+            BaseUnitSeeder::class,
+            UnitSeeder::class,
+            DepartmentSeeder::class,
+            CategorySeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

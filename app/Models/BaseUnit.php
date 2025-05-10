@@ -5,18 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Unit extends Model
+class BaseUnit extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'units';
+    protected $table = 'base_units';
     protected $primaryKey = 'id';
     public $timestamps = true;
 
     protected $fillable = [
         'name',
-        'conversion_unit',
-        'to_base_unit_id',
     ];
 
     protected $casts = [
@@ -26,8 +24,8 @@ class Unit extends Model
     ];
 
     //Relationships
-    public function baseUnit()
+    public function units()
     {
-        return $this->belongsTo(BaseUnit::class, 'to_base_unit_id');
+        return $this->hasMany(Unit::class, 'to_base_unit_id');
     }
 }

@@ -3,20 +3,19 @@
 
 @extends('layouts.app')
 
-@section('title', 'Edit Unit')
+@section('title', 'Edit Base Unit')
 
 @section('content')
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Edit Unit</h3>
+            <h3 class="fw-bold mb-3">Edit Base Unit</h3>
         </div>
         <div class="row">
             <div class="col-md-12">
-                @include('unit.form', [
+                @include('baseunit.form', [
                     'action' => $action,
                     'method' => $method,
-                    'unit' => $unit,
-                    'baseunits' => $baseunits,
+                    'baseunit' => $baseunit,
                     'cancelRoute' => $cancelRoute,
                 ])
             </div>

@@ -3,59 +3,55 @@
 
 @extends('layouts.app')
 
-@section('title', 'Unit')
+@section('title', 'Base Unit')
 
 @section('content')
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Unit</h3>
+            <h3 class="fw-bold mb-3">Base Unit</h3>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Unit List</h4>
+                            <h4 class="card-title">Base Unit List</h4>
                             <button class="btn btn-primary btn-round ms-auto"
                                 onclick="window.location='{{ route('unit.create') }}'">
                                 <i class="fa fa-plus"></i>
-                                Add Unit
+                                Add Base Unit
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="unit-table" class="display table table-striped table-hover">
+                            <table id="baseunit-table" class="display table table-striped table-hover">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Name</th>
-                                        <th>Conversion Unit</th>
-                                        <th>To Unit</th>
                                         <th style="width: 10%">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($units as $unit)
+                                    @foreach ($baseunits as $baseunit)
                                         <tr>
-                                            <td>{{ $unit->id }}</td>
-                                            <td>{{ $unit->name }}</td>
-                                            <td>{{ $unit->conversion_unit }}</td>
-                                            <td>{{ $unit->baseUnit->name }}</td>
+                                            <td>{{ $baseunit->id }}</td>
+                                            <td>{{ $baseunit->name }}</td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('unit.edit', $unit->id) }}"
+                                                    <a href="{{ route('baseunit.edit', $baseunit->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('unit.destroy', $unit->id) }}"
+                                                    <form action="{{ route('baseunit.destroy', $baseunit->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-link btn-danger"
                                                             data-toggle="tooltip" title="Delete"
-                                                            onclick="return confirm('Are you sure you want to delete this unit?')">
+                                                            onclick="return confirm('Are you sure you want to delete this baseunit?')">
                                                             <i class="fa fa-times"></i>
                                                         </button>
                                                     </form>
@@ -76,7 +72,7 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            $('#unit-table').DataTable({
+            $('#baseunit-table').DataTable({
                 "pageLength": 10,
                 "order": [[0, "asc"]],
                 "columnDefs": [

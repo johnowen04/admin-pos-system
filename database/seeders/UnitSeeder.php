@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Unit;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class UnitSeeder extends Seeder
 {
@@ -12,49 +12,12 @@ class UnitSeeder extends Seeder
      */
     public function run(): void
     {
-        Unit::insert([
-            [
-                'name' => 'Pieces',
-                'conversion_unit' => 1, // Base unit
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Dozen',
-                'conversion_unit' => 12, // 1 dozen = 12 pieces
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Box',
-                'conversion_unit' => 24, // 1 box = 24 pieces
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Kilogram',
-                'conversion_unit' => 1000, // 1 kilogram = 1000 grams
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Gram',
-                'conversion_unit' => 1, // Base unit for weight
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Liter',
-                'conversion_unit' => 1, // Base unit for volume
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Milliliter',
-                'conversion_unit' => 0.001, // 1 milliliter = 0.001 liters
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        DB::table('units')->insert([
+            ['name' => 'kilogram', 'conversion_unit' => 1000, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'milligram', 'conversion_unit' => 0.001, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'kilometer', 'conversion_unit' => 1000, 'to_base_unit_id' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'centimeter', 'conversion_unit' => 0.01, 'to_base_unit_id' => 2, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'dozen', 'conversion_unit' => 12, 'to_base_unit_id' => 3, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

@@ -84,7 +84,19 @@
                     'link' => 'unit',
                     'icon' => 'fas fa-ruler-horizontal',
                     'route' => 'unit.index',
-                    'active' => request()->is('unit*'),
+                    'active' => request()->is('unit*') || request()->is('baseunit*'),
+                    'children' => [
+                        [
+                            'name' => 'Base Unit',
+                            'route' => 'baseunit.index',
+                            'active' => request()->is('baseunit'),
+                        ],
+                        [
+                            'name' => 'Unit',
+                            'route' => 'unit.index',
+                            'active' => request()->is('unit'),
+                        ],
+                    ],
                 ],
                 [
                     'name' => 'Product',
