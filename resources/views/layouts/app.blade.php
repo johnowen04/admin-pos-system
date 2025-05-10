@@ -79,6 +79,13 @@
                         ],
                     ],
                 ],
+                [
+                    'name' => 'Unit',
+                    'link' => 'unit',
+                    'icon' => 'fas fa-ruler-horizontal',
+                    'route' => 'unit.index',
+                    'active' => request()->is('unit*'),
+                ],
             ]; ?>
 
             <x-sidebar :menuItems="$menuItems" />
@@ -505,7 +512,8 @@
             type: "line",
             height: "70",
             width: "100%",
-            lineWidth: "2",Í
+            lineWidth: "2",
+            Í
             lineColor: "#177dff",
             fillColor: "rgba(23, 125, 255, 0.14)",
         });
