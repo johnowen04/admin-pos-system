@@ -34,4 +34,9 @@ class Outlet extends Model
     {
         return $this->belongsToMany(Employee::class, 'employee_outlet', 'outlets_id', 'nip');
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'outlet_category', 'outlets_id', 'categories_id');
+    }
 }

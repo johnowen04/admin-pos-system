@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
@@ -16,4 +17,5 @@ Route::resource('role', RoleController::class);
 Route::resource('employee', EmployeeController::class);
 Route::resource('unit', UnitController::class);
 Route::resource('department', DepartmentController::class);
+Route::resource('category', CategoryController::class);
 
