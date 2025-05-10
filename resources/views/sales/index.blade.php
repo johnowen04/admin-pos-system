@@ -3,23 +3,23 @@
 
 @extends('layouts.app')
 
-@section('title', 'Purchase')
+@section('title', 'Sales')
 
 @section('content')
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Purchase</h3>
+            <h3 class="fw-bold mb-3">Sales</h3>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Purchase List</h4>
+                            <h4 class="card-title">Sales List</h4>
                             <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('purchase.create') }}'">
+                                onclick="window.location='{{ route('sales.create') }}'">
                                 <i class="fa fa-plus"></i>
-                                Add Purchase
+                                Add Sales
                             </button>
                         </div>
                     </div>
@@ -37,27 +37,27 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($purchases as $purchase)
+                                    @foreach ($sales as $sale)
                                         <tr>
-                                            <td>{{ $purchase->id }}</td>
-                                            <td>{{ $purchase->created_at }}</td>
-                                            <td>{{ $purchase->invoice_number }}</td>
-                                            <td>{{ $purchase->grand_total }}</td>
-                                            <td>{{ $purchase->outlet->name }}</td>
+                                            <td>{{ $sale->id }}</td>
+                                            <td>{{ $sale->created_at }}</td>
+                                            <td>{{ $sale->invoice_number }}</td>
+                                            <td>{{ $sale->grand_total }}</td>
+                                            <td>{{ $sale->outlet->name }}</td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('purchase.edit', $purchase->id) }}"
+                                                    <a href="{{ route('sales.edit', $sale->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('purchase.destroy', $purchase->id) }}"
+                                                    <form action="{{ route('sales.destroy', $sale->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-link btn-danger"
                                                             data-toggle="tooltip" title="Delete"
-                                                            onclick="return confirm('Are you sure you want to delete this purchase?')">
+                                                            onclick="return confirm('Are you sure you want to delete this sales?')">
                                                             <i class="fa fa-times"></i>
                                                         </button>
                                                     </form>
@@ -78,7 +78,7 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            $('#purchase-table').DataTable({
+            $('#sales-table').DataTable({
                 "pageLength": 10,
                 "order": [[0, "asc"]],
                 "columnDefs": [

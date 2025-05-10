@@ -9,13 +9,15 @@ use Illuminate\View\Component;
 class ProductTable extends Component
 {
     public $products;
+    public $invoice;
     
     /**
      * Create a new component instance.
      */
-    public function __construct($products = [])
+    public function __construct($products = [], $invoice)
     {
         $this->products = $products;
+        $this->invoice = $invoice;
     }
 
     /**

@@ -53,7 +53,14 @@ class Product extends Model
 
     public function purchaseInvoices()
     {
-        return $this->belongsToMany(PurchaseInvoices::class, 'purchase_invoice_product', 'sku', 'purchase_invoice_id')
+        return $this->belongsToMany(PurchaseInvoice::class, 'purchase_invoice_product', 'sku', 'purchase_invoice_id')
+            ->withPivot('quantity', 'unit_price', 'total_price')
+            ->withTimestamps();
+    }
+    
+    public function salesInvoices()
+    {
+        return $this->belongsToMany(SalesInvoice::class, 'sales_invoice_product', 'sku', 'sales_invoice_id')
             ->withPivot('quantity', 'unit_price', 'total_price')
             ->withTimestamps();
     }

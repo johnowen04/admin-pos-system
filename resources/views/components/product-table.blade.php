@@ -13,7 +13,42 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Existing rows will be dynamically populated -->
+                @if (isset($invoice) && $invoice->products->isNotEmpty())
+                    @foreach ($invoice->products as $product)
+                        <tr>
+                            <td>
+                                <button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button>
+                            </td>
+                            <td>
+                                <input type="hidden" name="products[{{ $loop->index }}][sku]"
+                                    value="{{ $product->sku }}">
+                                {{ $product->name }}
+                            </td>
+                            <td>
+                                <input type="number" name="products[{{ $loop->index }}][quantity]"
+                                    class="form-control product-quantity" value="{{ $product->pivot->quantity }}"
+                                    min="1">
+                            </td>
+                            <td>
+                                <input type="number" name="products[{{ $loop->index }}][unit_price]"
+                                    class="form-control product-unit-price" value="{{ $product->pivot->unit_price }}"
+                                    min="0" step="0.01">
+                            </td>
+
+                            <td>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control product-total-price"
+                                        name="products[${rowCount}][total_price]" value="{{ number_format($product->pivot->quantity * $product->pivot->unit_price, 2) }}" readonly>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="5" class="text-center">No products added yet.</td>
+                    </tr>
+                @endif
             </tbody>
             <tfoot>
                 <tr>
@@ -78,204 +113,139 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const productsTable = document.querySelector('#invoiceProductsTable tbody');
-
-            // Initialize DataTables
-            $('#productTable').DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                info: true,
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": 0
-                    } // Disable sorting on the Action column
-                ],
-            });
-
-            // Function to calculate the total price for a row
-            function calculateRowTotal(row) {
-                const quantityInput = row.querySelector('input[name*="[quantity]"]');
-                const unitPriceInput = row.querySelector('input[name*="[unit_price]"]');
-                const totalPriceInput = row.querySelector('input[name*="[total_price]"]');
-
-                if (quantityInput && unitPriceInput && totalPriceInput) {
-                    const quantity = parseFloat(quantityInput.value) || 0;
-                    const unitPrice = parseFloat(unitPriceInput.value) || 0;
-                    const totalPrice = quantity * unitPrice;
-
-                    // Update the total price input
-                    totalPriceInput.value = totalPrice.toFixed(2); // Keep 2 decimal places
-                }
-            }
-
+            const confirmSelectionButton = document.querySelector('#confirmSelection');
+            const productCheckboxes = document.querySelectorAll('.select-product-checkbox');
+            const singleProductButtons = document.querySelectorAll('.add-single-product');
             const totalQuantityElement = document.querySelector('#totalQuantity');
             const totalPriceElement = document.querySelector('#totalPrice');
+            const grandTotalInput = document.querySelector('#grandTotal');
 
-            // Function to calculate the grand total
-            function calculateGrandTotal() {
+            // Function to calculate totals
+            function calculateTotals() {
                 let totalQuantity = 0;
                 let totalPrice = 0;
 
-                // Loop through all rows in the table
                 productsTable.querySelectorAll('tr').forEach(row => {
                     const quantityInput = row.querySelector('input[name*="[quantity]"]');
                     const unitPriceInput = row.querySelector('input[name*="[unit_price]"]');
+                    const totalPriceInput = row.querySelector('input[name*="[total_price]"]');
 
                     if (quantityInput && unitPriceInput) {
                         const quantity = parseFloat(quantityInput.value) || 0;
                         const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                        const total = quantity * unitPrice;
 
+                        // Update the total price for the row
+                        if (totalPriceInput) {
+                            totalPriceInput.value = total.toFixed(2);
+                        }
+
+                        // Accumulate totals
                         totalQuantity += quantity;
-                        totalPrice += quantity * unitPrice;
+                        totalPrice += total;
                     }
                 });
 
-                // Update the footer with the calculated totals
+                // Update totals in the footer
                 totalQuantityElement.textContent = totalQuantity;
                 totalPriceElement.textContent = `Rp${totalPrice.toLocaleString('id-ID')}`;
-                
-                // Update the hidden grand total input field
-                document.querySelector('#grandTotal').value = totalPrice.toFixed(2);
+                grandTotalInput.value = totalPrice.toFixed(2);
             }
-
-            // Event listener for changes in quantity or unit price inputs
-            productsTable.addEventListener('input', function(e) {
-                if (e.target.name.includes('[quantity]') || e.target.name.includes('[unit_price]')) {
-                    const row = e.target.closest('tr');
-                    calculateRowTotal(row); // Update the total price for the row
-                    calculateGrandTotal();
-                }
-            });
-
-            // Event listener for removing a product row
-            productsTable.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-product')) {
-                    e.target.closest('tr').remove();
-                    calculateGrandTotal(); // Recalculate totals after removing a row
-                }
-            });
-
-            const confirmSelectionButton = document.querySelector('#confirmSelection');
-            const productCheckboxes = document.querySelectorAll('.select-product-checkbox');
-            const singleProductButtons = document.querySelectorAll('.add-single-product');
 
             // Function to check if a product already exists in the table
             function isProductInTable(sku) {
-                const existingProducts = Array.from(productsTable.querySelectorAll('input[name*="[sku]"]'));
-                return existingProducts.some(input => input.value === sku);
+                return Array.from(productsTable.querySelectorAll('input[name*="[sku]"]'))
+                    .some(input => input.value === sku);
             }
 
-            // Function to toggle the "Add Selected Products" button and disable single product buttons
-            function toggleButtons() {
-                const anyChecked = Array.from(productCheckboxes).some(checkbox => checkbox.checked);
+            // Function to add a new product row
+            function addProductRow(sku, name) {
+                if (isProductInTable(sku)) {
+                    alert(`The product "${name}" is already added to the table.`);
+                    return;
+                }
 
-                // Enable/Disable "Add Selected Products" button
-                confirmSelectionButton.disabled = !anyChecked;
+                const rowCount = productsTable.querySelectorAll('tr').length;
+                const newRow = `
+            <tr>
+                <td><button type="button" class="btn btn-danger remove-product">Remove</button></td>
+                <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
+                <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
+                <td>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Rp</span>
+                        <input type="number" class="form-control product-total-price" name="products[${rowCount}][total_price]" value="0" readonly>
+                    </div>
+                </td>
+            </tr>
+        `;
+                productsTable.insertAdjacentHTML('beforeend', newRow);
 
-                // Enable/Disable "Add Single Product" buttons
-                singleProductButtons.forEach(button => {
-                    button.disabled =
-                        anyChecked; // Disable single product buttons if any checkbox is checked
-                });
+                // Attach event listeners to the new row
+                attachRowEventListeners(productsTable.lastElementChild);
+
+                // Recalculate totals after adding a product
+                calculateTotals();
             }
 
-            // Add event listeners to all checkboxes
-            productCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', toggleButtons);
+            // Function to attach event listeners to a row
+            function attachRowEventListeners(row) {
+                const quantityInput = row.querySelector('input[name*="[quantity]"]');
+                const unitPriceInput = row.querySelector('input[name*="[unit_price]"]');
+                const removeButton = row.querySelector('.remove-product');
+
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', calculateTotals);
+                }
+
+                if (unitPriceInput) {
+                    unitPriceInput.addEventListener('input', calculateTotals);
+                }
+
+                if (removeButton) {
+                    removeButton.addEventListener('click', function() {
+                        row.remove();
+                        calculateTotals(); // Recalculate totals after removing a row
+                    });
+                }
+            }
+
+            // Attach event listeners to all pre-populated rows
+            productsTable.querySelectorAll('tr').forEach(row => {
+                attachRowEventListeners(row);
             });
 
-            // Handle "Add Single Product" button click
+            // Event listener for "Add Single Product" buttons
             singleProductButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const sku = this.dataset.sku;
                     const name = this.dataset.name;
-
-                    // Check if the product is already in the table
-                    if (isProductInTable(sku)) {
-                        alert(`The product "${name}" is already added to the table.`);
-                        return;
-                    }
-
-                    // Add product to the table
-                    const rowCount = productsTable.rows.length;
-                    const newRow = `
-                    <tr>
-                        <td><button type="button" class="btn btn-danger remove-product">Remove</button></td>
-                        <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
-                        <td><input type="number" class="form-control" name="products[${rowCount}][quantity]" value="1" required /></td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" name="products[${rowCount}][unit_price]" value="0" required />
-                            </div>
-                        </td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" name="products[${rowCount}][total_price]" value="0" readonly />
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                    productsTable.insertAdjacentHTML('beforeend', newRow);
-
-                    // Recalculate totals after adding products
-                    calculateGrandTotal();
-
-                    // Close the modal
-                    const modal = bootstrap.Modal.getInstance(document.querySelector(
-                        '#productModal'));
-                    modal.hide();
+                    addProductRow(sku, name);
                 });
             });
 
-            // Handle "Add Selected Products" button click
+            // Event listener for "Add Selected Products" button
             confirmSelectionButton.addEventListener('click', function() {
-                // Get all selected checkboxes
                 const selectedProducts = document.querySelectorAll('.select-product-checkbox:checked');
 
-                selectedProducts.forEach((checkbox) => {
+                selectedProducts.forEach(checkbox => {
                     const sku = checkbox.dataset.sku;
                     const name = checkbox.dataset.name;
-
-                    // Check if the product is already in the table
-                    if (isProductInTable(sku)) {
-                        alert(`The product "${name}" is already added to the table.`);
-                        return;
-                    }
-
-                    // Add product to the table
-                    const rowCount = productsTable.rows.length;
-                    const newRow = `
-                    <tr>
-                        <td><button type="button" class="btn btn-danger remove-product">Remove</button></td>
-                        <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
-                        <td><input type="number" class="form-control" name="products[${rowCount}][quantity]" value="1" required /></td><td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" name="products[${rowCount}][unit_price]" value="0" required />
-                            </div>
-                        </td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control" name="products[${rowCount}][total_price]" value="0" readonly />
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                    productsTable.insertAdjacentHTML('beforeend', newRow);
+                    addProductRow(sku, name);
                 });
-
-                // Recalculate totals after adding products
-                calculateGrandTotal();
 
                 // Close the modal
                 const modal = bootstrap.Modal.getInstance(document.querySelector('#productModal'));
                 modal.hide();
 
                 // Clear all checkboxes
-                document.querySelectorAll('.select-product-checkbox').forEach((checkbox) => {
+                productCheckboxes.forEach(checkbox => {
                     checkbox.checked = false;
                 });
 
@@ -283,12 +253,19 @@
                 toggleButtons();
             });
 
-            // Remove a product row
-            productsTable.addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-product')) {
-                    e.target.closest('tr').remove();
-                }
+            // Function to toggle button states
+            function toggleButtons() {
+                const anyChecked = Array.from(productCheckboxes).some(checkbox => checkbox.checked);
+                confirmSelectionButton.disabled = !anyChecked;
+            }
+
+            // Add event listeners to checkboxes
+            productCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', toggleButtons);
             });
+
+            // Initial calculation of totals for pre-populated rows
+            calculateTotals();
         });
     </script>
 @endpush

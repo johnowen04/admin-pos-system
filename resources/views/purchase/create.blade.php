@@ -15,7 +15,7 @@
                 @include('purchase.form', [
                     'action' => $action,
                     'method' => $method,
-                    'purchase' => $purchase,
+                    'purchaseInvoice' => $purchaseInvoice,
                     'outlets' => $outlets,
                     'products' => $products,
                     'cancelRoute' => $cancelRoute,

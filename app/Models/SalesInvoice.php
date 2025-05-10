@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PurchaseInvoices extends Model
+class SalesInvoice extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'purchase_invoices';
+    protected $table = 'sales_invoices';
     protected $primaryKey = 'id';
     public $incrementing = true;
     public $timestamps = true;
@@ -41,7 +41,7 @@ class PurchaseInvoices extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'purchase_invoice_product', 'purchase_invoice_id', 'sku')
+        return $this->belongsToMany(Product::class, 'sales_invoice_product', 'sales_invoice_id', 'sku')
             ->withPivot('quantity', 'unit_price', 'total_price')
             ->withTimestamps();
     }

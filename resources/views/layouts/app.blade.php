@@ -137,6 +137,13 @@
                         'route' => 'purchase.index',
                         'active' => request()->is('purchase*'),
                     ],
+                    [
+                        'name' => 'Sales',
+                        'link' => 'sales',
+                        'icon' => 'fas fa-building',
+                        'route' => 'sales.index',
+                        'active' => request()->is('sales*'),
+                    ],
                 ]; ?>
 
                 <x-sidebar :menuItems="$menuItems" />
