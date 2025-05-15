@@ -39,7 +39,7 @@ class EmployeeService
             'name' => $data['name'], // Use the employee's name for the user
             'email' => $data['email'],
             'password' => Hash::make($data['password']), // Hash the password
-            'nip' => $employee->nip, // Link the user to the employee
+            'employee_id' => $employee->id, // Link the user to the employee
         ]);
 
         // Sync outlets

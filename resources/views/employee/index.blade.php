@@ -38,18 +38,19 @@
                                 <tbody>
                                     @foreach ($employees as $employee)
                                         <tr>
+                                            <td>{{ $employee->id }}</td>
                                             <td>{{ $employee->nip }}</td>
                                             <td>{{ $employee->name }}</td>
                                             <td>{{ $employee->outlets()->count() }}</td>
                                             <td>{{ $employee->role->name }}</td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('employee.edit', $employee->nip) }}"
+                                                    <a href="{{ route('employee.edit', $employee->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('employee.destroy', $employee->nip) }}"
+                                                    <form action="{{ route('employee.destroy', $employee->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')

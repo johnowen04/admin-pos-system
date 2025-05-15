@@ -10,8 +10,8 @@ class Employee extends Model
     use SoftDeletes;
 
     protected $table = 'employees';
-    protected $primaryKey = 'nip';
-    public $incrementing = false;
+    protected $primaryKey = 'id';
+    public $incrementing = true;
     public $timestamps = true;
 
     protected $fillable = [
@@ -36,11 +36,21 @@ class Employee extends Model
 
     public function user()
     {
-        return $this->hasOne(User::class, 'nip', 'nip');
+        return $this->hasOne(User::class, 'employee_id');
     }
 
     public function outlets()
     {
-        return $this->belongsToMany(Outlet::class, 'employee_outlet', 'nip', 'outlets_id');
+        return $this->belongsToMany(Outlet::class, 'employee_outlet', 'employee_id', 'outlets_id');
+    }
+
+    public function purchaseInvoices()
+    {
+        return $this->hasMany(PurchaseInvoice::class, 'employee_id');
+    }
+
+    public function salesInvoices()
+    {
+        return $this->hasMany(SalesInvoice::class, 'employee_id');
     }
 }

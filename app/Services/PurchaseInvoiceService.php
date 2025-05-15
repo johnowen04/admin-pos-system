@@ -33,7 +33,7 @@ class PurchaseInvoiceService
                 'grand_total' => $data['grand_total'],
                 'description' => $data['description'] ?? null,
                 'outlets_id' => $data['outlets'][0], // Assuming one outlet is selected
-                'nip' => $data['nip'],
+                'employee_id' => $data['employee_id'],
             ]);
 
             // Attach products to the purchase invoice
@@ -69,6 +69,7 @@ class PurchaseInvoiceService
                 'grand_total' => $data['grand_total'],
                 'description' => $data['description'] ?? null,
                 'outlets_id' => $data['outlets'][0], // Assuming one outlet is selected
+                'employee_id' => $data['employee_id'],
             ]);
 
             // Update products associated with the purchase invoice

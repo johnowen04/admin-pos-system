@@ -50,6 +50,6 @@ class User extends Authenticatable
     // Relationships
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'nip', 'nip');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 }

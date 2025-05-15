@@ -59,7 +59,7 @@ class EmployeeSeeder extends Seeder
                 'name' => $employeeData['name'], // Use the employee's name for the user
                 'email' => $employeeData['email'],
                 'password' => Hash::make($password), // Hash the password
-                'nip' => $employee->nip, // Link the user to the employee
+                'employee_id' => $employee->id, // Link the user to the employee
             ]);
 
             // Sync outlets

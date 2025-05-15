@@ -19,7 +19,7 @@ class SalesInvoice extends Model
         'grand_total',
         'description',
         'outlets_id',
-        'nip',
+        'employee_id',
     ];
 
     protected $casts = [
@@ -36,7 +36,7 @@ class SalesInvoice extends Model
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'nip', 'nip');
+        return $this->belongsTo(Employee::class, 'employee_id');
     }
 
     public function products()

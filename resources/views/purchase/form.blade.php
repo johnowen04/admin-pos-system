@@ -53,7 +53,7 @@
                 </div>
 
                 <!-- Hidden input for NIP -->
-                <input type="hidden" name="nip" value="{{ Auth::user()->employee->nip }}">
+                <input type="hidden" name="employee_id" value="{{ Auth::user()->employee->id }}">
 
             </div>
         </div>

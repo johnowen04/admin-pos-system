@@ -17,13 +17,13 @@ return new class extends Migration
             $table->decimal('grand_total', 15, 2); // Grand total amount
             $table->string('description', 255)->nullable(); // Description of the invoice
             $table->unsignedBigInteger('outlets_id'); // Foreign key to outlets table
-            $table->string('nip'); // Employee Identification Number
+            $table->unsignedBigInteger('employee_id'); // Foreign key to employees table
             $table->timestamps(); // Created and updated timestamps
             $table->softDeletes(); // Soft delete column
 
             // Foreign key constraint
             $table->foreign('outlets_id')->references('id')->on('outlets')->onDelete('cascade');
-            $table->foreign('nip')->references('nip')->on('employees')->onDelete('cascade');
+            $table->foreign('employee_id')->references('id')->on('employees')->onDelete('cascade');
         });
     }
 

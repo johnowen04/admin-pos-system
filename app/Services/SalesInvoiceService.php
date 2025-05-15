@@ -32,7 +32,7 @@ class SalesInvoiceService
                 'invoice_number' => $data['invoice_number'],
                 'grand_total' => $data['grand_total'],
                 'description' => $data['description'],
-                'nip' => $data['nip'],
+                'employee_id' => $data['employee_id'],
             ]);
 
             $products = [];
@@ -64,7 +64,7 @@ class SalesInvoiceService
                 'invoice_number' => $data['invoice_number'],
                 'grand_total' => $data['grand_total'],
                 'description' => $data['description'],
-                'nip' => $data['nip'],
+                'employee_id' => $data['employee_id'],
             ]);
 
             $products = [];

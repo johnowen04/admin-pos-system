@@ -95,7 +95,7 @@ class EmployeeController extends Controller
         $selectedOutlets = $this->employeeService->getSelectedOutlets($employee); // Get selected outlets for the employee
         $roles = $this->roleService->getAllRoles(); // Fetch all roles
         return view('employee.edit', [
-            'action' => route('employee.update', $employee->nip),
+            'action' => route('employee.update', $employee->id),
             'method' => 'PUT',
             'employee' => $employee,
             'outlets' => $outlets,

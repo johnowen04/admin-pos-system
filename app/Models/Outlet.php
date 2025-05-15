@@ -32,7 +32,7 @@ class Outlet extends Model
     //Relationships
     public function employees()
     {
-        return $this->belongsToMany(Employee::class, 'employee_outlet', 'outlets_id', 'nip');
+        return $this->belongsToMany(Employee::class, 'employee_outlet', 'outlets_id', 'employee_id');
     }
 
     public function categories()

@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('employee_outlet', function (Blueprint $table) {
             $table->unsignedBigInteger('outlets_id'); // Foreign key for outlets
-            $table->string('nip', 20); // Foreign key for employees (primary key in employees table)
-
+            $table->unsignedBigInteger('employee_id'); // Foreign key for employees
+            
             // Composite primary key
-            $table->primary(['outlets_id', 'nip']);
+            $table->primary(['outlets_id', 'employee_id']);
 
             // Indexes
-            $table->index('nip', 'fk_outlets_has_employees_employees1_idx');
+            $table->index('employee_id', 'fk_outlets_has_employees_employees1_idx');
             $table->index('outlets_id', 'fk_outlets_has_employees_outlets1_idx');
 
             // Foreign key constraints
@@ -29,8 +29,8 @@ return new class extends Migration
                 ->onDelete('no action')
                 ->onUpdate('no action');
 
-            $table->foreign('nip', 'fk_outlets_has_employees_employees1')
-                ->references('nip')
+                $table->foreign('employee_id', 'fk_outlets_has_employees_employees1')
+                ->references('id')
                 ->on('employees')
                 ->onDelete('no action')
                 ->onUpdate('no action');

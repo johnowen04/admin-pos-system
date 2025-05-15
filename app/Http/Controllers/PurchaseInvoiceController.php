@@ -74,7 +74,7 @@ class PurchaseInvoiceController extends Controller
             'products.*.sku' => 'required|exists:products,sku',
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'nip' => 'required|string|max:50',
+            'employee_id' => 'required|numeric',
         ]);
 
         // Use the service to create the purchase invoice
@@ -117,7 +117,7 @@ class PurchaseInvoiceController extends Controller
             'products.*.sku' => 'required|exists:products,sku',
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'nip' => 'required|string|max:50',
+            'employee_id' => 'required|numeric',
         ]);
 
         // Use the service to update the purchase invoice

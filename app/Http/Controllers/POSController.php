@@ -196,7 +196,7 @@ class POSController extends Controller
             'invoice_number' => $nextInvoiceNumber,
             'grand_total' => $grandTotal,
             'description' => 'POS Transaction',
-            'nip' => Auth::user()->employee->nip, // Assuming the authenticated user has an employee relationship
+            'employee_id' => Auth::user()->employee->id, // Assuming the authenticated user has an employee relationship
         ]);
 
         // Attach products to the sales invoice and update stock

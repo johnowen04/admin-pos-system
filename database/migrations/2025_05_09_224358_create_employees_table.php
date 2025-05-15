@@ -9,7 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('employees', function (Blueprint $table) {
-            $table->string('nip', 20)->primary(); // Primary key
+            $table->id(); // Auto-incrementing ID
+            $table->string('nip', 20)->unique(); // Unique Employee Identification Number
             $table->string('name', 255);
             $table->string('phone', 15)->nullable();
             $table->string('email', 255)->nullable();
