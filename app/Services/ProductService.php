@@ -108,4 +108,17 @@ class ProductService
     {
         return Product::find($sku); // Use SKU as the primary key
     }
+
+    /**
+     * Get products by outlet ID.
+     *
+     * @param int $outletId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getProductsByOutlets(array $outletIds)
+    {
+        return Product::whereHas('outlets', function ($query) use ($outletIds) {
+            $query->where('outlets_id', $outletIds);
+        })->get();
+    }
 }
