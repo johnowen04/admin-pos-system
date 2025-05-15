@@ -42,7 +42,7 @@
                     <label for="salesInvoiceNumber">Sales Invoice Number</label>
                     <input type="text" class="form-control" id="salesInvoiceNumber" name="invoice_number"
                         placeholder="Ex: SO/251225/001, SO/010125/005, etc"
-                        value="{{ old('invoice_number', $salesInvoice->invoice_number ?? '') }}" required />
+                        value="{{ old('invoice_number', $salesInvoice->invoice_number ?? $nextInvoiceNumber) }}" required disabled/>
                 </div>
 
                 <div class="form-group">

@@ -17,7 +17,7 @@
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Purchase List</h4>
                             <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('purchase.create') }}'">
+                                onclick="window.location='{{ route('purchase-invoice.create') }}'">
                                 <i class="fa fa-plus"></i>
                                 Add Purchase
                             </button>
@@ -37,21 +37,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($purchases as $purchase)
+                                    @foreach ($purchaseInvoices as $purchaseInvoice)
                                         <tr>
-                                            <td>{{ $purchase->id }}</td>
-                                            <td>{{ $purchase->created_at }}</td>
-                                            <td>{{ $purchase->invoice_number }}</td>
-                                            <td>{{ $purchase->grand_total }}</td>
-                                            <td>{{ $purchase->outlet->name }}</td>
+                                            <td>{{ $purchaseInvoice->id }}</td>
+                                            <td>{{ $purchaseInvoice->created_at }}</td>
+                                            <td>{{ $purchaseInvoice->invoice_number }}</td>
+                                            <td>{{ $purchaseInvoice->grand_total }}</td>
+                                            <td>{{ $purchaseInvoice->outlet->name }}</td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('purchase.edit', $purchase->id) }}"
+                                                    <a href="{{ route('purchase-invoice.edit', $purchaseInvoice->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('purchase.destroy', $purchase->id) }}"
+                                                    <form action="{{ route('purchase-invoice.destroy', $purchaseInvoice->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')

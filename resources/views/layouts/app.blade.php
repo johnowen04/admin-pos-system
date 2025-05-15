@@ -139,14 +139,14 @@
                             'name' => 'Purchase',
                             'link' => 'purchase',
                             'icon' => 'fas fa-building',
-                            'route' => 'purchase.index',
+                            'route' => 'purchase-invoice.index',
                             'active' => request()->is('purchase*'),
                         ],
                         [
                             'name' => 'Sales',
                             'link' => 'sales',
                             'icon' => 'fas fa-building',
-                            'route' => 'sales.index',
+                            'route' => 'sales-invoice.index',
                             'active' => request()->is('sales*'),
                         ],
                         [

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id(); // Primary key
             $table->string('invoice_number')->unique()->nullable(); // Unique invoice number
             $table->decimal('grand_total', 15, 2); // Grand total amount
-            $table->string('description', 255); // Unique invoice number
+            $table->string('description', 255)->nullable(); // Description of the invoice
             $table->unsignedBigInteger('outlets_id'); // Foreign key to outlets table
             $table->string('nip'); // Employee Identification Number
             $table->timestamps(); // Created and updated timestamps

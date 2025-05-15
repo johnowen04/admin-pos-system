@@ -34,18 +34,18 @@
                                     class="form-control product-unit-price" value="{{ $product->pivot->unit_price }}"
                                     min="0" step="0.01">
                             </td>
-
                             <td>
                                 <div class="input-group mb-3">
                                     <span class="input-group-text">Rp</span>
                                     <input type="number" class="form-control product-total-price"
-                                        name="products[${rowCount}][total_price]" value="{{ number_format($product->pivot->quantity * $product->pivot->unit_price, 2) }}" readonly>
+                                        name="products[{{ $loop->index }}][total_price]"
+                                        value="{{ $product->pivot->quantity * $product->pivot->unit_price }}" readonly>
                                 </div>
                             </td>
                         </tr>
                     @endforeach
                 @else
-                    <tr>
+                    <tr id="noProductRow">
                         <td colspan="5" class="text-center">No products added yet.</td>
                     </tr>
                 @endif
@@ -112,6 +112,14 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            $('#productTable').DataTable({
+                "pageLength": 5,
+                "order": [[0, "asc"]],
+                "columnDefs": [
+                    { "orderable": false, "targets": -1 } // Disable sorting on the Action column
+                ]
+            });
+
             const productsTable = document.querySelector('#invoiceProductsTable tbody');
             const confirmSelectionButton = document.querySelector('#confirmSelection');
             const productCheckboxes = document.querySelectorAll('.select-product-checkbox');
@@ -119,6 +127,13 @@
             const totalQuantityElement = document.querySelector('#totalQuantity');
             const totalPriceElement = document.querySelector('#totalPrice');
             const grandTotalInput = document.querySelector('#grandTotal');
+            const noProductRow = document.getElementById('noProductRow');
+
+            // Function to toggle the "No products" row
+            function toggleNoProductRow() {
+                const productRows = productsTable.querySelectorAll('tr:not(#noProductRow)');
+                noProductRow.style.display = productRows.length > 0 ? 'none' : '';
+            }
 
             // Function to calculate totals
             function calculateTotals() {
@@ -126,27 +141,24 @@
                 let totalPrice = 0;
 
                 productsTable.querySelectorAll('tr').forEach(row => {
-                    const quantityInput = row.querySelector('input[name*="[quantity]"]');
-                    const unitPriceInput = row.querySelector('input[name*="[unit_price]"]');
-                    const totalPriceInput = row.querySelector('input[name*="[total_price]"]');
+                    const quantityInput = row.querySelector('.product-quantity');
+                    const unitPriceInput = row.querySelector('.product-unit-price');
+                    const totalPriceInput = row.querySelector('.product-total-price');
 
                     if (quantityInput && unitPriceInput) {
                         const quantity = parseFloat(quantityInput.value) || 0;
                         const unitPrice = parseFloat(unitPriceInput.value) || 0;
                         const total = quantity * unitPrice;
 
-                        // Update the total price for the row
                         if (totalPriceInput) {
                             totalPriceInput.value = total.toFixed(2);
                         }
 
-                        // Accumulate totals
                         totalQuantity += quantity;
                         totalPrice += total;
                     }
                 });
 
-                // Update totals in the footer
                 totalQuantityElement.textContent = totalQuantity;
                 totalPriceElement.textContent = `Rp${totalPrice.toLocaleString('id-ID')}`;
                 grandTotalInput.value = totalPrice.toFixed(2);
@@ -167,38 +179,33 @@
 
                 const rowCount = productsTable.querySelectorAll('tr').length;
                 const newRow = `
-            <tr>
-                <td><button type="button" class="btn btn-danger remove-product">Remove</button></td>
-                <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
-                <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
-                <td>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Rp</span>
-                        <input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Rp</span>
-                        <input type="number" class="form-control product-total-price" name="products[${rowCount}][total_price]" value="0" readonly>
-                    </div>
-                </td>
-            </tr>
-        `;
+                    <tr>
+                        <td><button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button></td>
+                        <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
+                        <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
+                        <td><input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required></td>
+                        <td>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">Rp</span>
+                                <input type="number" class="form-control product-total-price"
+                                    name="products[${rowCount}][total_price]"
+                                    value="" readonly>
+                            </div>    
+                        </td>
+                    </tr>
+                `;
                 productsTable.insertAdjacentHTML('beforeend', newRow);
 
-                // Attach event listeners to the new row
                 attachRowEventListeners(productsTable.lastElementChild);
-
-                // Recalculate totals after adding a product
                 calculateTotals();
+                toggleNoProductRow();
             }
 
             // Function to attach event listeners to a row
             function attachRowEventListeners(row) {
-                const quantityInput = row.querySelector('input[name*="[quantity]"]');
-                const unitPriceInput = row.querySelector('input[name*="[unit_price]"]');
-                const removeButton = row.querySelector('.remove-product');
+                const quantityInput = row.querySelector('.product-quantity');
+                const unitPriceInput = row.querySelector('.product-unit-price');
+                const removeButton = row.querySelector('.remove-product-row');
 
                 if (quantityInput) {
                     quantityInput.addEventListener('input', calculateTotals);
@@ -211,7 +218,8 @@
                 if (removeButton) {
                     removeButton.addEventListener('click', function() {
                         row.remove();
-                        calculateTotals(); // Recalculate totals after removing a row
+                        calculateTotals();
+                        toggleNoProductRow();
                     });
                 }
             }
@@ -240,16 +248,13 @@
                     addProductRow(sku, name);
                 });
 
-                // Close the modal
                 const modal = bootstrap.Modal.getInstance(document.querySelector('#productModal'));
                 modal.hide();
 
-                // Clear all checkboxes
                 productCheckboxes.forEach(checkbox => {
                     checkbox.checked = false;
                 });
 
-                // Reset button states
                 toggleButtons();
             });
 
@@ -259,13 +264,12 @@
                 confirmSelectionButton.disabled = !anyChecked;
             }
 
-            // Add event listeners to checkboxes
             productCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', toggleButtons);
             });
 
-            // Initial calculation of totals for pre-populated rows
             calculateTotals();
+            toggleNoProductRow();
         });
     </script>
 @endpush

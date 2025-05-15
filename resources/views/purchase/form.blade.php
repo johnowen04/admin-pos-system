@@ -41,8 +41,8 @@
                 <div class="form-group">
                     <label for="purchaseInvoiceNumber">Purchase Invoice Number</label>
                     <input type="text" class="form-control" id="purchaseInvoiceNumber" name="invoice_number"
-                        placeholder="Ex: PU/251225/001, PU/010125/005, etc"
-                        value="{{ old('invoice_number', $purchaseInvoice->invoice_number ?? '') }}" required />
+                        placeholder="Ex: PO/251225/001, PO/010125/005, etc"
+                        value="{{ old('invoice_number', $purchaseInvoice->invoice_number ?? $nextInvoiceNumber) }}" required disabled />
                 </div>
 
                 <div class="form-group">
