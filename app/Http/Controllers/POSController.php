@@ -25,25 +25,35 @@ class POSController extends Controller
         })->get();
 
         // Filter categories by accessible outlets
-        $categories = Category::whereHas('outlets', function ($query) use ($accessibleOutletIds) {
-            $query->whereIn('outlets_id', $accessibleOutletIds);
-        })->get();
+        $categories = Category::all();
+
+        // Generate a unique invoice number
+        $currentDate = now()->format('Ymd'); // Get the current date in YYYYMMDD format
+        $lastInvoice = SalesInvoice::where('invoice_number', 'like', "INV-$currentDate-%")
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $lastInvoiceNumber = $lastInvoice ? intval(substr($lastInvoice->invoice_number, -3)) : 0; // Extract the last 3 digits
+        $newInvoiceNumber = 'INV-' . $currentDate . '-' . str_pad($lastInvoiceNumber + 1, 3, '0', STR_PAD_LEFT);
 
         // Pass the filtered data to the view
         return view('pos.index', [
             'products' => $products,
             'categories' => $categories,
+            'invoiceNumber' => $newInvoiceNumber,
         ]);
     }
 
     public function payment(Request $request)
     {
         $cart = json_decode($request->input('cart'), true);
-        $grandTotal = $request->input('grand_total');
+        $grandTotal = $request->input('grandTotal');
+        $newInvoiceNumber = $request->input('invoiceNumber');
 
         return view('pos.payment', [
             'cart' => $cart,
             'grandTotal' => $grandTotal,
+            'invoiceNumber' => $newInvoiceNumber,
         ]);
     }
 
@@ -51,14 +61,10 @@ class POSController extends Controller
     {
         // Decode the cart data from the request
         $cart = json_decode($request->input('cart'), true);
-        $grandTotal = $request->input('grand_total');
-        $outletId = $request->input('outlet_id');
-
-        // Generate a unique invoice number
-        $lastInvoice = SalesInvoice::orderBy('id', 'desc')->first();
-        $lastInvoiceNumber = $lastInvoice ? intval(preg_replace('/[^0-9]/', '', $lastInvoice->invoice_number)) : 0;
-        $newInvoiceNumber = 'INV-' . str_pad($lastInvoiceNumber + 1, 4, '0', STR_PAD_LEFT);
-
+        $grandTotal = $request->input('grandTotal');
+        $outletId = $request->input('outletId');
+        $newInvoiceNumber = $request->input('invoiceNumber');
+        
         // Create the sales invoice
         $salesInvoice = SalesInvoice::create([
             'outlets_id' => $outletId,

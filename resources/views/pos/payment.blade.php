@@ -6,7 +6,7 @@
     <div class="page-inner">
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4>Pembayaran</h4>
+            <h4>Payment</h4>
         </div>
 
         <!-- Payment Summary and Method -->
@@ -15,10 +15,10 @@
             <div class="col-md-8">
                 <div class="row mb-3">
                     <!-- Total Tagihan -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="card text-center">
                             <div class="card-body">
-                                <div class="card-title"><strong>Total Tagihan</strong></div>
+                                <div class="card-title"><strong>Total Bill</strong></div>
                                 <div class="card-text fs-4"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong>
                                 </div>
                             </div>
@@ -26,10 +26,10 @@
                     </div>
 
                     <!-- Sisa Tagihan -->
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <div class="card text-center">
                             <div class="card-body">
-                                <div class="card-title text-danger"><strong>Sisa Tagihan</strong></div>
+                                <div class="card-title text-danger"><strong>Remaining Bill</strong></div>
                                 <div class="card-text fs-4 text-danger"><strong>Rp
                                         {{ number_format($grandTotal, 0, ',', '.') }}</strong></div>
                             </div>
@@ -37,7 +37,7 @@
                     </div>
 
                     <!-- Kembalian -->
-                    <div class="col-md-4">
+                    <div class="col-md-4" hidden>
                         <div class="card text-center">
                             <div class="card-body">
                                 <div class="card-title"><strong>Kembalian</strong></div>
@@ -74,12 +74,12 @@
                 <div class="card">
                     <div class="card-header d-flex justify-content-between">
                         <span>Cart</span>
-                        <span>CS/04/250425/0003</span>
+                        <span class="fw-bold">{{ $invoiceNumber }}</span>
                     </div>
                     <ul class="list-group list-group-flush">
                         @foreach ($cart as $item)
                             <li class="list-group-item d-flex justify-content-between">
-                                {{ $item['quantity'] }} {{ $item['name'] }}
+                                {{ $item['quantity'] }} x {{ $item['name'] }}
                                 <span>Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
                             </li>
                         @endforeach
@@ -92,9 +92,10 @@
                 <form action="{{ route('pos.receipt') }}" method="POST">
                     @csrf
                     <input type="hidden" name="cart" value="{{ json_encode($cart) }}">
-                    <input type="hidden" name="grand_total" value="{{ $grandTotal }}">
-                    <input type="hidden" name="outlet_id" value="{{ Auth::user()->employee->outlets[0]->id }}">
-                    <button type="submit" class="btn btn-success w-100 mt-3">Proses Bayar</button>
+                    <input type="hidden" name="invoiceNumber" value="{{ $invoiceNumber }}">
+                    <input type="hidden" name="grandTotal" value="{{ $grandTotal }}">
+                    <input type="hidden" name="outletId" value="{{ Auth::user()->employee->outlets[0]->id }}">
+                    <button type="submit" class="btn btn-success w-100 mt-3">Process Payment</button>
                 </form>
             </div>
         </div>
