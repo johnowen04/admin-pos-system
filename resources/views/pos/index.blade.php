@@ -3,6 +3,16 @@
 @section('title', 'POS')
 
 @section('content')
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="page-inner">
 
         <!-- Search and Product Grid -->
@@ -33,7 +43,7 @@
                                         <div>{{ $product->name }}</div>
                                         <div class="text-muted">Rp {{ number_format($product->sell_price, 0, ',', '.') }}
                                         </div>
-                                        <button class="btn btn-sm btn-primary mt-2">Add</button>
+                                        <button class="btn btn-sm btn-primary mt-2 add-to-cart">Add</button>
                                     </div>
                                 </div>
                             @endforeach
@@ -51,39 +61,53 @@
                             <span>Cart</span>
                         </div>
                         <button id="clearCartButton" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash"></i> <!-- Font Awesome Trash Icon -->
+                            <i class="fas fa-trash"></i>
                         </button>
                     </div>
                     <div class="card-body">
                         <ul id="cartItems" class="list-group mb-3"
                             style="min-height: 60vh; max-height: 350px; overflow-y: auto;">
-                            <!-- Example cart item -->
-                            <!-- This will be dynamically populated -->
-                            <!--
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <strong>Fruitea 500 Strawberry</strong>
-                                                <div>Qty: 2 x Rp 7.000</div>
-                                            </div>
-                                            <div>
-                                                <span>Rp 14.000</span>
-                                                <button class="btn btn-sm btn-danger ms-2 remove-item">X</button>
-                                            </div>
-                                        </li>
-                                        -->
+                            @php
+                                $cart = session('cart', []);
+                                $grandTotal = 0;
+                            @endphp
+
+                            @foreach ($cart as $sku => $item)
+                                @php
+                                    $totalPrice = $item['quantity'] * $item['unit_price'];
+                                    $grandTotal += $totalPrice;
+                                @endphp
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ $item['name'] }}</strong>
+                                        <div>
+                                            Qty:
+                                            <input type="number" class="form-control form-control-sm quantity-input"
+                                                data-sku="{{ $sku }}" value="{{ $item['quantity'] }}"
+                                                min="1" style="width: 60px; display: inline-block;">
+                                            x Rp {{ number_format($item['unit_price'], 0, ',', '.') }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <span>Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
+                                        <button class="btn btn-sm btn-warning ms-2 minus-item"
+                                            data-sku="{{ $sku }}">-</button>
+                                        <button class="btn btn-sm btn-danger ms-2 remove-item"
+                                            data-sku="{{ $sku }}">X</button>
+                                    </div>
+                                </li>
+                            @endforeach
                         </ul>
                         <div class="d-flex justify-content-between">
                             <strong>Total:</strong>
-                            <strong id="cartTotal">Rp 0</strong>
+                            <strong id="cartTotal">Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong>
                         </div>
                     </div>
                     <div class="card-footer text-end">
-                        <form action="{{ route('pos.payment') }}" method="POST" id="paymentForm">
+                        <form action="{{ route('pos.payment') }}" method="GET" id="paymentForm">
                             @csrf
-                            <input type="hidden" name="cart" id="cartInput">
-                            <input type="hidden" name="grandTotal" id="grandTotalInput">
-                            <input type="hidden" name="invoiceNumber" id="grandTotalInput" value="{{ $invoiceNumber }}">
-                            <button type="submit" id="checkoutButton" class="btn btn-success" disabled>Payment</button>
+                            <input type="hidden" name="cart" id="cartInput" value="{{ json_encode($cart) }}">
+                            <button type="submit" id="checkoutButton" class="btn btn-success" disabled>Checkout</button>
                         </form>
                     </div>
                 </div>
@@ -95,18 +119,12 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
-            const productGrid = $('#productGrid');
-
-            // Search functionality
-            $('#productSearch').on('keyup', function() {
-                filterProducts();
-            });
-
-            // Category filter functionality
-            $('#categoryFilter').on('change', function() {
-                filterProducts();
-            });
+            const cartItems = $('#cartItems');
+            const cartTotal = $('#cartTotal');
+            const checkoutButton = $('#checkoutButton');
+            const clearCartButton = $('#clearCartButton');
+            const cartInput = $('#cartInput');
+            const grandTotalInput = $('#grandTotalInput');
 
             // Filter products based on search and category
             function filterProducts() {
@@ -121,121 +139,149 @@
                     const matchesSearch = name.includes(searchTerm) || sku.includes(searchTerm);
                     const matchesCategory = !selectedCategory || category === selectedCategory;
 
-                    if (matchesSearch && matchesCategory) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
+                    $(this).toggle(matchesSearch && matchesCategory);
                 });
             }
 
-            const cart = {};
-            const cartItems = $('#cartItems');
-            const cartTotal = $('#cartTotal');
-            const checkoutButton = $('#checkoutButton');
-            const clearCartButton = $('#clearCartButton');
-            const paymentForm = $('#paymentForm');
-            const cartInput = $('#cartInput');
-            const grandTotalInput = $('#grandTotalInput');
-
-            // Clear all items from the cart
-            clearCartButton.on('click', function() {
-                Object.keys(cart).forEach((sku) => delete cart[sku]);
-                updateCart();
-            });
-
-            // Add item to cart
-            $('.product-item button').on('click', function() {
-                const productElement = $(this).closest('.product-item');
-                const name = productElement.data('name');
-                const sku = productElement.data('sku');
-                const price = parseFloat(productElement.find('.text-muted').text().replace(/[^\d]/g, ''));
-
-                if (!cart[sku]) {
-                    cart[sku] = {
-                        name,
-                        price,
-                        quantity: 1
-                    };
-                } else {
-                    cart[sku].quantity++;
-                }
-
-                updateCart();
-            });
+            // Function to update the checkout button state
+            function updateCheckoutButton() {
+                const cart = JSON.parse(cartInput.val() || '{}'); // Parse the cart from the hidden input
+                const isCartEmpty = Object.keys(cart).length === 0; // Check if the cart is empty
+                checkoutButton.prop('disabled', isCartEmpty); // Enable/disable the button
+            }
 
             // Update cart UI
-            function updateCart() {
+            function updateCartUI(cart) {
                 cartItems.empty();
                 let total = 0;
 
                 Object.keys(cart).forEach((sku) => {
                     const item = cart[sku];
-                    const subtotal = item.price * item.quantity;
+                    const subtotal = item.unit_price * item.quantity;
                     total += subtotal;
 
                     const cartItem = $(`
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${item.name}</strong>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                Qty: 
-                                <input type="number" class="form-control form-control-sm quantity-input" 
-                                    data-sku="${sku}" value="${item.quantity}" min="1" style="width: 60px; display: inline-block;">
-                                x Rp ${item.price.toLocaleString('id-ID')}
+                                <strong>${item.name}</strong>
+                                <div>
+                                    Qty: 
+                                    <input type="number" class="form-control form-control-sm quantity-input" 
+                                        data-sku="${sku}" value="${item.quantity}" min="1" style="width: 60px; display: inline-block;">
+                                    x Rp ${item.unit_price.toLocaleString('id-ID')}
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
-                            <button class="btn btn-sm btn-warning ms-2 minus-item" data-sku="${sku}">-</button>
-                            <button class="btn btn-sm btn-danger ms-2 remove-item" data-sku="${sku}">X</button>
-                        </div>
-                    </li>
+                            <div>
+                                <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
+                                <button class="btn btn-sm btn-warning ms-2 minus-item" data-sku="${sku}">-</button>
+                                <button class="btn btn-sm btn-danger ms-2 remove-item" data-sku="${sku}">X</button>
+                            </div>
+                        </li>
                     `);
 
                     cartItems.append(cartItem);
                 });
 
                 cartTotal.text(`Rp ${total.toLocaleString('id-ID')}`);
-                grandTotalInput.val(total); // Update grand total input
                 cartInput.val(JSON.stringify(cart)); // Update cart input
-                checkoutButton.prop('disabled', total === 0);
+                updateCheckoutButton(); // Update the checkout button state
             }
 
-            // Handle quantity change
+            // Add product to cart
+            function addToCart(productElement) {
+                const name = productElement.data('name');
+                const sku = productElement.data('sku');
+                const unitPrice = parseFloat(productElement.find('.text-muted').text().replace(/[^\d]/g, ''));
+
+                $.post('{{ route('pos.addToCart') }}', {
+                    _token: '{{ csrf_token() }}',
+                    sku,
+                    name,
+                    unit_price: unitPrice,
+                    quantity: 1,
+                }).done((response) => {
+                    updateCartUI(response.cart);
+                });
+            }
+
+            // Clear all items from the cart
+            function clearCart() {
+                $.post('{{ route('pos.clearCart') }}', {
+                    _token: '{{ csrf_token() }}',
+                }).done(() => {
+                    updateCartUI({});
+                });
+            }
+
+            // Event listeners
+            $('#productSearch').on('keyup', filterProducts);
+            $('#categoryFilter').on('change', filterProducts);
+
+            $('#productGrid').on('click', '.add-to-cart', function() {
+                const productElement = $(this).closest('.product-item');
+                addToCart(productElement);
+            });
+
+            clearCartButton.on('click', clearCart);
+
             cartItems.on('change', '.quantity-input', function() {
                 const sku = $(this).data('sku');
                 const newQuantity = parseInt($(this).val());
 
-                if (cart[sku] && newQuantity > 0) {
-                    cart[sku].quantity = newQuantity;
-                } else if (newQuantity <= 0) {
-                    delete cart[sku];
+                if (newQuantity > 0) {
+                    $.post('{{ route('pos.addToCart') }}', {
+                        _token: '{{ csrf_token() }}',
+                        sku,
+                        quantity: newQuantity,
+                    }).done((response) => {
+                        updateCartUI(response.cart);
+                    });
+                } else {
+                    $.post('{{ route('pos.removeFromCart') }}', {
+                        _token: '{{ csrf_token() }}',
+                        sku,
+                    }).done((response) => {
+                        updateCartUI(response.cart);
+                    });
                 }
-
-                updateCart();
             });
 
-            // Reduce quantity with minus button
             cartItems.on('click', '.minus-item', function() {
                 const sku = $(this).data('sku');
-                if (cart[sku]) {
-                    cart[sku].quantity--;
-                    if (cart[sku].quantity <= 0) {
-                        delete cart[sku];
-                    }
+                const quantityInput = $(this).closest('li').find('.quantity-input');
+                const currentQuantity = parseInt(quantityInput.val());
+
+                if (currentQuantity === 1) {
+                    // If quantity is 1, remove the item from the cart
+                    $.post('{{ route('pos.removeFromCart') }}', {
+                        _token: '{{ csrf_token() }}',
+                        sku,
+                    }).done((response) => {
+                        updateCartUI(response.cart);
+                    });
+                } else {
+                    // Otherwise, decrement the quantity
+                    $.post('{{ route('pos.addToCart') }}', {
+                        _token: '{{ csrf_token() }}',
+                        sku,
+                        quantity: -1,
+                    }).done((response) => {
+                        updateCartUI(response.cart);
+                    });
                 }
-                updateCart();
             });
 
-            // Remove item entirely with X button
             cartItems.on('click', '.remove-item', function() {
                 const sku = $(this).data('sku');
-                if (cart[sku]) {
-                    delete cart[sku];
-                }
-                updateCart();
+                $.post('{{ route('pos.removeFromCart') }}', {
+                    _token: '{{ csrf_token() }}',
+                    sku,
+                }).done((response) => {
+                    updateCartUI(response.cart);
+                });
             });
+
+            updateCheckoutButton(); // Update the checkout button state
         });
     </script>
 @endpush

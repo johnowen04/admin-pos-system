@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'POS Payment')
+@section('title', 'POS Receipt')
 
 @section('content')
     <div class="page-inner">
@@ -11,7 +11,7 @@
                         <h4 class="mb-1">Payment Receipt</h4>
                         <small class="text-muted">Outlet: {{ Auth::user()->employee->outlets[0]->name }}</small><br>
                         <small class="text-muted">Cashier: {{ Auth::user()->employee->name }}</small><br>
-                        <small class="text-muted">Date: {{ now()->format('d M Y H:i') }}</small>
+
                     </div>
 
                     <table class="table table-borderless table-sm">
@@ -28,7 +28,7 @@
                                     <td>{{ $item['name'] }}</td>
                                     <td class="text-center">{{ $item['quantity'] }}</td>
                                     <td class="text-end">Rp
-                                        {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}
+                                        {{ number_format($item['unit_price'] * $item['quantity'], 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -52,6 +52,7 @@
 
                     <div class="text-center mt-4 no-print">
                         <button class="btn btn-primary btn-sm" onclick="window.print()">Print Receipt</button>
+                        <a href="{{ route('pos.index') }}" class="btn btn-secondary btn-sm">Back to POS</a>
                     </div>
                 </div>
             </div>

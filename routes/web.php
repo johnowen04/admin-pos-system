@@ -26,8 +26,14 @@ Route::get('/logout', function () {
 });
 
 Route::get('/pos', [POSController::class, 'index'])->name('pos.index')->middleware('auth');
-Route::post('/pos/payment', [POSController::class, 'payment'])->name('pos.payment')->middleware('auth');
-Route::post('/pos/receipt', [POSController::class, 'receipt'])->name('pos.receipt')->middleware('auth');
+Route::get('/pos/payment', [POSController::class, 'payment'])->name('pos.payment')->middleware('auth');
+Route::post('/pos/process-payment', [POSController::class, 'processPayment'])->name('pos.processPayment')->middleware('auth');
+Route::get('/pos/receipt', [POSController::class, 'receipt'])->name('pos.receipt')->middleware('auth');
+
+Route::post('/cart/add', [POSController::class, 'addToCart'])->name('pos.addToCart')->middleware('auth');
+Route::post('/cart/remove', [POSController::class, 'removeFromCart'])->name('pos.removeFromCart')->middleware('auth');
+Route::get('/cart', [POSController::class, 'getCart'])->name('pos.getCart')->middleware('auth');
+Route::post('/cart/clear', [POSController::class, 'clearCart'])->name('pos.clearCart')->middleware('auth');
 
 Route::get('/dashboard', function () {
     return view('index');

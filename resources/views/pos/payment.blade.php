@@ -15,18 +15,18 @@
             <div class="col-md-8">
                 <div class="row mb-3">
                     <!-- Total Tagihan -->
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="card text-center">
                             <div class="card-body">
                                 <div class="card-title"><strong>Total Bill</strong></div>
-                                <div class="card-text fs-4"><strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong>
+                                <div class="card-text fs-4">Rp {{ number_format($grandTotal, 0, ',', '.') }}
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Sisa Tagihan -->
-                    <div class="col-md-6">
+                    <div class="col-md-6" hidden>
                         <div class="card text-center">
                             <div class="card-body">
                                 <div class="card-title text-danger"><strong>Remaining Bill</strong></div>
@@ -77,10 +77,17 @@
                         <span class="fw-bold">{{ $invoiceNumber }}</span>
                     </div>
                     <ul class="list-group list-group-flush">
-                        @foreach ($cart as $item)
-                            <li class="list-group-item d-flex justify-content-between">
-                                {{ $item['quantity'] }} x {{ $item['name'] }}
-                                <span>Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</span>
+                        @foreach ($cart as $sku => $item)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ $item['name'] }}</strong>
+                                    <div>Qty: {{ $item['quantity'] }} x Rp
+                                        {{ number_format($item['unit_price'], 0, ',', '.') }}</div>
+                                </div>
+                                <div>
+                                    <span>Rp
+                                        {{ number_format($item['quantity'] * $item['unit_price'], 0, ',', '.') }}</span>
+                                </div>
                             </li>
                         @endforeach
                     </ul>
@@ -89,13 +96,9 @@
                         <strong>Rp {{ number_format($grandTotal, 0, ',', '.') }}</strong>
                     </div>
                 </div>
-                <form action="{{ route('pos.receipt') }}" method="POST">
+                <form action="{{ route('pos.processPayment') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="cart" value="{{ json_encode($cart) }}">
-                    <input type="hidden" name="invoiceNumber" value="{{ $invoiceNumber }}">
-                    <input type="hidden" name="grandTotal" value="{{ $grandTotal }}">
-                    <input type="hidden" name="outletId" value="{{ Auth::user()->employee->outlets[0]->id }}">
-                    <button type="submit" class="btn btn-success w-100 mt-3">Process Payment</button>
+                    <button type="submit" class="btn btn-success w-100 mt-3">Process</button>
                 </form>
             </div>
         </div>
