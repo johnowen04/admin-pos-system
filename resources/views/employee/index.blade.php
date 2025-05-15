@@ -29,6 +29,7 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
+                                        <th>NIP</th>
                                         <th>Name</th>
                                         <th>Outlet Count</th>
                                         <th>Position</th>
