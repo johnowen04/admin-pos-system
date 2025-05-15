@@ -77,7 +77,7 @@
                         <span class="fw-bold">{{ $invoiceNumber }}</span>
                     </div>
                     <ul class="list-group list-group-flush">
-                        @foreach ($cart as $sku => $item)
+                        @foreach ($cart as $id => $item)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <strong>{{ $item['name'] }}</strong>
