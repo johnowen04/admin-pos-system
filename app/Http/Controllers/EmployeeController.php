@@ -3,21 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use App\Models\Outlet;
-use App\Models\Role;
+use App\Services\EmployeeService;
+use App\Services\OutletService;
+use App\Services\RoleService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class EmployeeController extends Controller
 {
+    protected $roleService;
+    protected $outletService;
+    protected $employeeService;
+
+    /**
+     * Constructor to inject the EmployeeService.
+     */
+    public function __construct(RoleService $roleService, OutletService $outletService, EmployeeService $employeeService)
+    {
+        $this->roleService = $roleService;
+        $this->outletService = $outletService;
+        $this->employeeService = $employeeService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $employees = Employee::all();
+        $employees = $this->employeeService->getAllEmployees();
         return view('employee.index', [
-            'employees' => $employees, // Placeholder for employees
+            'employees' => $employees,
             'createRoute' => route('employee.create'),
         ]);
     }
@@ -27,8 +41,8 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        $outlets = Outlet::all(); // Fetch all outlets
-        $roles = Role::all(); // Fetch all outlets
+        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
+        $roles = $this->roleService->getAllRoles(); // Fetch all roles
         return view('employee.create', [
             'action' => route('employee.store'),
             'method' => 'POST',
@@ -57,27 +71,8 @@ class EmployeeController extends Controller
             'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
         ]);
 
-        // Create the employee
-        $employee = Employee::create([
-            'nip' => $validatedData['nip'],
-            'name' => $validatedData['name'],
-            'phone' => $validatedData['phone'],
-            'email' => $validatedData['email'],
-            'roles_id' => $validatedData['roles_id'],
-        ]);
-
-        // Create the associated user
-        $employee->user()->create([
-            'name' => $validatedData['name'], // Use the employee's name for the user
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']), // Hash the password
-            'nip' => $employee->nip, // Link the user to the employee
-        ]);
-
-        // Sync outlets
-        if (!empty($validatedData['outlets'])) {
-            $employee->outlets()->sync($validatedData['outlets']);
-        }
+        // Use the service to create the employee
+        $this->employeeService->createEmployee($validatedData);
 
         // Redirect back with a success message
         return redirect()->route('employee.index')->with('success', 'Employee created successfully.');
@@ -96,9 +91,9 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
-        $outlets = Outlet::all(); // Fetch all outlets
-        $selectedOutlets = $employee->outlets->pluck('id')->toArray(); // Get selected outlets
-        $roles = Role::all(); // Fetch all outlets
+        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
+        $selectedOutlets = $this->employeeService->getSelectedOutlets($employee); // Get selected outlets for the employee
+        $roles = $this->roleService->getAllRoles(); // Fetch all roles
         return view('employee.edit', [
             'action' => route('employee.update', $employee->nip),
             'method' => 'PUT',
@@ -117,41 +112,18 @@ class EmployeeController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
+            'nip' => 'required|string|max:50|unique:employees,nip,' . $employee->id,
             'name' => 'required|string|max:100',
             'phone' => 'required|string|max:15',
-            'email' => 'required|email|max:100|unique:users,email,' . $employee->user->id, // Ensure unique email for the user
+            'email' => 'required|email|max:100|unique:users,email,' . $employee->user->id,
             'roles_id' => 'required|exists:roles,id',
             'password' => 'nullable|string|min:8', // Password is optional for updates
             'outlets' => 'nullable|array', // Outlets can be null or an array
             'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
         ]);
 
-        // Update employee details
-        $employee->update([
-            'name' => $validatedData['name'],
-            'phone' => $validatedData['phone'],
-            'email' => $validatedData['email'],
-            'roles_id' => $validatedData['roles_id'],
-        ]);
-
-        // Update the associated user
-        $userData = [
-            'email' => $validatedData['email'],
-        ];
-
-        // Only update the password if it is provided
-        if (!empty($validatedData['password'])) {
-            $userData['password'] = Hash::make($validatedData['password']);
-        }
-
-        $employee->user->update($userData);
-
-        // Sync outlets
-        if (!empty($validatedData['outlets'])) {
-            $employee->outlets()->sync($validatedData['outlets']);
-        } else {
-            $employee->outlets()->detach(); // Detach all outlets if none are provided
-        }
+        // Use the service to update the employee
+        $this->employeeService->updateEmployee($employee, $validatedData);
 
         // Redirect back with a success message
         return redirect()->route('employee.index')->with('success', 'Employee updated successfully.');
@@ -160,8 +132,12 @@ class EmployeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Employee $employee)
     {
-        //
+        // Use the service to delete the employee
+        $this->employeeService->deleteEmployee($employee);
+
+        // Redirect back with a success message
+        return redirect()->route('employee.index')->with('success', 'Employee deleted successfully.');
     }
 }

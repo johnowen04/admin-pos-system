@@ -4,19 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use App\Models\Outlet;
-use App\Models\Department;
+use App\Services\CategoryService;
+use App\Services\DepartmentService;
+use App\Services\OutletService;
 
 class CategoryController extends Controller
 {
+    protected $departmentService;
+    protected $outletService;
+    protected $categoryService;
+
+    /**
+     * Constructor to inject the CategoryService.
+     */
+    public function __construct(DepartmentService $departmentService, OutletService $outletService, CategoryService $categoryService)
+    {
+        $this->departmentService = $departmentService;
+        $this->outletService = $outletService;
+        $this->categoryService = $categoryService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = $this->categoryService->getAllCategories();
         return view('category.index', [
-            'categories' => $categories, // Placeholder for categories
+            'categories' => $categories,
             'createRoute' => route('category.create'),
         ]);
     }
@@ -26,8 +41,8 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $outlets = Outlet::all(); // Fetch all outlets
-        $departments = Department::all(); // Fetch all outlets
+        $departments = $this->departmentService->getAllDepartments(); // Fetch all departments
+        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
         return view('category.create', [
             'action' => route('category.store'),
             'method' => 'POST',
@@ -82,9 +97,9 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        $outlets = Outlet::all(); // Fetch all outlets
-        $selectedOutlets = $category->outlets->pluck('id')->toArray(); // Get selected outlet IDs
-        $departments = Department::all(); // Fetch all outlets
+        $departments = $this->departmentService->getAllDepartments(); // Fetch all departments
+        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
+        $selectedOutlets = $this->categoryService->getSelectedOutlets($category); // Get selected outlet IDs
         return view('category.edit', [
             'action' => route('category.update', $category->id),
             'method' => 'PUT',
@@ -103,26 +118,15 @@ class CategoryController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'required|string|max:45',
-            'departments_id' => 'required|exists:departments,id', // Ensure the department exists
+            'name' => 'required|string|max:100',
+            'departments_id' => 'required|exists:departments,id',
             'is_shown' => 'required|boolean',
-            'outlets' => 'nullable|array', // Outlets can be null or an array
-            'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
+            'outlets' => 'nullable|array',
+            'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Update the category
-        $category->update([
-            'name' => $validatedData['name'],
-            'departments_id' => $validatedData['departments_id'],
-            'is_shown' => $validatedData['is_shown'],
-        ]);
-
-        // Sync outlets with the category (if any)
-        if (!empty($validatedData['outlets'])) {
-            $category->outlets()->sync($validatedData['outlets']);
-        } else {
-            $category->outlets()->detach(); // Detach all outlets if none are provided
-        }
+        // Use the service to update the category
+        $this->categoryService->updateCategory($category, $validatedData);
 
         // Redirect back to the category index with a success message
         return redirect()->route('category.index')->with('success', 'Category updated successfully.');
@@ -133,8 +137,8 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        // Perform soft delete
-        $category->delete();
+        // Use the service to delete the category
+        $this->categoryService->deleteCategory($category);
 
         // Redirect back to the category index with a success message
         return redirect()->route('category.index')->with('success', 'Category deleted successfully.');

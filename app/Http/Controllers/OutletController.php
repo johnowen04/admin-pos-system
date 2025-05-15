@@ -4,17 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Outlet;
+use App\Services\OutletService;
 
 class OutletController extends Controller
 {
+    protected $outletService;
+
+    /**
+     * Constructor to inject the OutletService.
+     */
+    public function __construct(OutletService $outletService)
+    {
+        $this->outletService = $outletService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $outlets = Outlet::all();
+        $outlets = $this->outletService->getAllOutlets();
         return view('outlet.index', [
-            'outlets' => $outlets, // Placeholder for outlets
+            'outlets' => $outlets,
             'createRoute' => route('outlet.create'),
         ]);
     }
@@ -48,19 +59,11 @@ class OutletController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        // Create the outlet
-        Outlet::create($validatedData);
+        // Use the service to create the outlet
+        $this->outletService->createOutlet($validatedData);
 
         // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -92,8 +95,8 @@ class OutletController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        // Update the outlet
-        $outlet->update($validatedData);
+        // Use the service to update the outlet
+        $this->outletService->updateOutlet($outlet, $validatedData);
 
         // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet updated successfully.');
@@ -104,10 +107,10 @@ class OutletController extends Controller
      */
     public function destroy(Outlet $outlet)
     {
-        // Perform soft delete
-        $outlet->delete();
+        // Use the service to delete the outlet
+        $this->outletService->deleteOutlet($outlet);
 
-        // Redirect back to the department index with a success message
+        // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet deleted successfully.');
     }
 }

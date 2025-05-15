@@ -3,16 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\BaseUnit;
+use App\Services\BaseUnitService;
 use Illuminate\Http\Request;
 
 class BaseUnitController extends Controller
 {
+    protected $baseUnitService;
+
+    /**
+     * Constructor to inject the BaseUnitService.
+     */
+    public function __construct(BaseUnitService $baseUnitService)
+    {
+        $this->baseUnitService = $baseUnitService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $baseunits = BaseUnit::all();
+        $baseunits = $this->baseUnitService->getAllBaseUnits();
         return view('baseunit.index', [
             'baseunits' => $baseunits, // Placeholder for base units
             'createRoute' => route('baseunit.create'),
@@ -43,7 +54,7 @@ class BaseUnitController extends Controller
         ]);
 
         // Create the base unit
-        BaseUnit::create($validatedData);
+        $this->baseUnitService->createBaseUnit($validatedData);
 
         // Redirect back to the base unit index with a success message
         return redirect()->route('baseunit.index')->with('success', 'Base Unit created successfully.');
@@ -81,7 +92,7 @@ class BaseUnitController extends Controller
         ]);
 
         // Update the base unit
-        $baseunit->update($validatedData);
+        $this->baseUnitService->updateBaseUnit($baseunit, $validatedData);
 
         // Redirect back to the base unit index with a success message
         return redirect()->route('baseunit.index')->with('success', 'Base Unit updated successfully.');
@@ -93,7 +104,7 @@ class BaseUnitController extends Controller
     public function destroy(BaseUnit $baseunit)
     {
         // Perform soft delete
-        $baseunit->delete();
+        $this->baseUnitService->deleteBaseUnit($baseunit);
 
         // Redirect back to the base unit index with a success message
         return redirect()->route('baseunit.index')->with('success', 'Base Unit deleted successfully.');

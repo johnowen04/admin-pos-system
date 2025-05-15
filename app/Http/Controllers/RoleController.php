@@ -2,19 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Role;
+use App\Services\RoleService;
+use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
+    protected $roleService;
+
+    /**
+     * Constructor to inject the RoleService.
+     */
+    public function __construct(RoleService $roleService)
+    {
+        $this->roleService = $roleService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $roles = Role::all();
+        $roles = $this->roleService->getAllRoles();
         return view('role.index', [
-            'roles' => $roles, // Placeholder for roles
+            'roles' => $roles,
             'createRoute' => route('role.create'),
         ]);
     }
@@ -42,19 +53,11 @@ class RoleController extends Controller
             'name' => 'required|string|max:20|unique:roles,name',
         ]);
 
-        // Create the outlet
-        Role::create($validatedData);
+        // Use the service to create the role
+        $this->roleService->createRole($validatedData);
 
         // Redirect back to the role index with a success message
         return redirect()->route('role.index')->with('success', 'Role created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -77,11 +80,11 @@ class RoleController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'required|string|max:20|unique:roles,name',
+            'name' => 'required|string|max:20|unique:roles,name,' . $role->id,
         ]);
 
-        // Update the role
-        $role->update($validatedData);
+        // Use the service to update the role
+        $this->roleService->updateRole($role, $validatedData);
 
         // Redirect back to the role index with a success message
         return redirect()->route('role.index')->with('success', 'Role updated successfully.');
@@ -92,8 +95,8 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        // Perform soft delete
-        $role->delete();
+        // Use the service to delete the role
+        $this->roleService->deleteRole($role);
 
         // Redirect back to the role index with a success message
         return redirect()->route('role.index')->with('success', 'Role deleted successfully.');

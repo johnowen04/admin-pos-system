@@ -3,17 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Unit;
-use App\Models\BaseUnit;
+use App\Services\BaseUnitService;
+use App\Services\UnitService;
 use Illuminate\Http\Request;
 
 class UnitController extends Controller
 {
+    protected $unitService;
+    protected $baseUnitService;
+
+    /**
+     * Constructor to inject the UnitService.
+     */
+    public function __construct(BaseUnitService $baseUnitService, UnitService $unitService)
+    {
+        $this->unitService = $unitService;
+        $this->baseUnitService = $baseUnitService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $units = Unit::all();
+        $units = $this->unitService->getAllUnits();
         return view('unit.index', [
             'units' => $units, // Placeholder for units
             'createRoute' => route('unit.create'),
@@ -25,7 +38,7 @@ class UnitController extends Controller
      */
     public function create()
     {
-        $baseunits = BaseUnit::all();
+        $baseunits = $this->baseUnitService->getAllBaseUnits();
         return view('unit.create', [
             'action' => route('unit.store'),
             'method' => 'POST',
@@ -46,7 +59,7 @@ class UnitController extends Controller
             'to_base_unit_id' => 'required|exists:base_units,id',
         ]);
 
-        Unit::create($validatedData);
+        $this->unitService->createUnit($validatedData);
 
         return redirect()->route('unit.index')->with('success', 'Unit created successfully.');
     }
@@ -64,7 +77,7 @@ class UnitController extends Controller
      */
     public function edit(Unit $unit)
     {
-        $baseunits = BaseUnit::all();
+        $baseunits = $this->baseUnitService->getAllBaseUnits();
         return view('unit.edit', [
             'action' => route('unit.update', $unit->id),
             'method' => 'PUT',
@@ -85,7 +98,7 @@ class UnitController extends Controller
             'to_base_unit_id' => 'required|exists:base_units,id',
         ]);
 
-        $unit->update($validatedData);
+        $this->unitService->updateUnit($unit, $validatedData);
 
         return redirect()->route('unit.index')->with('success', 'Unit updated successfully.');
     }
@@ -95,7 +108,7 @@ class UnitController extends Controller
      */
     public function destroy(Unit $unit)
     {
-        $unit->delete();
+        $this->unitService->deleteUnit($unit);
 
         return redirect()->route('unit.index')->with('success', 'Unit deleted successfully.');
     }
