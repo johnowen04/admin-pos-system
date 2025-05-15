@@ -36,8 +36,9 @@
                     <div class="card-body">
                         <div id="productGrid" class="row g-4" style="max-height: 350px; overflow-y: auto;">
                             @foreach ($products as $product)
-                                <div class="col-6 col-md-4 col-lg-3 product-item" data-name="{{ $product->name }}"
-                                    data-sku="{{ $product->sku }}" data-category="{{ $product->categories_id }}">
+                                <div class="col-6 col-md-4 col-lg-3 product-item" data-id="{{ $product->id }}"
+                                    data-name="{{ $product->name }}" data-sku="{{ $product->sku }}"
+                                    data-category="{{ $product->categories_id }}">
                                     <div class="border p-3 text-center rounded bg-light">
                                         <div class="fw-bold">{{ $product->sku }}</div>
                                         <div>{{ $product->name }}</div>
@@ -72,7 +73,7 @@
                                 $grandTotal = 0;
                             @endphp
 
-                            @foreach ($cart as $sku => $item)
+                            @foreach ($cart as $id => $item)
                                 @php
                                     $totalPrice = $item['quantity'] * $item['unit_price'];
                                     $grandTotal += $totalPrice;
@@ -83,17 +84,17 @@
                                         <div>
                                             Qty:
                                             <input type="number" class="form-control form-control-sm quantity-input"
-                                                data-sku="{{ $sku }}" value="{{ $item['quantity'] }}"
-                                                min="1" style="width: 60px; display: inline-block;">
+                                                data-id={{ $id }} value="{{ $item['quantity'] }}" min="1"
+                                                style="width: 60px; display: inline-block;">
                                             x Rp {{ number_format($item['unit_price'], 0, ',', '.') }}
                                         </div>
                                     </div>
                                     <div>
                                         <span>Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
                                         <button class="btn btn-sm btn-warning ms-2 minus-item"
-                                            data-sku="{{ $sku }}">-</button>
+                                            data-id={{ $id }}>-</button>
                                         <button class="btn btn-sm btn-danger ms-2 remove-item"
-                                            data-sku="{{ $sku }}">X</button>
+                                            data-id={{ $id }}>X</button>
                                     </div>
                                 </li>
                             @endforeach
@@ -155,8 +156,8 @@
                 cartItems.empty();
                 let total = 0;
 
-                Object.keys(cart).forEach((sku) => {
-                    const item = cart[sku];
+                Object.keys(cart).forEach((id) => {
+                    const item = cart[id];
                     const subtotal = item.unit_price * item.quantity;
                     total += subtotal;
 
@@ -167,14 +168,14 @@
                                 <div>
                                     Qty: 
                                     <input type="number" class="form-control form-control-sm quantity-input" 
-                                        data-sku="${sku}" value="${item.quantity}" min="1" style="width: 60px; display: inline-block;">
+                                        data-id="${id}" value="${item.quantity}" min="1" style="width: 60px; display: inline-block;">
                                     x Rp ${item.unit_price.toLocaleString('id-ID')}
                                 </div>
                             </div>
                             <div>
                                 <span>Rp ${subtotal.toLocaleString('id-ID')}</span>
-                                <button class="btn btn-sm btn-warning ms-2 minus-item" data-sku="${sku}">-</button>
-                                <button class="btn btn-sm btn-danger ms-2 remove-item" data-sku="${sku}">X</button>
+                                <button class="btn btn-sm btn-warning ms-2 minus-item" data-id="${id}">-</button>
+                                <button class="btn btn-sm btn-danger ms-2 remove-item" data-id="${id}">X</button>
                             </div>
                         </li>
                     `);
@@ -190,12 +191,12 @@
             // Add product to cart
             function addToCart(productElement) {
                 const name = productElement.data('name');
-                const sku = productElement.data('sku');
+                const id = productElement.data('id');
                 const unitPrice = parseFloat(productElement.find('.text-muted').text().replace(/[^\d]/g, ''));
 
                 $.post('{{ route('pos.addToCart') }}', {
                     _token: '{{ csrf_token() }}',
-                    sku,
+                    id,
                     name,
                     unit_price: unitPrice,
                     quantity: 1,
@@ -225,13 +226,13 @@
             clearCartButton.on('click', clearCart);
 
             cartItems.on('change', '.quantity-input', function() {
-                const sku = $(this).data('sku');
+                const id = $(this).data('id');
                 const newQuantity = parseInt($(this).val());
 
                 if (newQuantity > 0) {
                     $.post('{{ route('pos.addToCart') }}', {
                         _token: '{{ csrf_token() }}',
-                        sku,
+                        id,
                         quantity: newQuantity,
                     }).done((response) => {
                         updateCartUI(response.cart);
@@ -239,7 +240,7 @@
                 } else {
                     $.post('{{ route('pos.removeFromCart') }}', {
                         _token: '{{ csrf_token() }}',
-                        sku,
+                        id,
                     }).done((response) => {
                         updateCartUI(response.cart);
                     });
@@ -247,7 +248,7 @@
             });
 
             cartItems.on('click', '.minus-item', function() {
-                const sku = $(this).data('sku');
+                const id = $(this).data('id');
                 const quantityInput = $(this).closest('li').find('.quantity-input');
                 const currentQuantity = parseInt(quantityInput.val());
 
@@ -255,7 +256,7 @@
                     // If quantity is 1, remove the item from the cart
                     $.post('{{ route('pos.removeFromCart') }}', {
                         _token: '{{ csrf_token() }}',
-                        sku,
+                        id,
                     }).done((response) => {
                         updateCartUI(response.cart);
                     });
@@ -263,7 +264,7 @@
                     // Otherwise, decrement the quantity
                     $.post('{{ route('pos.addToCart') }}', {
                         _token: '{{ csrf_token() }}',
-                        sku,
+                        id,
                         quantity: -1,
                     }).done((response) => {
                         updateCartUI(response.cart);
@@ -272,10 +273,10 @@
             });
 
             cartItems.on('click', '.remove-item', function() {
-                const sku = $(this).data('sku');
+                const id = $(this).data('id');
                 $.post('{{ route('pos.removeFromCart') }}', {
                     _token: '{{ csrf_token() }}',
-                    sku,
+                    id,
                 }).done((response) => {
                     updateCartUI(response.cart);
                 });

@@ -10,8 +10,8 @@ class Product extends Model
     use SoftDeletes;
 
     protected $table = 'products';
-    protected $primaryKey = 'sku';
-    public $incrementing = false;
+    protected $primaryKey = 'id';
+    public $incrementing = true;
     public $timestamps = true;
 
     protected $fillable = [
@@ -47,20 +47,20 @@ class Product extends Model
 
     public function outlets()
     {
-        return $this->belongsToMany(Outlet::class, 'outlet_product', 'sku', 'outlets_id')
+        return $this->belongsToMany(Outlet::class, 'outlet_product', 'products_id', 'outlets_id')
             ->withPivot('quantity');
     }
 
     public function purchaseInvoices()
     {
-        return $this->belongsToMany(PurchaseInvoice::class, 'purchase_invoice_product', 'sku', 'purchase_invoice_id')
+        return $this->belongsToMany(PurchaseInvoice::class, 'purchase_invoice_product', 'products_id', 'purchase_invoice_id')
             ->withPivot('quantity', 'unit_price', 'total_price')
             ->withTimestamps();
     }
     
     public function salesInvoices()
     {
-        return $this->belongsToMany(SalesInvoice::class, 'sales_invoice_product', 'sku', 'sales_invoice_id')
+        return $this->belongsToMany(SalesInvoice::class, 'sales_invoice_product', 'products_id', 'sales_invoice_id')
             ->withPivot('quantity', 'unit_price', 'total_price')
             ->withTimestamps();
     }

@@ -42,7 +42,17 @@ class Outlet extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'outlet_product', 'outlets_id', 'sku')
+        return $this->belongsToMany(Product::class, 'outlet_product', 'outlets_id', 'products_id')
             ->withPivot('quantity');
+    }
+
+    public function purchaseInvoices()
+    {
+        return $this->hasMany(PurchaseInvoice::class, 'outlet_id');
+    }
+
+    public function salesInvoices()
+    {
+        return $this->hasMany(SalesInvoice::class, 'outlet_id');
     }
 }

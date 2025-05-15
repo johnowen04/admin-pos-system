@@ -9,7 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->string('sku', 50)->primary(); // Primary key
+            $table->id();
+            $table->string('sku', 50)->unique();
             $table->string('name', 100); // Product name
             $table->text('description')->nullable(); // Product description
             $table->decimal('base_price', 10, 2)->nullable()->default(0); // Base price

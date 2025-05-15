@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('outlet_product', function (Blueprint $table) {
             $table->unsignedBigInteger('outlets_id'); // Foreign key for outlets
-            $table->string('sku', 50); // Foreign key for products (primary key in products table)
+            $table->unsignedBigInteger('products_id'); // Foreign key for products
             $table->smallInteger('quantity')->default(0); // Quantity column with default value 0
 
             // Composite primary key
-            $table->primary(['outlets_id', 'sku']);
+            $table->primary(['outlets_id', 'products_id']);
 
             // Indexes
-            $table->index('sku', 'fk_outlets_has_products_products1_idx');
             $table->index('outlets_id', 'fk_outlets_has_products_outlets1_idx');
+            $table->index('products_id', 'fk_outlets_has_products_products1_idx');
 
             // Foreign key constraints
             $table->foreign('outlets_id', 'fk_outlets_has_products_outlets1')
@@ -30,8 +30,8 @@ return new class extends Migration
                 ->onDelete('no action')
                 ->onUpdate('no action');
 
-            $table->foreign('sku', 'fk_outlets_has_products_products1')
-                ->references('sku')
+            $table->foreign('products_id', 'fk_outlets_has_products_products1')
+                ->references('id')
                 ->on('products')
                 ->onDelete('no action')
                 ->onUpdate('no action');

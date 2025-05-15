@@ -14,7 +14,7 @@ class CreatePurchaseInvoiceProductTable extends Migration
         Schema::create('purchase_invoice_product', function (Blueprint $table) {
             $table->id(); // Primary key
             $table->unsignedBigInteger('purchase_invoice_id'); // Foreign key to purchase_invoices
-            $table->string('sku'); // Foreign key to products (SKU as primary key in products table)
+            $table->unsignedBigInteger('products_id'); // Foreign key to products
             $table->integer('quantity'); // Quantity of the product
             $table->decimal('unit_price', 15, 2); // Unit price of the product
             $table->decimal('total_price', 15, 2); // Total price (quantity * unit_price)
@@ -22,7 +22,7 @@ class CreatePurchaseInvoiceProductTable extends Migration
 
             // Foreign key constraints
             $table->foreign('purchase_invoice_id')->references('id')->on('purchase_invoices')->onDelete('cascade');
-            $table->foreign('sku')->references('sku')->on('products')->onDelete('cascade');
+            $table->foreign('products_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

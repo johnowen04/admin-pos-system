@@ -67,24 +67,24 @@ class POSController extends Controller
      */
     public function addToCart(Request $request)
     {
-        $product = $request->only(['sku', 'name', 'unit_price', 'quantity']);
+        $product = $request->only(['id', 'name', 'unit_price', 'quantity']);
 
         // Retrieve the cart from the session or initialize it as an empty array
         $cart = session()->get('cart', []);
 
         // Check if the product already exists in the cart
-        if (isset($cart[$product['sku']])) {
+        if (isset($cart[$product['id']])) {
             // If increment or decrement by one item
             if ($product['quantity'] == 1 || $product['quantity'] == -1) {
                 // Update the quantity of the existing product
-                $cart[$product['sku']]['quantity'] += $product['quantity'];
+                $cart[$product['id']]['quantity'] += $product['quantity'];
             } else {
                 // Update the quantity and total price
-                $cart[$product['sku']]['quantity'] = $product['quantity'];
+                $cart[$product['id']]['quantity'] = $product['quantity'];
             }
         } else {
             // Add the product to the cart
-            $cart[$product['sku']] = [
+            $cart[$product['id']] = [
                 'name' => $product['name'],
                 'quantity' => $product['quantity'],
                 'unit_price' => $product['unit_price'],
@@ -102,14 +102,14 @@ class POSController extends Controller
      */
     public function removeFromCart(Request $request)
     {
-        $sku = $request->input('sku');
+        $id = $request->input('id');
 
         // Retrieve the cart from the session
         $cart = session()->get('cart', []);
 
         // Remove the product from the cart
-        if (isset($cart[$sku])) {
-            unset($cart[$sku]);
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
         }
 
         // Save the updated cart back to the session
@@ -129,9 +129,9 @@ class POSController extends Controller
         $cartWithTotals = [];
         $grandTotal = 0;
 
-        foreach ($cart as $sku => $item) {
+        foreach ($cart as $id => $item) {
             $item['total_price'] = $item['quantity'] * $item['unit_price'];
-            $cartWithTotals[$sku] = $item;
+            $cartWithTotals[$id] = $item;
             $grandTotal += $item['total_price'];
         }
 
@@ -200,16 +200,16 @@ class POSController extends Controller
         ]);
 
         // Attach products to the sales invoice and update stock
-        foreach ($cart as $sku => $item) {
+        foreach ($cart as $id => $item) {
             // Attach the product to the sales invoice
-            $salesInvoice->products()->attach($sku, [
+            $salesInvoice->products()->attach($id, [
                 'quantity' => $item['quantity'],
                 'unit_price' => $item['unit_price'],
                 'total_price' => $item['quantity'] * $item['unit_price'],
             ]);
 
             // Update the stock for the product in the outlet
-            $product = Product::where('sku', $sku)->first();
+            $product = Product::where('id', $id)->first();
             if ($product) {
                 $existingQuantity = $product->outlets()
                     ->where('outlets_id', $outletId)

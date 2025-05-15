@@ -119,7 +119,7 @@ class ProductController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'sku' => 'required|string|max:50|unique:products,sku,' . $product->getKey() . ',sku',
+            'sku' => 'required|string|max:50|unique:products,sku,' . $product->id,
             'name' => 'required|string|max:100',
             'description' => 'nullable|string|max:255',
             'base_price' => 'nullable|numeric|min:0',

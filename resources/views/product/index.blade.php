@@ -28,6 +28,7 @@
                             <table id="product-table" class="display table table-striped table-hover">
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>SKU</th>
                                         <th>Name</th>
                                         <th>Category</th>
@@ -41,6 +42,7 @@
                                 <tbody>
                                     @foreach ($products as $product)
                                         <tr>
+                                            <td>{{ $product->id }}</td>
                                             <td>{{ $product->sku }}</td>
                                             <td>{{ $product->name }}</td>
                                             <td>{{ $product->category->name }}</td>
@@ -56,12 +58,12 @@
                                             </td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('product.edit', $product->sku) }}"
+                                                    <a href="{{ route('product.edit', $product->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('product.destroy', $product->sku) }}"
+                                                    <form action="{{ route('product.destroy', $product->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')

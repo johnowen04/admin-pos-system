@@ -20,8 +20,8 @@
                                 <button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button>
                             </td>
                             <td>
-                                <input type="hidden" name="products[{{ $loop->index }}][sku]"
-                                    value="{{ $product->sku }}">
+                                <input type="hidden" name="products[{{ $loop->index }}][id]"
+                                    value="{{ $product->id }}">
                                 {{ $product->name }}
                             </td>
                             <td>
@@ -85,13 +85,15 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="form-check-input select-product-checkbox"
-                                            data-sku="{{ $product->sku }}" data-name="{{ $product->name }}">
+                                            data-id="{{ $product->id }}" data-sku="{{ $product->sku }}"
+                                            data-name="{{ $product->name }}">
                                     </td>
                                     <td>{{ $product->sku }}</td>
                                     <td>{{ $product->name }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary add-single-product"
-                                            data-sku="{{ $product->sku }}" data-name="{{ $product->name }}">
+                                            data-id="{{ $product->id }}" data-sku="{{ $product->sku }}"
+                                            data-name="{{ $product->name }}">
                                             Add
                                         </button>
                                     </td>
@@ -114,9 +116,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             $('#productTable').DataTable({
                 "pageLength": 5,
-                "order": [[0, "asc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": -1 } // Disable sorting on the Action column
+                "order": [
+                    [0, "asc"]
+                ],
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": -1
+                    } // Disable sorting on the Action column
                 ]
             });
 
@@ -165,14 +171,14 @@
             }
 
             // Function to check if a product already exists in the table
-            function isProductInTable(sku) {
-                return Array.from(productsTable.querySelectorAll('input[name*="[sku]"]'))
-                    .some(input => input.value === sku);
+            function isProductInTable(id) {
+                return Array.from(productsTable.querySelectorAll('input[name*="[id]"]'))
+                    .some(input => input.value === id);
             }
 
             // Function to add a new product row
-            function addProductRow(sku, name) {
-                if (isProductInTable(sku)) {
+            function addProductRow(id, name) {
+                if (isProductInTable(id)) {
                     alert(`The product "${name}" is already added to the table.`);
                     return;
                 }
@@ -181,7 +187,7 @@
                 const newRow = `
                     <tr>
                         <td><button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button></td>
-                        <td>${name} <input type="hidden" name="products[${rowCount}][sku]" value="${sku}"></td>
+                        <td>${name} <input type="hidden" name="products[${rowCount}][id]" value="${id}"></td>
                         <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
                         <td><input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required></td>
                         <td>
@@ -232,9 +238,9 @@
             // Event listener for "Add Single Product" buttons
             singleProductButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    const sku = this.dataset.sku;
+                    const id = this.dataset.id;
                     const name = this.dataset.name;
-                    addProductRow(sku, name);
+                    addProductRow(id, name);
                 });
             });
 
@@ -243,9 +249,9 @@
                 const selectedProducts = document.querySelectorAll('.select-product-checkbox:checked');
 
                 selectedProducts.forEach(checkbox => {
-                    const sku = checkbox.dataset.sku;
+                    const id = checkbox.dataset.id;
                     const name = checkbox.dataset.name;
-                    addProductRow(sku, name);
+                    addProductRow(id, name);
                 });
 
                 const modal = bootstrap.Modal.getInstance(document.querySelector('#productModal'));

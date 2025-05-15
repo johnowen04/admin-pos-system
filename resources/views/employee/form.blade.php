@@ -77,7 +77,7 @@
                     <div class="input-group">
                         <input type="password" class="form-control" id="employeepassword" name="password"
                             placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
-                            required @if ($method === 'PUT') disabled @endif />
+                            required @if ($method === 'PUT') readonly @endif />
                         @if ($method === 'PUT')
                             <button class="btn btn-black btn-border" type="button" id="togglePasswordEdit">
                                 Edit
@@ -106,13 +106,13 @@
             const toggleButton = document.getElementById('togglePasswordEdit');
 
             toggleButton.addEventListener('click', function() {
-                if (passwordField.disabled) {
+                if (passwordField.readonly) {
                     // Enable the password field and change button text to "Cancel"
-                    passwordField.disabled = false;
+                    passwordField.readonly = false;
                     toggleButton.textContent = 'Cancel';
                 } else {
                     // Disable the password field and reset button text to "Edit"
-                    passwordField.disabled = true;
+                    passwordField.readonly = true;
                     toggleButton.textContent = 'Edit';
                     passwordField.value = ''; // Clear the password field
                 }

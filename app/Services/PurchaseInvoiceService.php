@@ -40,7 +40,7 @@ class PurchaseInvoiceService
             if (!empty($data['products'])) {
                 $products = [];
                 foreach ($data['products'] as $product) {
-                    $products[$product['sku']] = [
+                    $products[$product['id']] = [
                         'quantity' => $product['quantity'],
                         'unit_price' => $product['unit_price'],
                         'total_price' => $product['quantity'] * $product['unit_price'],
@@ -76,7 +76,7 @@ class PurchaseInvoiceService
             if (!empty($data['products'])) {
                 $products = [];
                 foreach ($data['products'] as $product) {
-                    $products[$product['sku']] = [
+                    $products[$product['id']] = [
                         'quantity' => $product['quantity'],
                         'unit_price' => $product['unit_price'],
                         'total_price' => $product['quantity'] * $product['unit_price'],

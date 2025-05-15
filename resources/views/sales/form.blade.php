@@ -35,14 +35,14 @@
                 </div>
 
                 <x-datepicker id="createdAt" name="created_at" label="Entry Date" placeholder="Select a date and time"
-                    value="{{ $salesInvoice->created_at ?? now() }}" required disabled />
+                    value="{{ $salesInvoice->created_at ?? now() }}" required readonly />
 
 
                 <div class="form-group">
                     <label for="salesInvoiceNumber">Sales Invoice Number</label>
                     <input type="text" class="form-control" id="salesInvoiceNumber" name="invoice_number"
                         placeholder="Ex: SO/251225/001, SO/010125/005, etc"
-                        value="{{ old('invoice_number', $salesInvoice->invoice_number ?? $nextInvoiceNumber) }}" required disabled/>
+                        value="{{ old('invoice_number', $salesInvoice->invoice_number ?? $nextInvoiceNumber) }}" required readonly/>
                 </div>
 
                 <div class="form-group">
