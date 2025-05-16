@@ -2,10 +2,21 @@
 
 namespace App\Services;
 
+use App\Models\Inventory;
 use App\Models\Product;
+use Illuminate\Validation\ValidationException;
 
 class ProductService
 {
+    public $outletService;
+    public $inventoryService;
+
+    public function __construct(OutletService $outletService, InventoryService $inventoryService)
+    {
+        $this->outletService = $outletService;
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Get all products.
      *
@@ -40,7 +51,7 @@ class ProductService
 
         // Attach outlets to the product (if any)
         if (!empty($data['outlets'])) {
-            $product->outlets()->sync($data['outlets']);
+            $this->inventoryService->initializeStockForNewProduct($data['outlets'], $product->id);
         }
 
         return $product;
@@ -70,7 +81,27 @@ class ProductService
 
         // Sync outlets
         if (!empty($data['outlets'])) {
-            $product->outlets()->sync($data['outlets']);
+            $currentOutlets = $product->outlets()->pluck('outlet_id')->toArray();
+            $newOutlets = $data['outlets']; // Assuming $data['outlets'] is [outlet_id => quantity]
+
+            // Find removed and added outlets
+            $removedOutlets = array_diff($currentOutlets, $newOutlets);
+            $addedOutlets = array_diff($newOutlets, $currentOutlets);
+
+
+            foreach ($removedOutlets as $_ => $outletId) {
+                $inventory = $this->inventoryService->getStock($outletId, $product->id);
+                if ($inventory > 0) {
+                    $outletName = $this->outletService->getOutletById($outletId)->name ?? "Unknown Outlet";
+                    throw ValidationException::withMessages([
+                        'outlet' => "Cannot remove outlet '{$outletName}' because its inventory is not empty."
+                    ]);
+                }
+
+                $this->inventoryService->deleteStock($outletId, $product->id);
+            }
+
+            $this->inventoryService->initializeStockForNewProduct($addedOutlets, $product->id);
         }
 
         return true;

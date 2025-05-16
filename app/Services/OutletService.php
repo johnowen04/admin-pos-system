@@ -17,6 +17,17 @@ class OutletService
     }
 
     /**
+     * Get an outlet by its ID.
+     *
+     * @param int $id
+     * @return \App\Models\Outlet|null
+     */
+    public function getOutletById(int $id)
+    {
+        return Outlet::where('id', $id);
+    }
+
+    /**
      * Create a new outlet.
      *
      * @param array $data

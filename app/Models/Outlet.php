@@ -42,8 +42,14 @@ class Outlet extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'outlet_product', 'outlets_id', 'products_id')
-            ->withPivot('quantity');
+        return $this->hasManyThrough(
+            Product::class,
+            Inventory::class,
+            'outlet_id',
+            'id',
+            'id',
+            'product_id'
+        );
     }
 
     public function purchaseInvoices()
