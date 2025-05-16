@@ -13,9 +13,9 @@ class BaseUnitSeeder extends Seeder
     public function run(): void
     {
         DB::table('base_units')->insert([
+            ['name' => 'piece', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'gram', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'meter', 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'piece', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'liter', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'second', 'created_at' => now(), 'updated_at' => now()],
         ]);
