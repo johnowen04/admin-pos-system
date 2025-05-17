@@ -72,10 +72,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="employeepassword">Password</label>
+                    <label for="employeePassword">Password</label>
 
                     <div class="input-group">
-                        <input type="password" class="form-control" id="employeepassword" name="password"
+                        <input type="password" class="form-control" id="employeePassword" name="password"
                             placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
                             required @if ($method === 'PUT') readonly @endif />
                         @if ($method === 'PUT')
@@ -102,17 +102,17 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const passwordField = document.getElementById('employeepassword');
+            const passwordField = document.getElementById('employeePassword');
             const toggleButton = document.getElementById('togglePasswordEdit');
 
             toggleButton.addEventListener('click', function() {
-                if (passwordField.readonly) {
+                if (passwordField.hasAttribute('readonly')) {
                     // Enable the password field and change button text to "Cancel"
-                    passwordField.readonly = false;
+                    passwordField.removeAttribute('readonly');
                     toggleButton.textContent = 'Cancel';
                 } else {
                     // Disable the password field and reset button text to "Edit"
-                    passwordField.readonly = true;
+                    passwordField.setAttribute('readonly', true);
                     toggleButton.textContent = 'Edit';
                     passwordField.value = ''; // Clear the password field
                 }
