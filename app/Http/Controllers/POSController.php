@@ -58,13 +58,13 @@ class POSController extends Controller
      */
     public function addToCart(Request $request)
     {
-
+        $type = $request->input('type');
         $product = $request->only(['id', 'name', 'unit_price', 'quantity']);
         $cart = session()->get('cart', []);
         $productId = $product['id'];
 
         if (isset($cart[$productId])) {
-            if (in_array($product['quantity'], [1, -1])) {
+            if (in_array($product['quantity'], [1, -1]) && $type === 'increment') {
                 $cart[$productId]['quantity'] += $product['quantity'];
             } else {
                 $cart[$productId]['quantity'] = $product['quantity'];

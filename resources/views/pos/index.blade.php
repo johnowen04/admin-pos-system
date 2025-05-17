@@ -52,7 +52,7 @@
                                             Stock: <span class="fw-bold stock-count">{{ $product['quantity'] }}</span>
                                         </div>
 
-                                        <button
+                                        <button id="addToCart"
                                             class="btn btn-sm mt-1 add-to-cart {{ $product['quantity'] > 0 ? 'btn-primary' : 'btn-danger' }}"
                                             {{ $product['quantity'] <= 0 ? 'disabled' : '' }}>
                                             {{ $product['quantity'] > 0 ? 'Add' : 'Out of Stock' }}
@@ -234,7 +234,8 @@
                             id: productId,
                             name,
                             unit_price: unitPrice,
-                            quantity: 1
+                            quantity: 1,
+                            type: 'increment',
                         })
                     })
                     .then(response => response.json())
@@ -251,7 +252,7 @@
             /**
              * Update cart quantity
              */
-            function updateCartQuantity(productId, quantity) {
+            function updateCartQuantity(productId, quantity, type = 'increment') {
                 fetch('{{ route('pos.addToCart') }}', {
                         method: 'POST',
                         headers: {
@@ -260,7 +261,8 @@
                         },
                         body: JSON.stringify({
                             id: productId,
-                            quantity
+                            quantity,
+                            type: type,
                         })
                     })
                     .then(response => response.json())
@@ -441,8 +443,9 @@
                     if (newQuantity <= 0) {
                         removeFromCart(productId);
                     } else {
-                        if (remainingStock >= newQuantity) {
-                            updateCartQuantity(productId, newQuantity);
+                        console.log(remainingStock, newQuantity, lastValue);
+                        if (remainingStock >= (newQuantity - lastValue)) {
+                            updateCartQuantity(productId, newQuantity, 'update');
                         } else {
                             alert('Not enough stock available for this product.');
                             e.target.value = lastValue; // Reset to 1 if stock is insufficient
