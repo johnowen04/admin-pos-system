@@ -46,7 +46,7 @@ class PurchaseInvoiceService
                         'total_price' => $product['quantity'] * $product['unit_price'],
                     ];
                 }
-                $purchaseInvoice->products()->sync($products);
+                $purchaseInvoice->products()->attach($products);
             }
 
             // Record stock movements for each product
