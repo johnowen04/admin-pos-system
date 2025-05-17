@@ -2,17 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\InventoryService;
+use App\Services\OutletService;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
-use App\Models\Product;
 
 class InventoryController extends Controller
 {
+    public $productService;
+    public $outletService;
+    public $inventoryService;
+
+    public function __construct(ProductService $productService, OutletService $outletService, InventoryService $inventoryService)
+    {
+        $this->productService = $productService;
+        $this->outletService = $outletService;
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $products = Product::all();
+        $products = $this->productService->getProductsWithStocks();
+
         return view('inventory.index', [
             'products' => $products, // Placeholder for product
             'createRoute' => route('inventory.create'),

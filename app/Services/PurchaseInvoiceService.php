@@ -29,10 +29,10 @@ class PurchaseInvoiceService
         DB::transaction(function () use ($data, &$purchaseInvoice) {
             // Create the purchase invoice
             $purchaseInvoice = PurchaseInvoice::create([
+                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
-                'grand_total' => $data['grand_total'],
                 'description' => $data['description'] ?? null,
-                'outlets_id' => $data['outlets'][0], // Assuming one outlet is selected
+                'grand_total' => $data['grand_total'],
                 'employee_id' => $data['employee_id'],
             ]);
 
@@ -47,6 +47,16 @@ class PurchaseInvoiceService
                     ];
                 }
                 $purchaseInvoice->products()->sync($products);
+            }
+
+            // Record stock movements for each product
+            foreach ($data['products'] as $product) {
+                app(StockMovementService::class)->recordPurchase(
+                    $data['outlet_id'], // Assuming one outlet is selected
+                    $product['id'],
+                    $data['employee_id'],
+                    $product['quantity']
+                );
             }
         });
 
@@ -65,10 +75,10 @@ class PurchaseInvoiceService
         DB::transaction(function () use ($purchaseInvoice, $data) {
             // Update the purchase invoice
             $purchaseInvoice->update([
-                'invoice_number' => $data['invoice_number'],
-                'grand_total' => $data['grand_total'],
-                'description' => $data['description'] ?? null,
                 'outlets_id' => $data['outlets'][0], // Assuming one outlet is selected
+                'invoice_number' => $data['invoice_number'],
+                'description' => $data['description'] ?? null,
+                'grand_total' => $data['grand_total'],
                 'employee_id' => $data['employee_id'],
             ]);
 

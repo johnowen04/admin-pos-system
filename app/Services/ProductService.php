@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Inventory;
 use App\Models\Product;
 use Illuminate\Validation\ValidationException;
 
@@ -25,6 +24,22 @@ class ProductService
     public function getAllProducts()
     {
         return Product::all();
+    }
+
+    /**
+     * Get all products with their stocks and outlet names.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getProductsWithStocks()
+    {
+        $products = $this->getAllProducts(); // Fetch all products
+
+        foreach ($products as $product) {
+            $product->stocks = $this->inventoryService->getStocksByProduct($product->id);
+        }
+
+        return $products;
     }
 
     /**
@@ -81,30 +96,48 @@ class ProductService
 
         // Sync outlets
         if (!empty($data['outlets'])) {
-            $currentOutlets = $product->outlets()->pluck('outlet_id')->toArray();
-            $newOutlets = $data['outlets']; // Assuming $data['outlets'] is [outlet_id => quantity]
-
-            // Find removed and added outlets
-            $removedOutlets = array_diff($currentOutlets, $newOutlets);
-            $addedOutlets = array_diff($newOutlets, $currentOutlets);
-
-
-            foreach ($removedOutlets as $_ => $outletId) {
-                $inventory = $this->inventoryService->getStock($outletId, $product->id);
-                if ($inventory > 0) {
-                    $outletName = $this->outletService->getOutletById($outletId)->name ?? "Unknown Outlet";
-                    throw ValidationException::withMessages([
-                        'outlet' => "Cannot remove outlet '{$outletName}' because its inventory is not empty."
-                    ]);
-                }
-
-                $this->inventoryService->deleteStock($outletId, $product->id);
-            }
-
-            $this->inventoryService->initializeStockForNewProduct($addedOutlets, $product->id);
+            $this->syncProductOutlets($product, $data['outlets']);
         }
 
         return true;
+    }
+
+    /**
+     * Sync product outlets.
+     */
+    private function syncProductOutlets(Product $product, array $outlets): void
+    {
+        $currentOutlets = $product->outlets()->pluck('outlet_id')->toArray();
+        $newOutlets = $outlets; // Extract outlet IDs from the provided data
+
+        // Find removed and added outlets
+        $removedOutlets = array_diff($currentOutlets, $newOutlets);
+        $addedOutlets = array_diff($newOutlets, $currentOutlets);
+
+        // Handle removed outlets
+        $this->handleRemovedOutlets($product, $removedOutlets);
+
+        // Initialize stock for added outlets
+        $this->inventoryService->initializeStockForNewProduct($addedOutlets, $product->id);
+    }
+
+    /**
+     * Handle removed outlets.
+     */
+    private function handleRemovedOutlets(Product $product, array $removedOutlets): void
+    {
+        foreach ($removedOutlets as $outletId) {
+            $inventory = $this->inventoryService->getStock($outletId, $product->id);
+
+            if ($inventory > 0) {
+                $outletName = $this->outletService->getOutletById($outletId)->name ?? "Unknown Outlet";
+                throw ValidationException::withMessages([
+                    'outlet' => "Cannot remove outlet '{$outletName}' because its inventory is not empty."
+                ]);
+            }
+
+            $this->inventoryService->deleteStock($outletId, $product->id);
+        }
     }
 
     /**
@@ -138,18 +171,5 @@ class ProductService
     public function getProductBySku(string $sku)
     {
         return Product::find($sku); // Use SKU as the primary key
-    }
-
-    /**
-     * Get products by outlet ID.
-     *
-     * @param int $outletId
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getProductsByOutlets(array $outletIds)
-    {
-        return Product::whereHas('outlets', function ($query) use ($outletIds) {
-            $query->where('outlets_id', $outletIds);
-        })->get();
     }
 }

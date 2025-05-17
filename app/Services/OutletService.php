@@ -6,6 +6,14 @@ use App\Models\Outlet;
 
 class OutletService
 {
+    public $outletService;
+    public $inventoryService;
+
+    public function __construct(InventoryService $inventoryService)
+    {
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Get all outlets.
      *
@@ -24,7 +32,24 @@ class OutletService
      */
     public function getOutletById(int $id)
     {
-        return Outlet::where('id', $id);
+        return Outlet::find($id);
+    }
+
+    
+    public function getProductsByOutletId(int $id)
+    {
+        $outlet = $this->getOutletById($id);
+        if (!$outlet) {
+            return null;
+        }
+        return $outlet->products;
+    }
+
+    public function getProductsWithStocksFromOutlet(int $outletId)
+    {
+        $products = $this->inventoryService->getStocksByOutlet($outletId); // Fetch all products
+
+        return $products;
     }
 
     /**

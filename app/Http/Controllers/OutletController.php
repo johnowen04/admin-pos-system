@@ -113,4 +113,13 @@ class OutletController extends Controller
         // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet deleted successfully.');
     }
+
+    /**
+     * API to Get products by outlet ID.
+     */
+    public function getProductsByOutlet(int $outlet_Id)
+    {
+        $products = $this->outletService->getProductsWithStocksFromOutlet($outlet_Id);
+        return response()->json(['products' => $products]);
+    }
 }

@@ -18,6 +18,11 @@ class SalesInvoiceService
         return SalesInvoice::with(['products', 'outlet'])->get();
     }
 
+    public function getSalesInvoiceById($id)
+    {
+        return SalesInvoice::with(['products', 'outlet'])->findOrFail($id);
+    }
+
     /**
      * Create a new sales invoice.
      *
@@ -28,22 +33,35 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($data) {
             $salesInvoice = SalesInvoice::create([
-                'outlets_id' => $data['outlets'][0],
+                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
+                'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
-                'description' => $data['description'],
                 'employee_id' => $data['employee_id'],
             ]);
 
-            $products = [];
-            foreach ($data['products'] as $product) {
-                $products[$product['id']] = [
-                    'quantity' => $product['quantity'],
-                    'unit_price' => $product['unit_price'],
-                    'total_price' => $product['quantity'] * $product['unit_price'],
-                ];
+            // Attach products to the purchase invoice
+            if (!empty($data['products'])) {
+                $products = [];
+                foreach ($data['products'] as $product) {
+                    $products[$product['id']] = [
+                        'quantity' => $product['quantity'],
+                        'unit_price' => $product['unit_price'],
+                        'total_price' => $product['quantity'] * $product['unit_price'],
+                    ];
+                }
+                $salesInvoice->products()->attach($products);
             }
-            $salesInvoice->products()->attach($products);
+
+            // Record stock movements for each product
+            foreach ($data['products'] as $product) {
+                app(StockMovementService::class)->recordSale(
+                    $data['outlet_id'], // Assuming one outlet is selected
+                    $product['id'],
+                    $data['employee_id'],
+                    $product['quantity']
+                );
+            }
 
             return $salesInvoice;
         });
@@ -60,10 +78,10 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($salesInvoice, $data) {
             $salesInvoice->update([
-                'outlets_id' => $data['outlets'][0],
+                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
+                'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
-                'description' => $data['description'],
                 'employee_id' => $data['employee_id'],
             ]);
 

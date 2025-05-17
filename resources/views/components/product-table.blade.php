@@ -1,6 +1,10 @@
 <div>
     <!-- Product Table -->
     <div class="form-group">
+        <div class="d-flex justify-content-end gap-2 mb-3">
+            <!-- Custom Actions Slot -->
+            {{ $slot }}
+        </div>
         <label for="invoiceProducts">Products</label>
         <table class="table table-bordered" id="invoiceProductsTable">
             <thead>
@@ -77,6 +81,7 @@
                                 <th>Select</th>
                                 <th>SKU</th>
                                 <th>Name</th>
+                                <th>Quantity</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -85,15 +90,16 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="form-check-input select-product-checkbox"
-                                            data-id="{{ $product->id }}" data-sku="{{ $product->sku }}"
-                                            data-name="{{ $product->name }}">
+                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
+                                            data-name="{{ $product['name'] }}">
                                     </td>
-                                    <td>{{ $product->sku }}</td>
-                                    <td>{{ $product->name }}</td>
+                                    <td>{{ $product['sku'] }}</td>
+                                    <td>{{ $product['name'] }}</td>
+                                    <td>{{ $product['quantity'] }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary add-single-product"
-                                            data-id="{{ $product->id }}" data-sku="{{ $product->sku }}"
-                                            data-name="{{ $product->name }}">
+                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
+                                            data-name="{{ $product['name'] }}">
                                             Add
                                         </button>
                                     </td>
@@ -114,34 +120,54 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            $('#productTable').DataTable({
-                "pageLength": 5,
-                "order": [
-                    [0, "asc"]
-                ],
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": -1
-                    } // Disable sorting on the Action column
-                ]
-            });
-
+            // DOM Elements
             const productsTable = document.querySelector('#invoiceProductsTable tbody');
-            const confirmSelectionButton = document.querySelector('#confirmSelection');
-            const productCheckboxes = document.querySelectorAll('.select-product-checkbox');
-            const singleProductButtons = document.querySelectorAll('.add-single-product');
             const totalQuantityElement = document.querySelector('#totalQuantity');
             const totalPriceElement = document.querySelector('#totalPrice');
             const grandTotalInput = document.querySelector('#grandTotal');
             const noProductRow = document.getElementById('noProductRow');
+            const outletSelect = document.getElementById('outlet');
+            const productModalTableBody = document.querySelector('#productTable tbody');
+            const confirmSelectionButton = document.querySelector('#confirmSelection');
+            const productModal = document.querySelector('#productModal');
+            const removeAllProductsButton = document.querySelector('#removeAllProducts');
 
-            // Function to toggle the "No products" row
+            // Initialize DataTable
+            $('#productTable').DataTable({
+                pageLength: 5,
+                order: [
+                    [0, "asc"]
+                ],
+                columnDefs: [{
+                    orderable: false,
+                    targets: -1
+                }]
+            });
+
+            // ======== FUNCTIONS ========
+
+            // Clear table rows
+            function clearTableRows() {
+                // Clear all product rows but keep the "No products added yet" row
+                Array.from(productsTable.querySelectorAll('tr')).forEach(row => {
+                    if (row.id !== 'noProductRow') {
+                        row.remove(); // Remove all rows except the one with id="noProductRow"
+                    }
+                });
+
+                // Reset totals
+                calculateTotals();
+                toggleNoProductRow();
+            }
+
+            // Toggle the "No products" row visibility
             function toggleNoProductRow() {
                 const productRows = productsTable.querySelectorAll('tr:not(#noProductRow)');
+                console.log(productRows.length);
                 noProductRow.style.display = productRows.length > 0 ? 'none' : '';
             }
 
-            // Function to calculate totals
+            // Calculate totals for quantity and price
             function calculateTotals() {
                 let totalQuantity = 0;
                 let totalPrice = 0;
@@ -170,13 +196,13 @@
                 grandTotalInput.value = totalPrice.toFixed(2);
             }
 
-            // Function to check if a product already exists in the table
+            // Check if a product already exists in the table
             function isProductInTable(id) {
                 return Array.from(productsTable.querySelectorAll('input[name*="[id]"]'))
                     .some(input => input.value === id);
             }
 
-            // Function to add a new product row
+            // Add a new product row to the table
             function addProductRow(id, name) {
                 if (isProductInTable(id)) {
                     alert(`The product "${name}" is already added to the table.`);
@@ -185,95 +211,160 @@
 
                 const rowCount = productsTable.querySelectorAll('tr').length;
                 const newRow = `
-                    <tr>
-                        <td><button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button></td>
-                        <td>${name} <input type="hidden" name="products[${rowCount}][id]" value="${id}"></td>
-                        <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
-                        <td><input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required></td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control product-total-price"
-                                    name="products[${rowCount}][total_price]"
-                                    value="" readonly>
-                            </div>    
-                        </td>
-                    </tr>
-                `;
+                <tr>
+                    <td><button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button></td>
+                    <td>${name} <input type="hidden" name="products[${rowCount}][id]" value="${id}"></td>
+                    <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
+                    <td><input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required></td>
+                    <td>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" class="form-control product-total-price"
+                                name="products[${rowCount}][total_price]"
+                                value="0" readonly>
+                        </div>    
+                    </td>
+                </tr>
+            `;
                 productsTable.insertAdjacentHTML('beforeend', newRow);
-
-                attachRowEventListeners(productsTable.lastElementChild);
                 calculateTotals();
                 toggleNoProductRow();
             }
 
-            // Function to attach event listeners to a row
-            function attachRowEventListeners(row) {
-                const quantityInput = row.querySelector('.product-quantity');
-                const unitPriceInput = row.querySelector('.product-unit-price');
-                const removeButton = row.querySelector('.remove-product-row');
-
-                if (quantityInput) {
-                    quantityInput.addEventListener('input', calculateTotals);
-                }
-
-                if (unitPriceInput) {
-                    unitPriceInput.addEventListener('input', calculateTotals);
-                }
-
-                if (removeButton) {
-                    removeButton.addEventListener('click', function() {
-                        row.remove();
-                        calculateTotals();
-                        toggleNoProductRow();
-                    });
-                }
-            }
-
-            // Attach event listeners to all pre-populated rows
-            productsTable.querySelectorAll('tr').forEach(row => {
-                attachRowEventListeners(row);
-            });
-
-            // Event listener for "Add Single Product" buttons
-            singleProductButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    const name = this.dataset.name;
-                    addProductRow(id, name);
-                });
-            });
-
-            // Event listener for "Add Selected Products" button
-            confirmSelectionButton.addEventListener('click', function() {
-                const selectedProducts = document.querySelectorAll('.select-product-checkbox:checked');
-
-                selectedProducts.forEach(checkbox => {
-                    const id = checkbox.dataset.id;
-                    const name = checkbox.dataset.name;
-                    addProductRow(id, name);
-                });
-
-                const modal = bootstrap.Modal.getInstance(document.querySelector('#productModal'));
-                modal.hide();
-
-                productCheckboxes.forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-
-                toggleButtons();
-            });
-
-            // Function to toggle button states
-            function toggleButtons() {
-                const anyChecked = Array.from(productCheckboxes).some(checkbox => checkbox.checked);
+            // Update the enabled state of the add selected button
+            function updateAddSelectedButtonState() {
+                const checkboxes = productModalTableBody.querySelectorAll('.select-product-checkbox');
+                const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
                 confirmSelectionButton.disabled = !anyChecked;
             }
 
-            productCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', toggleButtons);
+            // ======== EVENT LISTENERS ========
+
+            // Remove all product rows
+            removeAllProductsButton.addEventListener('click', function() {
+                clearTableRows();
             });
 
+            // Fetch products when outlet changes
+            outletSelect.addEventListener('change', function() {
+                // Clear added product on outlet change
+                clearTableRows();
+
+                const outletId = this.value;
+
+                fetch(`/api/outlets/${outletId}/products`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Clear previous rows
+                        productModalTableBody.innerHTML = '';
+
+                        if (!data.products || data.products.length === 0) {
+                            productModalTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="text-center">No products available for this outlet.</td>
+                            </tr>
+                        `;
+                        } else {
+                            data.products.forEach(product => {
+                                const row = `
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input select-product-checkbox"
+                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
+                                            data-name="{{ $product['name'] }}">
+                                    </td>
+                                    <td>{{ $product['sku'] }}</td>
+                                    <td>{{ $product['name'] }}</td>
+                                    <td>{{ $product['quantity'] }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary add-single-product"
+                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
+                                            data-name="{{ $product['name'] }}">
+                                            Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                                productModalTableBody.insertAdjacentHTML('beforeend', row);
+                            });
+
+                            // Update button state
+                            updateAddSelectedButtonState();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching products:', error);
+                        productModalTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">Error loading products. Please try again.</td>
+                        </tr>
+                    `;
+                    });
+            });
+
+            // Event delegation for quantity and price changes
+            productsTable.addEventListener('input', function(event) {
+                if (event.target.classList.contains('product-quantity') ||
+                    event.target.classList.contains('product-unit-price')) {
+                    calculateTotals();
+                }
+            });
+
+            // Event delegation for removing products
+            productsTable.addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-product-row')) {
+                    event.target.closest('tr').remove();
+                    calculateTotals();
+                    toggleNoProductRow();
+                }
+            });
+
+            // Event delegation for checkboxes in modal
+            productModalTableBody.addEventListener('change', function(event) {
+                if (event.target.classList.contains('select-product-checkbox')) {
+                    updateAddSelectedButtonState();
+                }
+            });
+
+            // Event delegation for single product add button
+            productModalTableBody.addEventListener('click', function(event) {
+                if (event.target.classList.contains('add-single-product')) {
+                    const id = event.target.getAttribute('data-id');
+                    const name = event.target.getAttribute('data-name');
+                    addProductRow(id, name);
+
+                    // Optional: close modal after adding a single product
+                    // const modalInstance = bootstrap.Modal.getInstance(productModal);
+                    // if (modalInstance) modalInstance.hide();
+                }
+            });
+
+            // Add selected products button
+            confirmSelectionButton.addEventListener('click', function() {
+                const selectedCheckboxes = productModalTableBody.querySelectorAll(
+                    '.select-product-checkbox:checked');
+
+                selectedCheckboxes.forEach(checkbox => {
+                    const id = checkbox.getAttribute('data-id');
+                    const name = checkbox.getAttribute('data-name');
+                    addProductRow(id, name);
+                    checkbox.checked = false;
+                });
+
+                // Update button state
+                updateAddSelectedButtonState();
+
+                // Close modal
+                const modalInstance = bootstrap.Modal.getInstance(productModal);
+                if (modalInstance) modalInstance.hide();
+            });
+
+            // Initialize on page load
             calculateTotals();
             toggleNoProductRow();
         });

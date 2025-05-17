@@ -136,17 +136,24 @@
                             ],
                         ],
                         [
+                            'name' => 'Inventory',
+                            'link' => 'inventory',
+                            'icon' => 'fas fa-boxes',
+                            'route' => 'inventory.index',
+                            'active' => request()->is('inventory*'),
+                        ],
+                        [
                             'name' => 'Purchase',
                             'link' => 'purchase',
                             'icon' => 'fas fa-building',
-                            'route' => 'purchase-invoice.index',
+                            'route' => 'purchase.index',
                             'active' => request()->is('purchase*'),
                         ],
                         [
                             'name' => 'Sales',
                             'link' => 'sales',
                             'icon' => 'fas fa-building',
-                            'route' => 'sales-invoice.index',
+                            'route' => 'sales.index',
                             'active' => request()->is('sales*'),
                         ],
                         [

@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\PurchaseInvoice;
 use App\Services\PurchaseInvoiceService;
 use App\Services\OutletService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 
-class PurchaseInvoiceController extends Controller
+class PurchaseController extends Controller
 {
     protected $purchaseInvoiceService;
     protected $outletService;
@@ -34,8 +33,9 @@ class PurchaseInvoiceController extends Controller
     public function index()
     {
         $purchaseInvoices = $this->purchaseInvoiceService->getAllPurchaseInvoices();
-        return view('purchase.index', [
-            'purchaseInvoices' => $purchaseInvoices,
+        return view('invoice.index', [
+            'invoiceType' => 'Purchase',
+            'invoices' => $purchaseInvoices,
         ]);
     }
 
@@ -45,16 +45,17 @@ class PurchaseInvoiceController extends Controller
     public function create()
     {
         $outlets = $this->outletService->getAllOutlets();
-        $products = $this->outletService->getProductsByOutletId(1);
+        $products = $this->outletService->getProductsWithStocksFromOutlet($outlets[0]->id ?? null);
         $nextInvoiceNumber = $this->purchaseInvoiceService->generatePurchaseInvoiceNumber();
-        return view('purchase.create', [
-            'action' => route('purchase-invoice.store'),
+        return view('invoice.create', [
+            'action' => route('purchase.store'),
             'method' => 'POST',
-            'purchaseInvoice' => null,
+            'invoiceType' => 'Purchase',
+            'invoice' => null,
             'outlets' => $outlets,
             'products' => $products,
             'nextInvoiceNumber' => $nextInvoiceNumber,
-            'cancelRoute' => route('purchase-invoice.index'),
+            'cancelRoute' => route('purchase.index'),
         ]);
     }
 
@@ -80,34 +81,35 @@ class PurchaseInvoiceController extends Controller
         $this->purchaseInvoiceService->createPurchaseInvoice($validatedData);
 
         // Redirect back with a success message
-        return redirect()->route('purchase-invoice.index')->with('success', 'Purchase invoice created successfully.');
+        return redirect()->route('purchase.index')->with('success', 'Purchase invoice created successfully.');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PurchaseInvoice $purchaseInvoice)
+    public function edit(PurchaseInvoice $purchase)
     {
         $outlets = $this->outletService->getAllOutlets();
         $products = $this->productService->getAllProducts();
-        return view('purchase.edit', [
-            'action' => route('purchase-invoice.update', $purchaseInvoice->id),
+        return view('invoice.edit', [
+            'action' => route('purchase.update', $purchase->id),
             'method' => 'PUT',
-            'purchaseInvoice' => $purchaseInvoice,
+            'invoiceType' => 'Purchase',
+            'invoice' => $purchase,
             'outlets' => $outlets,
             'products' => $products,
-            'cancelRoute' => route('purchase-invoice.index'),
+            'cancelRoute' => route('purchase.index'),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PurchaseInvoice $purchaseInvoice)
+    public function update(Request $request, PurchaseInvoice $purchase)
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'invoice_number' => 'required|string|max:50|unique:purchase_invoices,invoice_number,' . $purchaseInvoice->id,
+            'invoice_number' => 'required|string|max:50|unique:purchase_invoices,invoice_number,' . $purchase->id,
             'grand_total' => 'required|numeric|min:0',
             'description' => 'nullable|string|max:255',
             'outlet_id' => 'required|exists:outlets,id',
@@ -119,21 +121,21 @@ class PurchaseInvoiceController extends Controller
         ]);
 
         // Use the service to update the purchase invoice
-        $this->purchaseInvoiceService->updatePurchaseInvoice($purchaseInvoice, $validatedData);
+        $this->purchaseInvoiceService->updatePurchaseInvoice($purchase, $validatedData);
 
         // Redirect back with a success message
-        return redirect()->route('purchase-invoice.index')->with('success', 'Purchase invoice updated successfully.');
+        return redirect()->route('purchase.index')->with('success', 'Purchase invoice updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PurchaseInvoice $purchaseInvoice)
+    public function destroy(PurchaseInvoice $purchase)
     {
         // Use the service to delete the purchase invoice
-        $this->purchaseInvoiceService->deletePurchaseInvoice($purchaseInvoice);
+        $this->purchaseInvoiceService->deletePurchaseInvoice($purchase);
 
         // Redirect back with a success message
-        return redirect()->route('purchase-invoice.index')->with('success', 'Purchase invoice deleted successfully.');
+        return redirect()->route('purchase.index')->with('success', 'Purchase invoice deleted successfully.');
     }
 }

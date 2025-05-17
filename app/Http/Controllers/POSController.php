@@ -4,13 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use \App\Models\Product;
-use App\Models\SalesInvoice;
 use App\Services\SalesInvoiceService;
 use App\Services\CategoryService;
 use App\Services\OutletService;
 use App\Services\ProductService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class POSController extends Controller
 {
@@ -39,26 +38,18 @@ class POSController extends Controller
      */
     public function index()
     {
-        // Get the authenticated user
         $user = Auth::user();
-
-        // Get the outlet(s) the user can access
         $accessibleOutletIds = $user->employee->outlets->pluck('id')->toArray();
-
-        // Filter products by accessible outlets
-        $products = $this->productService->getProductsByOutlets($accessibleOutletIds);
-
-        // Get all categories
+        $products = $this->outletService->getProductsWithStocksFromOutlet($accessibleOutletIds[0]);
         $categories = $this->categoryService->getAllCategories();
-
-        // Get next invoice number
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
+        $cart = session()->get('cart', []);
 
-        // Pass the filtered data to the view
         return view('pos.index', [
             'products' => $products,
             'categories' => $categories,
             'invoiceNumber' => $nextInvoiceNumber,
+            'cart' => $cart,
         ]);
     }
 
@@ -67,33 +58,26 @@ class POSController extends Controller
      */
     public function addToCart(Request $request)
     {
+
         $product = $request->only(['id', 'name', 'unit_price', 'quantity']);
-
-        // Retrieve the cart from the session or initialize it as an empty array
         $cart = session()->get('cart', []);
+        $productId = $product['id'];
 
-        // Check if the product already exists in the cart
-        if (isset($cart[$product['id']])) {
-            // If increment or decrement by one item
-            if ($product['quantity'] == 1 || $product['quantity'] == -1) {
-                // Update the quantity of the existing product
-                $cart[$product['id']]['quantity'] += $product['quantity'];
+        if (isset($cart[$productId])) {
+            if (in_array($product['quantity'], [1, -1])) {
+                $cart[$productId]['quantity'] += $product['quantity'];
             } else {
-                // Update the quantity and total price
-                $cart[$product['id']]['quantity'] = $product['quantity'];
+                $cart[$productId]['quantity'] = $product['quantity'];
             }
         } else {
-            // Add the product to the cart
-            $cart[$product['id']] = [
+            $cart[$productId] = [
                 'name' => $product['name'],
                 'quantity' => $product['quantity'],
                 'unit_price' => $product['unit_price'],
             ];
         }
 
-        // Save the cart back to the session
         session()->put('cart', $cart);
-
         return response()->json(['success' => true, 'cart' => $cart]);
     }
 
@@ -103,18 +87,13 @@ class POSController extends Controller
     public function removeFromCart(Request $request)
     {
         $id = $request->input('id');
-
-        // Retrieve the cart from the session
         $cart = session()->get('cart', []);
 
-        // Remove the product from the cart
         if (isset($cart[$id])) {
             unset($cart[$id]);
         }
 
-        // Save the updated cart back to the session
         session()->put('cart', $cart);
-
         return response()->json(['success' => true, 'cart' => $cart]);
     }
 
@@ -124,19 +103,15 @@ class POSController extends Controller
     public function getCart()
     {
         $cart = session()->get('cart', []);
-
-        // Calculate total price dynamically
-        $cartWithTotals = [];
         $grandTotal = 0;
 
         foreach ($cart as $id => $item) {
-            $item['total_price'] = $item['quantity'] * $item['unit_price'];
-            $cartWithTotals[$id] = $item;
-            $grandTotal += $item['total_price'];
+            $cart[$id]['total_price'] = $item['quantity'] * $item['unit_price'];
+            $grandTotal += $cart[$id]['total_price'];
         }
 
         return response()->json([
-            'cart' => $cartWithTotals,
+            'cart' => $cart,
             'grand_total' => $grandTotal,
         ]);
     }
@@ -155,14 +130,17 @@ class POSController extends Controller
      */
     public function payment()
     {
-        // Get next invoice number
-        $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
 
-        // Retrieve the cart from the session
+        $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
         $cart = session()->get('cart', []);
         $grandTotal = array_reduce($cart, function ($total, $item) {
             return $total + ($item['quantity'] * $item['unit_price']);
         }, 0);
+
+        if (!$cart) {
+            return redirect()->route('pos.index')
+                ->with('error', 'Receipt data not found. Please complete a transaction first.');
+        }
 
         return view('pos.payment', [
             'cart' => $cart,
@@ -174,97 +152,205 @@ class POSController extends Controller
     /**
      * Process the payment.
      */
-    public function processPayment()
+    public function processPayment(Request $request)
     {
-        // Retrieve the cart and grand total from the session
         $cart = session()->get('cart', []);
         $grandTotal = array_reduce($cart, function ($total, $item) {
             return $total + ($item['quantity'] * $item['unit_price']);
         }, 0);
 
-        // Perform payment processing logic here (e.g., save to database, generate invoice, etc.)
-
-        // Get next invoice number
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
-
-        // Get the outlet ID from the authenticated user
+        $employee_id = Auth::user()->employee->id;
         $outletId = Auth::user()->employee->outlets[0]->id;
 
-        // Create the sales invoice
-        $salesInvoice = SalesInvoice::create([
-            'outlets_id' => $outletId,
+        $products = [];
+        foreach ($cart as $id => $product) {
+            $product['id'] = $id;
+            $products[] = $product;
+        }
+
+        $validatedData = [
             'invoice_number' => $nextInvoiceNumber,
             'grand_total' => $grandTotal,
             'description' => 'POS Transaction',
-            'employee_id' => Auth::user()->employee->id, // Assuming the authenticated user has an employee relationship
-        ]);
+            'outlet_id' => $outletId,
+            'products' => $products,
+            'employee_id' => $employee_id,
+        ];
 
-        // Attach products to the sales invoice and update stock
-        foreach ($cart as $id => $item) {
-            // Attach the product to the sales invoice
-            $salesInvoice->products()->attach($id, [
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $item['quantity'] * $item['unit_price'],
-            ]);
-
-            // Update the stock for the product in the outlet
-            $product = Product::where('id', $id)->first();
-            if ($product) {
-                $existingQuantity = $product->outlets()
-                    ->where('outlets_id', $outletId)
-                    ->first()
-                    ->pivot
-                    ->quantity ?? 0;
-
-                $product->outlets()->syncWithoutDetaching([
-                    $outletId => [
-                        'quantity' => $existingQuantity - $item['quantity'], // Reduce stock
-                    ],
-                ]);
-            }
+        if ($request->filled('amount_paid')) {
+            session()->put('amountPaid', $request->amount_paid);
         }
 
-        // Save the grand total to the session
-        session()->put('grandTotal', $grandTotal);
+        if ($request->filled('payment_method')) {
+            session()->put('paymentMethod', $request->payment_method);
+        }
 
-        // Save the invoice number to the session
+        $this->salesInvoiceService->createSalesInvoice($validatedData);
+        session()->put('grandTotal', $grandTotal);
         session()->put('invoiceNumber', $nextInvoiceNumber);
 
-        // Redirect to a receipt or success page
         return redirect()->route('pos.receipt');
     }
 
     /**
-     * Display the receipt.
+     * Display the transaction receipt.
+     *
+     * @param int|null $id Optional sales invoice ID for retrieving historical receipts
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function receipt()
+    public function receipt($id = null)
     {
-        // Retrieve the cart and other data from the session
+        try {
+            $previousRoute = $this->getPreviousRoute();
+            $cart = [];
+            $grandTotal = 0;
+            $invoiceNumber = '';
+            $date = now()->format('d/m/Y H:i');
+            $amountPaid = null;
+            $paymentMethod = null;
+
+            $employee = Auth::user()->employee;
+            $outlet = $employee->outlets->first();
+
+            if ($previousRoute === 'pos.payment') {
+                $receiptData = $this->getReceiptDataFromSession();
+
+                if (!$receiptData) {
+                    return redirect()->route('pos.index')
+                        ->with('error', 'Receipt data not found. Please complete a transaction first.');
+                }
+
+                extract($receiptData);
+                $this->clearSessionData();
+            } else if ($id) {
+                $receiptData = $this->getReceiptDataFromDatabase($id);
+
+                if (!$receiptData) {
+                    return redirect()->route('pos.index')
+                        ->with('error', 'Receipt not found. Please check the invoice ID and try again.');
+                }
+
+                extract($receiptData);
+            } else {
+                return redirect()->route('pos.index')
+                    ->with('error', 'Invalid receipt access. Please complete a transaction first.');
+            }
+
+            return view('pos.receipt', compact(
+                'cart',
+                'grandTotal',
+                'date',
+                'employee',
+                'outlet',
+                'invoiceNumber',
+                'previousRoute',
+                'amountPaid',
+                'paymentMethod'
+            ));
+        } catch (\Exception $e) {
+            Log::error('Error generating receipt: ' . $e->getMessage());
+            return redirect()->route('pos.index')
+                ->with('error', 'An error occurred while generating the receipt.');
+        }
+    }
+
+    /**
+     * Get the name of the previous route.
+     *
+     * @return string|null
+     */
+    private function getPreviousRoute()
+    {
+        try {
+            return app('router')->getRoutes()->match(
+                app('request')->create(url()->previous())
+            )->getName();
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get receipt data from session.
+     *
+     * @return array|null
+     */
+    private function getReceiptDataFromSession()
+    {
         $cart = session()->get('cart', []);
         $grandTotal = session()->get('grandTotal', 0);
         $invoiceNumber = session()->get('invoiceNumber', '');
+        $amountPaid = session()->get('amountPaid', $grandTotal);
+        $paymentMethod = session()->get('paymentMethod', 'Cash');
 
-        // Validate that the invoice number is set
-        if (empty($invoiceNumber)) {
-            return redirect()->route('pos.index')->with('error', 'No invoice number found. Please complete the payment first.');
+        if (empty($cart) || empty($invoiceNumber)) {
+            return null;
         }
 
-        // Validate that the cart is not empty
-        if (empty($cart)) {
-            return redirect()->route('pos.index')->with('error', 'The cart is empty. Please add items to the cart.');
-        }
-
-        // Clear the cart after processing the receipt
-        session()->forget('cart');
-        session()->forget('grandTotal');
-        session()->forget('invoice_number');
-
-        // Redirect to the receipt page with the sales invoice details
-        return view('pos.receipt', [
+        return [
             'cart' => $cart,
             'grandTotal' => $grandTotal,
             'invoiceNumber' => $invoiceNumber,
+            'amountPaid' => $amountPaid,
+            'paymentMethod' => $paymentMethod
+        ];
+    }
+
+    /**
+     * Get receipt data from database by invoice ID.
+     *
+     * @param int $id
+     * @return array|null
+     */
+    private function getReceiptDataFromDatabase($id)
+    {
+        try {
+            $sales = $this->salesInvoiceService->getSalesInvoiceById($id);
+
+            if (!$sales) {
+                return null;
+            }
+
+            $cart = [];
+            foreach ($sales->products as $product) {
+                $cart[] = [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'quantity' => $product->pivot->quantity,
+                    'unit_price' => $product->pivot->unit_price
+                ];
+            }
+
+            return [
+                'cart' => $cart,
+                'grandTotal' => $sales->grand_total,
+                'invoiceNumber' => $sales->invoice_number,
+                'date' => $sales->created_at->format('d/m/Y H:i'),
+                'employee' => $sales->employee,
+                'outlet' => $sales->employee->outlets->first(),
+                'amountPaid' => $sales->amount_paid ?? $sales->grand_total,
+                'paymentMethod' => $sales->payment_method ?? 'Cash'
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error fetching sales invoice: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Clear session data after processing the receipt.
+     *
+     * @return void
+     */
+    private function clearSessionData()
+    {
+        session()->forget([
+            'cart',
+            'grandTotal',
+            'invoiceNumber',
+            'amountPaid',
+            'paymentMethod'
         ]);
     }
 }
