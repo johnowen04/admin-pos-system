@@ -275,16 +275,16 @@
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="form-check-input select-product-checkbox"
-                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
-                                            data-name="{{ $product['name'] }}">
+                                            data-id="${product.id}" data-sku="${product.sku}"
+                                            data-name="${product.name}">
                                     </td>
-                                    <td>{{ $product['sku'] }}</td>
-                                    <td>{{ $product['name'] }}</td>
-                                    <td>{{ $product['quantity'] }}</td>
+                                    <td>${product.sku}</td>
+                                    <td>${product.name}</td>
+                                    <td>${product.quantity}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary add-single-product"
-                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
-                                            data-name="{{ $product['name'] }}">
+                                            data-id="${product.id}" data-sku="${product.sku}"
+                                            data-name="${product.name}">
                                             Add
                                         </button>
                                     </td>
