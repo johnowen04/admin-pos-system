@@ -3,17 +3,20 @@
 namespace App\Services;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ProductService
 {
     public $outletService;
     public $inventoryService;
+    public $stockMovementService;
 
-    public function __construct(OutletService $outletService, InventoryService $inventoryService)
+    public function __construct(OutletService $outletService, InventoryService $inventoryService, StockMovementService $stockMovementService)
     {
         $this->outletService = $outletService;
         $this->inventoryService = $inventoryService;
+        $this->stockMovementService = $stockMovementService;
     }
 
     /**
@@ -64,9 +67,20 @@ class ProductService
             'units_id' => $data['units_id'],
         ]);
 
+        $employeeId = Auth::user()->id;
+
         // Attach outlets to the product (if any)
         if (!empty($data['outlets'])) {
             $this->inventoryService->initializeStockForNewProduct($data['outlets'], $product->id);
+            foreach ($data['outlets'] as  $_ => $outletId) {
+                // Record stock movements for each product
+                $this->stockMovementService->recordInitialStock(
+                    $outletId,
+                    $product['id'],
+                    $employeeId,
+                    0,
+                );
+            }
         }
 
         return $product;
@@ -119,6 +133,18 @@ class ProductService
 
         // Initialize stock for added outlets
         $this->inventoryService->initializeStockForNewProduct($addedOutlets, $product->id);
+
+        $employeeId = Auth::user()->id;
+
+        foreach ($addedOutlets as $outletId) {
+            // Record stock movements for each product
+            $this->stockMovementService->recordInitialStock(
+                $outletId,
+                $product['id'],
+                $employeeId,
+                0,
+            );
+        }
     }
 
     /**
