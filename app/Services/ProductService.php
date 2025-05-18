@@ -45,6 +45,29 @@ class ProductService
         return $products;
     }
 
+    public function getProductsWithMovements()
+    {
+        $products = $this->getAllProducts(); // Fetch all products
+
+        foreach ($products as $product) {
+            $product->movements = $this->stockMovementService->getMovementsByProduct($product->id);
+        }
+
+        return $products;
+    }
+
+    public function getProductsWithStocksAndMovements()
+    {
+        $products = $this->getAllProducts(); // Fetch all products
+
+        foreach ($products as $product) {
+            $product->stocks = $this->inventoryService->getStocksByProduct($product->id);
+            $product->movements = $this->stockMovementService->getMovementsByProduct($product->id);
+        }
+
+        return $products;
+    }
+
     /**
      * Create a new product.
      *

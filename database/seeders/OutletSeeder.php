@@ -14,7 +14,7 @@ class OutletSeeder extends Seeder
     {
         DB::table('outlets')->insert([
             [
-                'name' => 'Outlet A',
+                'name' => 'Futsal',
                 'type' => 'pos',
                 'status' => 'open',
                 'phone' => '1234567890',
@@ -25,24 +25,13 @@ class OutletSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Outlet B',
-                'type' => 'warehouse',
-                'status' => 'closed',
+                'name' => 'Kolam',
+                'type' => 'pos',
+                'status' => 'open',
                 'phone' => '0987654321',
                 'whatsapp' => '0987654321',
                 'email' => 'outletB@example.com',
                 'address' => '456 Elm Street, City B',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Outlet C',
-                'type' => 'pos',
-                'status' => 'open',
-                'phone' => '1122334455',
-                'whatsapp' => '1122334455',
-                'email' => 'outletC@example.com',
-                'address' => '789 Oak Street, City C',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

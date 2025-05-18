@@ -30,8 +30,12 @@
                                     <tr>
                                         <th>SKU</th>
                                         <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Units</th>
+                                        <th hidden>Category</th>
+                                        <th>Initial</th>
+                                        <th>Purchased</th>
+                                        <th>Sold</th>
+                                        <th>End</th>
+                                        <th>Unit</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -40,14 +44,36 @@
                                         <tr>
                                             <td>{{ $product->sku }}</td>
                                             <td>{{ $product->name }}</td>
-                                            <td>{{ $product->category->name }}</td>
+                                            <td hidden>{{ $product->category->name }}</td>
+                                            <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? [])) }}
+                                            </td>
+                                            <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['purchase'] ?? [])) }}
+                                            </td>
+                                            <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['sale'] ?? [])) }}
+                                            </td>
+                                            <td>{{ array_sum(
+                                                array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? []),
+                                            ) +
+                                                array_sum(
+                                                    array_map(
+                                                        fn($items) => array_sum(array_column($items, 'quantity')),
+                                                        $groupedGlobal[$product->id]['purchase'] ?? [],
+                                                    ),
+                                                ) -
+                                                array_sum(
+                                                    array_map(
+                                                        fn($items) => array_sum(array_column($items, 'quantity')),
+                                                        $groupedGlobal[$product->id]['sale'] ?? [],
+                                                    ),
+                                                ) }}
+                                            </td>
                                             <td>{{ $product->unit->name }}</td>
 
                                             <td>
                                                 <div class="form-button-action">
                                                     <button class="btn btn-link btn-lg view-details-btn"
                                                         data-product="{{ json_encode($product) }}"
-                                                        data-stock="{{ json_encode($product->stocks) }}">
+                                                        data-stock="{{ json_encode($groupedDetail[$product->id]) }}">
                                                         <i class="fas fa-boxes"></i>
                                                     </button>
                                                     <a href="{{ route('inventory.edit', $product->id) }}"
@@ -111,7 +137,10 @@
                             <thead>
                                 <tr>
                                     <th>Outlet</th>
-                                    <th>Quantity</th>
+                                    <th>Initial</th>
+                                    <th>Purchased</th>
+                                    <th>Sold</th>
+                                    <th>End</th>
                                     <th>Unit</th>
                                 </tr>
                             </thead>
@@ -147,6 +176,7 @@
             // Handle row click to show modal
             $('.view-details-btn').on('click', function() {
                 const product = $(this).data('product');
+                console.log(product);
                 const stockDetails = $(this).data('stock');
 
                 // Populate product details
@@ -156,6 +186,28 @@
 
                 // Populate stock table
                 const stockTableBody = $('#modalStockTableBody');
+
+                function getInitialQuantity(movementsArray) {
+                    if (movementsArray.length > 0) {
+                        return parseFloat(movementsArray[0].quantity);
+                    }
+                    return 0;
+                }
+
+                function getPurchasedOrSoldQuantity(movementsArray) {
+                    if (movementsArray.length > 0) {
+                        return movementsArray.reduce((total, item) => total + parseFloat(item.quantity), 0);
+                    }
+                    return 0;
+                }
+
+                function getEndQuantity(initialArray, purchasedArray, soldArray) {
+                    return getInitialQuantity(initialArray) +
+                        getPurchasedOrSoldQuantity(purchasedArray) -
+                        getPurchasedOrSoldQuantity(soldArray);
+                }
+
+
                 stockTableBody.empty(); // Clear previous rows
                 if (stockDetails.length === 0) {
                     // Show "No inventories available" message if stockDetails is empty
@@ -166,14 +218,18 @@
                     `);
                 } else {
                     // Populate stock rows
-                    stockDetails.forEach(stock => {
+                    Object.entries(stockDetails).forEach(([outletId, outletData]) => {
                         stockTableBody.append(`
                             <tr>
-                                <td>${stock.outlet_name}</td>
-                                <td>${stock.quantity}</td>
+                                <td>${outletData.name}</td>
+                                <td>${getInitialQuantity(outletData.initial)}</td>
+                                <td>${getPurchasedOrSoldQuantity(outletData.purchase || [])}</td>
+                                <td>${getPurchasedOrSoldQuantity(outletData.sale || [])}</td>
+                                <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [])}</td>
                                 <td>${product.unit.name}</td>
                             </tr>
                         `);
+
                     });
                 }
 

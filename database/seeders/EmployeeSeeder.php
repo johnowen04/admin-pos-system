@@ -21,27 +21,36 @@ class EmployeeSeeder extends Seeder
                 'name' => 'John Doe',
                 'phone' => '08123456789',
                 'email' => 'john.doe@example.com',
-                'roles_id' => 1, // Administrator
+                'roles_id' => 3, // Superuser
                 'password' => 'password123', // Plain password for seeding
-                'outlets' => [1, 2, 3], // Assign Outlet 1 and Outlet 2
+                'outlets' => [1, 2], // Assign Outlet 1 and Outlet 2
             ],
             [
                 'nip' => 'EMP002',
                 'name' => 'Jane Smith',
                 'phone' => '08198765432',
                 'email' => 'jane.smith@example.com',
-                'roles_id' => 2, // Manager
+                'roles_id' => 1, // Admin
                 'password' => 'password123', // Plain password for seeding
-                'outlets' => [1, 2], // Assign Outlet 3 and Outlet 4
+                'outlets' => [1, 2], // Assign Outlet 1 and Outlet 2
             ],
             [
                 'nip' => 'EMP003',
                 'name' => 'Alice Johnson',
                 'phone' => '08122334455',
                 'email' => 'alice.johnson@example.com',
-                'roles_id' => 3, // Staff
+                'roles_id' => 2, // Cashier
                 'password' => 'password123', // Plain password for seeding
-                'outlets' => [1], // Assign only Outlet 5
+                'outlets' => [1], // Assign only Outlet 1
+            ],
+            [
+                'nip' => 'EMP004',
+                'name' => 'Andrea Smith',
+                'phone' => '08122334455',
+                'email' => 'andrea.smith@example.com',
+                'roles_id' => 2, // Cashier
+                'password' => 'password123', // Plain password for seeding
+                'outlets' => [2], // Assign only Outlet 2
             ],
         ];
 

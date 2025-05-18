@@ -14,27 +14,7 @@ class DepartmentSeeder extends Seeder
     {
         DB::table('departments')->insert([
             [
-                'name' => 'Sales',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Marketing',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Finance',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Human Resources',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'IT',
+                'name' => 'Food and Beverages',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

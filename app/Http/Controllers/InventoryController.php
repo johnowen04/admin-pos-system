@@ -25,10 +25,30 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $products = $this->productService->getProductsWithStocks();
+        $products = $this->productService->getProductsWithMovements();
+        $groupedGlobal = [];
+        $groupedDetail = [];
+
+        foreach ($products as $product) {
+            $productId = $product->id; // Or $product->sku
+
+            foreach ($product->movements as $movement) {
+                $movementType = $movement->movement_type->value ?? 'unknown';
+                $outletId = $movement->outlet_id ?? 'unknown';
+
+                // Grouped Global
+                $groupedGlobal[$productId][$movementType][$outletId][] = $movement;
+
+                // Grouped Detail
+                $groupedDetail[$productId][$outletId]['name'] = $movement->outlet->name ?? 'Unknown Outlet';
+                $groupedDetail[$productId][$outletId][$movementType][] = $movement;
+            }
+        }
 
         return view('inventory.index', [
-            'products' => $products, // Placeholder for product
+            'products' => $products,
+            'groupedGlobal' => $groupedGlobal,
+            'groupedDetail' => $groupedDetail,
             'createRoute' => route('inventory.create'),
         ]);
     }

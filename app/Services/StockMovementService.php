@@ -11,6 +11,25 @@ class StockMovementService
 {
     public function __construct(protected InventoryService $inventoryService) {}
 
+    public function getMovementsByProduct(int $productId)
+    {
+        return $this->getAllMovements(productId: $productId);
+    }
+
+    public function getMovementsByOutlet(int $outletId)
+    {
+        return $this->getAllMovements(outletId: $outletId);
+    }
+
+    public function getAllMovements(?int $productId = null, ?int $outletId = null)
+    {
+        return StockMovement::query()
+            ->when($outletId, fn($query) => $query->where('outlet_id', $outletId))
+            ->when($productId, fn($query) => $query->where('product_id', $productId))
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
     public function recordInitialStock(int $outletId, int $productId, ?int $employeeId, int $quantity, ?string $reason = null): StockMovement
     {
         return $this->createMovement($outletId, $productId, $employeeId, StockMovementType::INITIAL, $quantity, $reason);
