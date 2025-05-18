@@ -17,7 +17,7 @@
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Base Unit List</h4>
                             <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('unit.create') }}'">
+                                onclick="window.location='{{ route('baseunit.create') }}'">
                                 <i class="fa fa-plus"></i>
                                 Add Base Unit
                             </button>
