@@ -19,6 +19,10 @@ Route::get('/logout', function () {
     return redirect()->route('login');
 });
 
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
 Route::get('/dashboard', function () {
     return view('index');
 })->name('dashboard')->middleware('auth');
