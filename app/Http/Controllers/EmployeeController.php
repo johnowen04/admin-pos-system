@@ -7,6 +7,7 @@ use App\Services\EmployeeService;
 use App\Services\OutletService;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
@@ -19,6 +20,11 @@ class EmployeeController extends Controller
      */
     public function __construct(RoleService $roleService, OutletService $outletService, EmployeeService $employeeService)
     {
+        $this->middleware('permission:employee.view')->only(['index', 'show']);
+        $this->middleware('permission:employee.create')->only(['create', 'store']);
+        $this->middleware('permission:employee.edit')->only(['edit', 'update']);
+        $this->middleware('permission:employee.delete')->only(['destroy']);
+
         $this->roleService = $roleService;
         $this->outletService = $outletService;
         $this->employeeService = $employeeService;
@@ -29,11 +35,10 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $employees = $this->employeeService->getAllEmployees();
-        return view('employee.index', [
-            'employees' => $employees,
-            'createRoute' => route('employee.create'),
-        ]);
+        $currentUserLevel = Auth::user()->employee->role->level->value;
+        $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualRole(roleLevel: $currentUserLevel, withTrashedRole: true); // Fetch all employees
+
+        return view('employee.index', compact('employees'));
     }
 
     /**
@@ -42,7 +47,8 @@ class EmployeeController extends Controller
     public function create()
     {
         $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
-        $roles = $this->roleService->getAllRoles(); // Fetch all roles
+        $currentUserLevel = Auth::user()->employee->role->level->value;
+        $roles = $this->roleService->getAllRoleWithLowerOrEqualLevel($currentUserLevel); // Fetch all roles
         return view('employee.create', [
             'action' => route('employee.store'),
             'method' => 'POST',
@@ -93,7 +99,8 @@ class EmployeeController extends Controller
     {
         $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
         $selectedOutlets = $this->employeeService->getSelectedOutlets($employee); // Get selected outlets for the employee
-        $roles = $this->roleService->getAllRoles(); // Fetch all roles
+        $currentUserLevel = Auth::user()->employee->role->level->value;
+        $roles = $this->roleService->getAllRoleWithLowerOrEqualLevel($currentUserLevel); // Fetch all roles
         return view('employee.edit', [
             'action' => route('employee.update', $employee->id),
             'method' => 'PUT',

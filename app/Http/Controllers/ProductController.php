@@ -25,6 +25,11 @@ class ProductController extends Controller
         CategoryService $categoryService,
         UnitService $unitService
     ) {
+        $this->middleware('permission:product.view')->only(['index', 'show']);
+        $this->middleware('permission:product.create')->only(['create', 'store']);
+        $this->middleware('permission:product.edit')->only(['edit', 'update']);
+        $this->middleware('permission:product.delete')->only(['destroy']);
+
         $this->productService = $productService;
         $this->outletService = $outletService;
         $this->categoryService = $categoryService;

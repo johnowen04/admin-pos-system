@@ -17,6 +17,11 @@ class UnitController extends Controller
      */
     public function __construct(BaseUnitService $baseUnitService, UnitService $unitService)
     {
+        $this->middleware('permission:unit.view')->only(['index', 'show']);
+        $this->middleware('permission:unit.create')->only(['create', 'store']);
+        $this->middleware('permission:unit.edit')->only(['edit', 'update']);
+        $this->middleware('permission:unit.delete')->only(['destroy']);
+
         $this->unitService = $unitService;
         $this->baseUnitService = $baseUnitService;
     }
@@ -38,12 +43,12 @@ class UnitController extends Controller
      */
     public function create()
     {
-        $baseunits = $this->baseUnitService->getAllBaseUnits();
+        $baseUnits = $this->baseUnitService->getAllBaseUnits();
         return view('unit.create', [
             'action' => route('unit.store'),
             'method' => 'POST',
             'unit' => null,
-            'baseunits' => $baseunits,
+            'baseUnits' => $baseUnits,
             'cancelRoute' => route('unit.index'),
         ]);
     }
@@ -77,12 +82,12 @@ class UnitController extends Controller
      */
     public function edit(Unit $unit)
     {
-        $baseunits = $this->baseUnitService->getAllBaseUnits();
+        $baseUnits = $this->baseUnitService->getAllBaseUnits();
         return view('unit.edit', [
             'action' => route('unit.update', $unit->id),
             'method' => 'PUT',
             'unit' => $unit,
-            'baseunits' => $baseunits,
+            'baseUnits' => $baseUnits,
             'cancelRoute' => route('unit.index'),
         ]);
     }

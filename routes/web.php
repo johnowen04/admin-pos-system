@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Controllers\ACLController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BaseUnitController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FeatureController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\OperationController;
 use App\Http\Controllers\OutletController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
@@ -38,6 +42,9 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('outlet', OutletController::class);
+    Route::resource('feature', FeatureController::class);
+    Route::resource('operation', OperationController::class);
+    Route::resource('permission', PermissionController::class);
     Route::resource('role', RoleController::class);
     Route::resource('employee', EmployeeController::class);
     Route::resource('baseunit', BaseUnitController::class);
@@ -49,6 +56,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sales', SalesController::class);
     Route::resource('inventory', InventoryController::class);
 
+    Route::post('/permission/batch', [PermissionController::class, 'batch'])->name('permission.batch');
+
+    Route::resource('acl', ACLController::class);
 
     Route::get('/pos', [POSController::class, 'index'])->name('pos.index');
     Route::get('/pos/payment', [POSController::class, 'payment'])->name('pos.payment');

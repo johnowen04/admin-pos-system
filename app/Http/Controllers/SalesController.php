@@ -22,6 +22,11 @@ class SalesController extends Controller
         OutletService $outletService,
         ProductService $productService
     ) {
+        $this->middleware('permission:sales.view')->only(['index', 'show']);
+        $this->middleware('permission:sales.create')->only(['create', 'store']);
+        $this->middleware('permission:sales.edit')->only(['edit', 'update']);
+        $this->middleware('permission:sales.delete')->only(['destroy']);
+
         $this->salesInvoiceService = $salesInvoiceService;
         $this->outletService = $outletService;
         $this->productService = $productService;

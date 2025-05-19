@@ -15,6 +15,11 @@ class BaseUnitController extends Controller
      */
     public function __construct(BaseUnitService $baseUnitService)
     {
+        $this->middleware('permission:bu.view')->only(['index', 'show']);
+        $this->middleware('permission:bu.create')->only(['create', 'store']);
+        $this->middleware('permission:bu.edit')->only(['edit', 'update']);
+        $this->middleware('permission:bu.delete')->only(['destroy']);
+
         $this->baseUnitService = $baseUnitService;
     }
 
@@ -23,9 +28,9 @@ class BaseUnitController extends Controller
      */
     public function index()
     {
-        $baseunits = $this->baseUnitService->getAllBaseUnits();
-        return view('baseunit.index', [
-            'baseunits' => $baseunits, // Placeholder for base units
+        $baseUnits = $this->baseUnitService->getAllBaseUnits();
+        return view('bu.index', [
+            'baseUnits' => $baseUnits, // Placeholder for base units
             'createRoute' => route('baseunit.create'),
         ]);
     }
@@ -35,10 +40,10 @@ class BaseUnitController extends Controller
      */
     public function create()
     {
-        return view('baseunit.create', [
+        return view('bu.create', [
             'action' => route('baseunit.store'),
             'method' => 'POST',
-            'baseunit' => null,
+            'baseUnit' => null,
             'cancelRoute' => route('baseunit.index'),
         ]);
     }
@@ -71,12 +76,12 @@ class BaseUnitController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(BaseUnit $baseunit)
+    public function edit(BaseUnit $baseUnit)
     {
-        return view('baseunit.edit', [
-            'action' => route('baseunit.update', $baseunit->id),
+        return view('bu.edit', [
+            'action' => route('baseunit.update', $baseUnit->id),
             'method' => 'PUT',
-            'baseunit' => $baseunit,
+            'baseUnit' => $baseUnit,
             'cancelRoute' => route('baseunit.index'),
         ]);
     }
@@ -84,7 +89,7 @@ class BaseUnitController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, BaseUnit $baseunit)
+    public function update(Request $request, BaseUnit $baseUnit)
     {
         // Validate the incoming request
         $validatedData = $request->validate([
@@ -92,7 +97,7 @@ class BaseUnitController extends Controller
         ]);
 
         // Update the base unit
-        $this->baseUnitService->updateBaseUnit($baseunit, $validatedData);
+        $this->baseUnitService->updateBaseUnit($baseUnit, $validatedData);
 
         // Redirect back to the base unit index with a success message
         return redirect()->route('baseunit.index')->with('success', 'Base Unit updated successfully.');
@@ -101,10 +106,10 @@ class BaseUnitController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(BaseUnit $baseunit)
+    public function destroy(BaseUnit $baseUnit)
     {
         // Perform soft delete
-        $this->baseUnitService->deleteBaseUnit($baseunit);
+        $this->baseUnitService->deleteBaseUnit($baseUnit);
 
         // Redirect back to the base unit index with a success message
         return redirect()->route('baseunit.index')->with('success', 'Base Unit deleted successfully.');

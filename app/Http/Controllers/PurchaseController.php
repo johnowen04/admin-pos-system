@@ -22,6 +22,11 @@ class PurchaseController extends Controller
         OutletService $outletService,
         ProductService $productService
     ) {
+        $this->middleware('permission:purchase.view')->only(['index', 'show']);
+        $this->middleware('permission:purchase.create')->only(['create', 'store']);
+        $this->middleware('permission:purchase.edit')->only(['edit', 'update']);
+        $this->middleware('permission:purchase.delete')->only(['destroy']);
+
         $this->purchaseInvoiceService = $purchaseInvoiceService;
         $this->outletService = $outletService;
         $this->productService = $productService;

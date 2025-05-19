@@ -15,6 +15,11 @@ class DepartmentController extends Controller
      */
     public function __construct(DepartmentService $departmentService)
     {
+        $this->middleware('permission:department.view')->only(['index', 'show']);
+        $this->middleware('permission:department.create')->only(['create', 'store']);
+        $this->middleware('permission:department.edit')->only(['edit', 'update']);
+        $this->middleware('permission:department.delete')->only(['destroy']);
+
         $this->departmentService = $departmentService;
     }
 

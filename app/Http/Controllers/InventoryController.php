@@ -15,6 +15,8 @@ class InventoryController extends Controller
 
     public function __construct(ProductService $productService, OutletService $outletService, InventoryService $inventoryService)
     {
+        $this->middleware('permission:inventory.view')->only(['index', 'show']);
+
         $this->productService = $productService;
         $this->outletService = $outletService;
         $this->inventoryService = $inventoryService;

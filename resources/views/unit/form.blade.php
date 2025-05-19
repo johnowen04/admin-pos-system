@@ -46,10 +46,10 @@
                         <label for="defaultSelect">To Unit</label>
                         <select class="form-select form-control" id="defaultSelect" name="to_base_unit_id">
                             <option value="" disabled selected>Select conversion unit</option>
-                            @foreach ($baseunits as $baseunit)
-                                <option value="{{ $baseunit->id }}"
-                                    {{ old('to_base_unit_id', $unit->to_base_unit_id ?? '') == $baseunit->id ? 'selected' : '' }}>
-                                    {{ $baseunit->name }}
+                            @foreach ($baseUnits as $baseUnit)
+                                <option value="{{ $baseUnit->id }}"
+                                    {{ old('to_base_unit_id', $unit->to_base_unit_id ?? '') == $baseUnit->id ? 'selected' : '' }}>
+                                    {{ $baseUnit->name }}
                                 </option>
                             @endforeach
                         </select>

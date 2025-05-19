@@ -67,6 +67,40 @@
                             'active' => request()->is('/'),
                         ],
                         [
+                            'name' => 'Role & Permission',
+                            'link' => 'role',
+                            'icon' => 'fas fa-user-shield',
+                            'route' => 'role.index',
+                            'active' => request()->is('feature*') || request()->is('operation*') || request()->is('permission*') || request()->is('role*') || request()->is('acl*'),
+                            'children' => [
+                                [
+                                    'name' => 'Feature',
+                                    'route' => 'feature.index',
+                                    'active' => request()->is('feature'),
+                                ],
+                                [
+                                    'name' => 'Operation',
+                                    'route' => 'operation.index',
+                                    'active' => request()->is('operation'),
+                                ],
+                                [
+                                    'name' => 'Permission',
+                                    'route' => 'permission.index',
+                                    'active' => request()->is('permission'),
+                                ],
+                                [
+                                    'name' => 'Role',
+                                    'route' => 'role.index',
+                                    'active' => request()->is('role'),
+                                ],
+                                [
+                                    'name' => 'ACL',
+                                    'route' => 'acl.index',
+                                    'active' => request()->is('acl'),
+                                ],
+                            ],
+                        ],
+                        [
                             'name' => 'Outlet',
                             'link' => 'outlet',
                             'icon' => 'fas fa-building',
@@ -78,19 +112,7 @@
                             'link' => 'employee',
                             'icon' => 'fas fa-user',
                             'route' => 'employee.index',
-                            'active' => request()->is('employee*') || request()->is('role*'),
-                            'children' => [
-                                [
-                                    'name' => 'Role',
-                                    'route' => 'role.index',
-                                    'active' => request()->is('role'),
-                                ],
-                                [
-                                    'name' => 'Employee',
-                                    'route' => 'employee.index',
-                                    'active' => request()->is('employee'),
-                                ],
-                            ],
+                            'active' => request()->is('employee*'),
                         ],
                         [
                             'name' => 'Unit',
@@ -145,22 +167,22 @@
                         [
                             'name' => 'Purchase',
                             'link' => 'purchase',
-                            'icon' => 'fas fa-building',
+                            'icon' => 'fas fa-shopping-basket',
                             'route' => 'purchase.index',
                             'active' => request()->is('purchase*'),
                         ],
                         [
                             'name' => 'Sales',
                             'link' => 'sales',
-                            'icon' => 'fas fa-building',
+                            'icon' => 'fas fa-tags',
                             'route' => 'sales.index',
                             'active' => request()->is('sales*'),
                         ],
                         [
                             'name' => 'POS',
                             'link' => 'pos',
-                            'icon' => 'fas fa-shopping-bag',
                             'route' => 'pos.index',
+                            'icon' => 'fas fa-shopping-cart',
                             'active' => request()->is('pos*'),
                         ],
                     ]; ?>
@@ -220,8 +242,8 @@
                                                 <li>
                                                     <div class="user-box">
                                                         <div class="avatar-lg">
-                                                            <img src="{{ asset('assets/img/profile.jpg') }}" alt="image profile"
-                                                                class="avatar-img rounded" />
+                                                            <img src="{{ asset('assets/img/profile.jpg') }}"
+                                                                alt="image profile" class="avatar-img rounded" />
                                                         </div>
                                                         <div class="u-text">
                                                             <h4>{{ Auth::user()->name }}</h4>

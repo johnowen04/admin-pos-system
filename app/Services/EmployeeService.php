@@ -12,9 +12,46 @@ class EmployeeService
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getAllEmployees()
+    public function getAllEmployees($withTrashed = false, $withTrashedRole = false)
     {
-        return Employee::all();
+        $query = $withTrashed ? Employee::withTrashed() : Employee::query();
+
+        // Load relationships, considering their trashed status
+        $query->with([
+            'role' => function ($query) use ($withTrashedRole) {
+                if ($withTrashedRole) {
+                    $query->withTrashed();
+                }
+            },
+        ]);
+
+        // Only return permissions with existing relationships
+        if (!$withTrashedRole) {
+            $query->whereHas('role');
+        }
+
+        return $query->get();
+    }
+
+    public function getAllEmployeesWithLowerOrEqualRole($roleLevel, $withTrashed = false, $withTrashedRole = false)
+    {
+        $query = $withTrashed ? Employee::withTrashed() : Employee::query();
+
+        // Load relationships, considering their trashed status
+        $query->with([
+            'role' => function ($query) use ($withTrashedRole) {
+                if ($withTrashedRole) {
+                    $query->withTrashed();
+                }
+            },
+        ]);
+
+        // Only return employees with existing relationships
+        $query->whereHas('role', function ($query) use ($roleLevel) {
+            $query->where('level', '<=', $roleLevel);
+        });
+
+        return $query->get();
     }
 
     /**

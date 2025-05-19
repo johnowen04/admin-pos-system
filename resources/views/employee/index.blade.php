@@ -43,7 +43,19 @@
                                             <td>{{ $employee->nip }}</td>
                                             <td>{{ $employee->name }}</td>
                                             <td>{{ $employee->outlets()->count() }}</td>
-                                            <td>{{ $employee->role->name }}</td>
+                                            <td>
+                                                @if ($employee->role)
+                                                    {{ $employee->role->name }}
+                                                    @if ($employee->role->trashed())
+                                                        <span class="badge bg-warning text-dark" data-toggle="tooltip"
+                                                            title="This role has been deleted. Please update the role.">
+                                                            <i class="fa fa-exclamation-triangle"></i>
+                                                        </span>
+                                                    @endif
+                                                @else
+                                                    <span class="text-danger">No role assigned</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <a href="{{ route('employee.edit', $employee->id) }}"
@@ -78,11 +90,16 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+            $('[data-toggle="tooltip"]').tooltip();
             $('#employee-table').DataTable({
                 "pageLength": 10,
-                "order": [[0, "asc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": -1 } // Disable sorting on the Action column
+                "order": [
+                    [0, "asc"]
+                ],
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": -1
+                    } // Disable sorting on the Action column
                 ]
             });
         });

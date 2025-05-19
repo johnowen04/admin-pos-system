@@ -29,7 +29,7 @@
                     <label>Outlet Type</label><br />
                     <div class="d-flex">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="type" id="radioTypePOS"
+                            <input checked class="form-check-input" type="radio" name="type" id="radioTypePOS"
                                 value="pos" {{ old('type', $outlet->type ?? '') == 'pos' ? 'checked' : '' }} />
                             <label class="form-check-label" for="radioTypePOS">
                                 Point of Sales
@@ -50,7 +50,7 @@
                     <label>Outlet Status</label><br />
                     <div class="d-flex">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="status" id="radioStatusOpen"
+                            <input checked class="form-check-input" type="radio" name="status" id="radioStatusOpen"
                                 value="open"
                                 {{ old('status', $outlet->status ?? '') == 'open' ? 'checked' : '' }} />
                             <label class="form-check-label" for="radioStatusOpen">
