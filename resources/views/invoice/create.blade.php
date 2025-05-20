@@ -3,7 +3,11 @@
 
 @extends('layouts.app')
 
-@section('title', 'Add {{ $invoiceType }} Invoice')
+@if ($invoiceType === 'Purchase')
+    @section('title', 'Purchase Invoice')
+@else
+    @section('title', 'Sales Invoice')
+@endif
 
 @section('content')
     <div class="page-inner">
