@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OutletType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -24,6 +25,7 @@ class Outlet extends Model
     ];
 
     protected $casts = [
+        'type' => OutletType::class,
         'deleted_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
