@@ -27,10 +27,8 @@ class POSController extends Controller
         OutletService $outletService,
         ProductService $productService
     ) {
-        $this->middleware('permission:pos.view')->only(['index', 'show']);
-        $this->middleware('permission:pos.create')->only(['create', 'store']);
-        $this->middleware('permission:pos.edit')->only(['edit', 'update']);
-        $this->middleware('permission:pos.delete')->only(['destroy']);
+        $this->middleware('permission:pos.view')->only(['index', 'payment', 'receipt', 'getCart']);
+        $this->middleware('permission:pos.create')->only(['addToCart', 'removeFromCart', 'clearCart', 'processPayment']);
 
         $this->salesInvoiceService = $salesInvoiceService;
         $this->categoryService = $categoryService;

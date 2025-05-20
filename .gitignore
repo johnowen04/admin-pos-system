@@ -1,3 +1,6 @@
+.DS_Store
+.AppleDouble
+.LSOverride
 /.phpunit.cache
 /node_modules
 /public/build

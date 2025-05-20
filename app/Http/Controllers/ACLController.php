@@ -24,8 +24,8 @@ class ACLController extends Controller
         PermissionService $permissionService,
         RoleService $roleService
     ) {
-        $this->middleware('permission:acl.view')->only(['index', 'show']);
-        $this->middleware('permission:acl.edit')->only(['edit', 'update']);
+        $this->middleware('permission:acl.view')->only(['index']);
+        $this->middleware('permission:acl.edit')->only(['update']);
 
         $this->featureService = $featureService;
         $this->operationService = $operationService;
@@ -59,38 +59,6 @@ class ACLController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the permissions matrix.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -115,14 +83,6 @@ class ACLController extends Controller
             // Just handle the exception message here
             return redirect()->route('acl.index')->with('error', 'Failed to update permissions: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 
     /**

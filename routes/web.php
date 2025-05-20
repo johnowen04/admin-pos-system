@@ -19,20 +19,12 @@ use App\Http\Controllers\SalesController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/logout', function () {
-    return redirect()->route('login');
-});
-
+// Public redirect routes
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::get('/dashboard', function () {
-    return view('index');
-})->name('dashboard')->middleware('auth');
-
-Route::get('/api/outlets/{outlet_id}/products', [OutletController::class, 'getProductsByOutlet']);
-
+// Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -40,35 +32,56 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
+// Protected routes
 Route::middleware(['auth'])->group(function () {
-    Route::resource('outlet', OutletController::class);
-    Route::resource('feature', FeatureController::class);
-    Route::resource('operation', OperationController::class);
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('index');
+    })->name('dashboard');
+
+    // ACL routes
+    Route::prefix('acl')->group(function () {
+        Route::get('/', [ACLController::class, 'index'])->name('acl.index');
+        Route::match(['put', 'patch'], '{acl}', [ACLController::class, 'update'])->name('acl.update');
+        Route::fallback(function () {
+            abort(404);
+        });
+    });
+
+    // Permission routes - custom route first
+    Route::post('/permission/batch', [PermissionController::class, 'batch'])->name('permission.batch');
     Route::resource('permission', PermissionController::class);
-    Route::resource('role', RoleController::class);
-    Route::resource('employee', EmployeeController::class);
+
+    // POS routes
+    Route::prefix('pos')->name('pos.')->group(function () {
+        Route::get('/', [POSController::class, 'index'])->name('index');
+        Route::get('payment', [POSController::class, 'payment'])->name('payment');
+        Route::post('process-payment', [POSController::class, 'processPayment'])->name('processPayment');
+        Route::get('receipt/{id?}', [POSController::class, 'receipt'])->name('receipt');
+
+        Route::prefix('cart')->group(function () {
+            Route::get('/', [POSController::class, 'getCart'])->name('getCart');
+            Route::post('add', [POSController::class, 'addToCart'])->name('addToCart');
+            Route::post('remove', [POSController::class, 'removeFromCart'])->name('removeFromCart');
+            Route::post('clear', [POSController::class, 'clearCart'])->name('clearCart');
+        });
+    });
+
+    // Standard resource controllers
     Route::resource('baseunit', BaseUnitController::class);
-    Route::resource('unit', UnitController::class);
-    Route::resource('department', DepartmentController::class);
     Route::resource('category', CategoryController::class);
+    Route::resource('department', DepartmentController::class);
+    Route::resource('employee', EmployeeController::class);
+    Route::resource('feature', FeatureController::class);
+    Route::resource('inventory', InventoryController::class);
+    Route::resource('outlet', OutletController::class);
+    Route::resource('operation', OperationController::class);
     Route::resource('product', ProductController::class);
     Route::resource('purchase', PurchaseController::class);
+    Route::resource('role', RoleController::class);
     Route::resource('sales', SalesController::class);
-    Route::resource('inventory', InventoryController::class);
+    Route::resource('unit', UnitController::class);
 
-    Route::post('/permission/batch', [PermissionController::class, 'batch'])->name('permission.batch');
-
-    Route::resource('acl', ACLController::class);
-
-    Route::get('/pos', [POSController::class, 'index'])->name('pos.index');
-    Route::get('/pos/payment', [POSController::class, 'payment'])->name('pos.payment');
-    Route::post('/pos/process-payment', [POSController::class, 'processPayment'])->name('pos.processPayment');
-    Route::get('/pos/receipt/{id?}', [POSController::class, 'receipt'])->name('pos.receipt');
-
-    Route::post('/cart/add', [POSController::class, 'addToCart'])->name('pos.addToCart');
-    Route::post('/cart/remove', [POSController::class, 'removeFromCart'])->name('pos.removeFromCart');
-    Route::get('/cart', [POSController::class, 'getCart'])->name('pos.getCart');
-    Route::post('/cart/clear', [POSController::class, 'clearCart'])->name('pos.clearCart');
-
+    // Authentication
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

@@ -252,7 +252,7 @@
 
                 const outletId = this.value;
 
-                fetch(`/api/outlets/${outletId}/products`)
+                fetch(`/api/outlet/${outletId}/products`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
