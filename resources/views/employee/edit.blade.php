@@ -18,7 +18,7 @@
                     'employee' => $employee,
                     'outlets' => $outlets,
                     'selectedOutlets' => $selectedOutlets,
-                    'roles' => $roles,
+                    'positions' => $positions,
                     'cancelRoute' => $cancelRoute,
                 ])
             </div>

@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('features', function (Blueprint $table) {
+        Schema::create('operations', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // e.g. Product, Category
-            $table->string('slug')->unique(); // e.g. product, category
+            $table->string('name')->unique();
+            $table->string('slug')->unique();
             $table->timestamps();
             $table->softDeletes(); // For soft deletes
         });
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('features');
+        Schema::dropIfExists('operations');
     }
 };

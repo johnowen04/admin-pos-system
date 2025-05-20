@@ -28,6 +28,7 @@ class PermissionSeeder extends Seeder
                     'feature_id' => $feature->id,
                     'operation_id' => $operation->id,
                     'slug' => $feature->slug . '.' . $operation->slug,
+                    'is_super_user_only' => false,
                 ]);
             }
         }

@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('feature_id')->constrained()->onDelete('cascade');
             $table->foreignId('operation_id')->constrained()->onDelete('cascade');
-            $table->string('slug')->unique(); // e.g. product.view
+            $table->string('slug')->unique();
+            $table->boolean('is_super_user_only')->default(true);
             $table->timestamps();
-            $table->softDeletes(); // For soft deletes
+            $table->softDeletes();
 
             $table->unique(['feature_id', 'operation_id']);
         });

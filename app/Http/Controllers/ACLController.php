@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\FeatureService;
 use App\Services\OperationService;
 use App\Services\PermissionService;
-use App\Services\RoleService;
+use App\Services\PositionService;
 use Illuminate\Http\Request;
 
 class ACLController extends Controller
@@ -13,7 +13,7 @@ class ACLController extends Controller
     protected $featureService;
     protected $operationService;
     protected $permissionService;
-    protected $roleService;
+    protected $positionService;
 
     /**
      * Constructor to inject services.
@@ -22,7 +22,7 @@ class ACLController extends Controller
         FeatureService $featureService,
         OperationService $operationService,
         PermissionService $permissionService,
-        RoleService $roleService
+        PositionService $positionService
     ) {
         $this->middleware('permission:acl.view|acl.*')->only(['index']);
         $this->middleware('permission:acl.edit|acl.*')->only(['update']);
@@ -30,7 +30,7 @@ class ACLController extends Controller
         $this->featureService = $featureService;
         $this->operationService = $operationService;
         $this->permissionService = $permissionService;
-        $this->roleService = $roleService;
+        $this->positionService = $positionService;
     }
 
     /**
@@ -40,20 +40,17 @@ class ACLController extends Controller
      */
     public function index()
     {
-        // Get all active roles
-        $roles = $this->roleService->getAllRoles();
+        $positions = $this->positionService->getAllPositions();
 
-        // Get all permissions with their relationships
         $permissions = $this->permissionService->getAllPermissions();
 
-        // Build ACL matrix
-        [$aclMatrix, $featuresForTemplate] = $this->buildACLMatrix($roles, $permissions);
+        [$aclMatrix, $featuresForTemplate] = $this->buildACLMatrix($positions, $permissions);
 
         return view('acl.index', [
             'action' => route('acl.update', ['acl' => 1]),
             'permissions' => $aclMatrix,
             'features' => $featuresForTemplate,
-            'roles' => $roles->pluck('name')->toArray(),
+            'positions' => $positions->pluck('name')->toArray(),
             'method' => 'PUT'
         ]);
     }
@@ -70,17 +67,16 @@ class ACLController extends Controller
 
         try {
             // The service now handles the transaction
-            $updatedRoles = $this->roleService->updateACLMatrix(
+            $updatedPositions = $this->positionService->updateACLMatrix(
                 $permissions,
                 $this->featureService,
                 $this->operationService,
                 $this->permissionService
             );
 
-            $message = count($updatedRoles) . ' roles updated successfully.';
+            $message = count($updatedPositions) . ' positions updated successfully.';
             return redirect()->route('acl.index')->with('success', $message);
         } catch (\Exception $e) {
-            // Just handle the exception message here
             return redirect()->route('acl.index')->with('error', 'Failed to update permissions: ' . $e->getMessage());
         }
     }
@@ -88,20 +84,18 @@ class ACLController extends Controller
     /**
      * Build the ACL matrix.
      *
-     * @param \Illuminate\Database\Eloquent\Collection $roles
+     * @param \Illuminate\Database\Eloquent\Collection $positions
      * @param \Illuminate\Database\Eloquent\Collection $permissions
      * @return array
      */
-    private function buildACLMatrix($roles, $permissions)
+    private function buildACLMatrix($positions, $permissions)
     {
         $features = $this->featureService->getAllFeatures();
         $operations = $this->operationService->getAllOperations();
 
-        // Create matrix in the expected format
         $aclMatrix = [];
         $featuresForTemplate = [];
 
-        // Group permissions by feature
         $permissionsByFeature = $permissions->groupBy('feature_id');
 
         foreach ($features as $feature) {
@@ -116,53 +110,44 @@ class ACLController extends Controller
             foreach ($operations as $operation) {
                 if (!$operation->name) continue;
 
-                // Find permission for this feature-operation combination
                 $permission = $permissions->first(function ($p) use ($feature, $operation) {
                     return $p->feature_id == $feature->id && $p->operation_id == $operation->id;
                 });
 
                 if (!$permission) continue;
 
-                // Create role permissions mapping
-                $rolePermissions = [];
-                foreach ($roles as $role) {
-                    $hasPermission = $role->permissions->contains('id', $permission->id) ? '1' : '0';
-                    $rolePermissions[$role->name] = $hasPermission;
+                $positionPermissions = [];
+                foreach ($positions as $position) {
+                    $hasPermission = $position->permissions->contains('id', $permission->id) ? '1' : '0';
+                    $positionPermissions[$position->name] = $hasPermission;
 
-                    // Add to feature matrix for the blade template
                     if (!isset($aclMatrix[$featureName])) {
                         $aclMatrix[$featureName] = [];
                     }
                     if (!isset($aclMatrix[$featureName][$operation->name])) {
                         $aclMatrix[$featureName][$operation->name] = [];
                     }
-                    $aclMatrix[$featureName][$operation->name][$role->name] = $hasPermission;
+                    $aclMatrix[$featureName][$operation->name][$position->name] = $hasPermission;
                 }
 
-                // Add this operation to the feature's operations list
                 $featureOperations[] = [
                     'id' => $operation->id,
                     'name' => $operation->name,
                     'permission_id' => $permission->id,
                     'slug' => $permission->slug,
-                    'roles' => $rolePermissions
+                    'positions' => $positionPermissions
                 ];
 
-                // Track operations for template
                 $featureOperationNames[] = $operation->name;
             }
 
-            // Skip features with no operations
             if (empty($featureOperations)) continue;
 
-            // Store operations for template
             $featuresForTemplate[$featureName] = $featureOperationNames ?? [];
 
-            // Clear for next iteration
             unset($featureOperationNames);
         }
 
-        // Return both the ACL matrix and the features structure
         return [$aclMatrix, $featuresForTemplate];
     }
 }

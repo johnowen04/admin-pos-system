@@ -22,7 +22,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
+        'role_id',
     ];
 
     /**
@@ -49,8 +51,35 @@ class User extends Authenticatable
     }
 
     // Relationships
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'employee_id');
+        return $this->hasOne(Employee::class, 'user_id');
+    }
+
+    public function position()
+    {
+        return optional($this->employee)->position;
+    }
+
+    public function permissions()
+    {
+        if ($this->role->name === 'Super User') {
+            return Permission::all();
+        }
+
+        if ($this->role->name === 'Employee') {
+            if (!$this->employee || !$this->employee->position) {
+                throw new \Exception('Employee must have a position.');
+            }
+
+            return $this->employee->position->permissions;
+        }
+
+        return collect();
     }
 }

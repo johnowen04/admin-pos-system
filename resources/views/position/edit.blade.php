@@ -3,22 +3,19 @@
 
 @extends('layouts.app')
 
-@section('title', 'Add Employee')
+@section('title', 'Edit Position')
 
 @section('content')
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Add Employee</h3>
+            <h3 class="fw-bold mb-3">Edit Position</h3>
         </div>
         <div class="row">
             <div class="col-md-12">
-                @include('employee.form', [
+                @include('position.form', [
                     'action' => $action,
                     'method' => $method,
-                    'employee' => $employee,
-                    'outlets' => $outlets,
-                    'selectedOutlets' => $selectedOutlets,
-                    'positions' => $positions,
+                    'position' => $position,
                     'cancelRoute' => $cancelRoute,
                 ])
             </div>

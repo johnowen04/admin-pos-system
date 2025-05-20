@@ -14,7 +14,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [];
-    
+
     /**
      * Register services.
      */
@@ -34,11 +34,11 @@ class AuthServiceProvider extends ServiceProvider
 
         // Register a gate check handler for all permissions
         Gate::before(function ($user, $ability) {
-            if (!$user || !$user->employee) {
+            if (!$user) {
                 return false;
             }
 
-            $accessControl = new AccessControlService($user->employee);
+            $accessControl = new AccessControlService($user);
             if ($accessControl->hasPermission($ability)) {
                 return true;
             }

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -14,65 +15,71 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed employees
+        $superUserRole = Role::where('name', 'Super User')->first();
+        $employeeRole = Role::where('name', 'Employee')->first();
+
         $employees = [
             [
                 'nip' => 'EMP001',
-                'name' => 'John Doe',
+                'name' => 'Admin User',
                 'phone' => '08123456789',
-                'email' => 'superuser@example.com',
-                'roles_id' => 1, // Superuser
-                'password' => 'password123', // Plain password for seeding
-                'outlets' => [1, 2], // Assign Outlet 1 and Outlet 2
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'password' => 'password123',
+                'role_id' => $superUserRole->id,
+                'position_id' => 2,
+                'outlets' => [1, 2],
             ],
             [
                 'nip' => 'EMP002',
-                'name' => 'Jane Smith',
-                'phone' => '08198765432',
-                'email' => 'admin@example.com',
-                'roles_id' => 2, // Admin
-                'password' => 'password123', // Plain password for seeding
-                'outlets' => [1, 2], // Assign Outlet 1 and Outlet 2
+                'name' => 'Cashier One',
+                'phone' => '08122334455',
+                'email' => 'cashier1@example.com',
+                'username' => 'cashier1',
+                'password' => 'password123',
+                'role_id' => $employeeRole->id,
+                'position_id' => 3,
+                'outlets' => [1],
             ],
             [
                 'nip' => 'EMP003',
-                'name' => 'Alice Johnson',
-                'phone' => '08122334455',
-                'email' => 'cashier1@example.com',
-                'roles_id' => 3, // Cashier
-                'password' => 'password123', // Plain password for seeding
-                'outlets' => [1], // Assign only Outlet 1
-            ],
-            [
-                'nip' => 'EMP004',
-                'name' => 'Andrea Smith',
-                'phone' => '08122334455',
+                'name' => 'Cashier Two',
+                'phone' => '08122334466',
                 'email' => 'cashier2@example.com',
-                'roles_id' => 3, // Cashier
-                'password' => 'password123', // Plain password for seeding
-                'outlets' => [2], // Assign only Outlet 2
+                'username' => 'cashier2',
+                'password' => 'password123',
+                'role_id' => $employeeRole->id,
+                'position_id' => 3,
+                'outlets' => [2],
             ],
         ];
 
         foreach ($employees as $employeeData) {
-            // Extract password and outlets from the data
             $password = $employeeData['password'];
+            $roleId = $employeeData['role_id'];
             $outlets = $employeeData['outlets'];
-            unset($employeeData['password'], $employeeData['outlets']);
 
-            // Create the employee
+            $userId = User::create([
+                'name' => $employeeData['name'],
+                'email' => $employeeData['email'],
+                'username' => $employeeData['username'],
+                'password' => Hash::make($password),
+                'role_id' => $roleId,
+            ])->id;
+
+            unset(
+                $employeeData['outlets'],
+                $employeeData['password'],
+                $employeeData['role_id'],
+                $employeeData['username']
+            );
+
+            $employeeData['user_id'] = $userId;
             $employee = Employee::create($employeeData);
 
-            // Create the associated user
-            User::create([
-                'name' => $employeeData['name'], // Use the employee's name for the user
-                'email' => $employeeData['email'],
-                'password' => Hash::make($password), // Hash the password
-                'employee_id' => $employee->id, // Link the user to the employee
-            ]);
-
-            // Sync outlets
             $employee->outlets()->sync($outlets);
         }
+
+        $this->command->info('3 employees created successfully: 1 admin and 2 cashiers');
     }
 }

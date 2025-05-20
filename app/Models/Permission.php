@@ -18,9 +18,11 @@ class Permission extends Model
         'feature_id',
         'operation_id',
         'slug',
+        'is_super_user_only',
     ];
 
     protected $casts = [
+        'is_super_user_only' => 'boolean',
         'deleted_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -37,9 +39,9 @@ class Permission extends Model
         return $this->belongsTo(Operation::class, 'operation_id');
     }
 
-    public function roles()
+    public function position()
     {
-        return $this->belongsToMany(Role::class, 'permission_role')
+        return $this->belongsToMany(Position::class, 'permission_position')
             ->withTimestamps();
     }
 }

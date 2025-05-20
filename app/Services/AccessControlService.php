@@ -2,55 +2,67 @@
 
 namespace App\Services;
 
-use App\Models\Employee;
+use App\Models\User;
 
 class AccessControlService
 {
-    protected Employee $employee;
-    protected $permissions;
+    protected $user = null;
+    protected $permissions = [];
 
-    public function __construct(Employee $employee)
+    public function __construct(?User $user = null)
     {
-        $this->employee = $employee;
+        if ($user) {
+            $this->setUser($user);
+        }
+    }
+
+    public function setUser(User $user)
+    {
+        $this->user = $user;
         $this->loadPermissions();
+        return $this;
     }
 
     protected function loadPermissions()
     {
-        // Load permissions for employee roles - eager load roles & permissions
-        $this->permissions = $this->employee->role()
-            ->with('permissions')
-            ->get()
-            ->pluck('permissions')
-            ->flatten()
-            ->pluck('slug')
-            ->unique()
-            ->toArray();
+        if ($this->user) {
+            try {
+                $this->permissions = $this->user->permissions()->pluck('slug')->toArray();
+            } catch (\Exception $e) {
+                $this->permissions = [];
+            }
+        } else {
+            $this->permissions = [];
+        }
     }
 
     public function hasPermission(string $permissionName): bool
     {
-        // Direct match - existing functionality
+        // If no user or permissions, deny access
+        if (!$this->user || empty($this->permissions)) {
+            return false;
+        }
+
+        // Direct match
         if (in_array($permissionName, $this->permissions)) {
             return true;
         }
 
-        // Handle wildcard permissions (like acl.*)
-        if (strpos($permissionName, '*') !== false) {
-            $prefix = str_replace('*', '', $permissionName);
-
-            foreach ($this->permissions as $userPermission) {
-                if (strpos($userPermission, $prefix) === 0) {
+        // Check if user has a wildcard permission that covers this permission
+        foreach ($this->permissions as $userPermission) {
+            if (strpos($userPermission, '*') !== false) {
+                $pattern = '/^' . str_replace('*', '.*', $userPermission) . '$/';
+                if (preg_match($pattern, $permissionName)) {
                     return true;
                 }
             }
         }
 
-        // Handle regular permissions that might match a wildcard the user has
-        foreach ($this->permissions as $userPermission) {
-            if (strpos($userPermission, '*') !== false) {
-                $pattern = '/^' . str_replace('*', '.*', $userPermission) . '$/';
-                if (preg_match($pattern, $permissionName)) {
+        // Check if the requested permission is a wildcard that matches any user permission
+        if (strpos($permissionName, '*') !== false) {
+            $prefix = str_replace('*', '', $permissionName);
+            foreach ($this->permissions as $userPermission) {
+                if (strpos($userPermission, $prefix) === 0) {
                     return true;
                 }
             }

@@ -12,6 +12,7 @@ use App\Http\Controllers\OperationController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\POSController;
+use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
@@ -52,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Permission routes - custom route first
+    Route::post('/permission/toggle-superuser', [PermissionController::class, 'toggleSuperUserOnly'])->name('permission.toggle-superuser');
     Route::post('/permission/batch', [PermissionController::class, 'batch'])->name('permission.batch');
     Route::resource('permission', PermissionController::class);
 
@@ -81,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('operation', OperationController::class);
     Route::resource('product', ProductController::class);
     Route::resource('purchase', PurchaseController::class);
+    Route::resource('position', PositionController::class);
     Route::resource('role', RoleController::class);
     Route::resource('sales', SalesController::class);
     Route::resource('unit', UnitController::class);

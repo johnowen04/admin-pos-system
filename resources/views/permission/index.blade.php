@@ -47,6 +47,7 @@
                                         <th>ID</th>
                                         <th>Feature</th>
                                         <th>Operation</th>
+                                        <th>SU Only?</th>
                                         <th style="width: 10%">Action</th>
                                     </tr>
                                 </thead>
@@ -79,6 +80,17 @@
                                                 @else
                                                     <span class="text-danger">No operation</span>
                                                 @endif
+                                            </td>
+                                            <td>
+                                                <div class="form-check form-switch">
+                                                    <label
+                                                        class="form-check-label label-su-toggle @if ($permission->is_super_user_only) text-danger @else text-secondary @endif"
+                                                        for="permissionSUToggle">{{ $permission->is_super_user_only ? 'Yes' : 'No' }}</label>
+                                                    <input id="permissionSUToggle"
+                                                        class="form-check-input permission-su-toggle" type="checkbox"
+                                                        data-permission-id="{{ $permission->id }}"
+                                                        {{ $permission->is_super_user_only ? 'checked' : '' }}>
+                                                </div>
                                             </td>
                                             <td>
                                                 <div class="form-button-action">
@@ -173,33 +185,108 @@
     <script>
         $(document).ready(function() {
             $('[data-toggle="tooltip"]').tooltip();
-            $('#permission-table').DataTable({
+
+            // Initialize DataTable
+            const permissionTable = $('#permission-table').DataTable({
                 "pageLength": 10,
                 "order": [
                     [0, "asc"]
                 ],
                 "columnDefs": [{
-                        "orderable": false,
-                        "targets": -1
-                    } // Disable sorting on the Action column
-                ]
+                    "orderable": false,
+                    "targets": -1
+                }]
             });
 
             const toggleOperation = document.getElementById('toggleSelectOperations');
             const operationsSelect = document.getElementById('operations');
 
-
             toggleOperation.addEventListener('change', function() {
-                const isChecked = this.checked; // Check if the toggle is checked
+                const isChecked = this.checked;
                 const options = operationsSelect.options;
 
-                // Select/Deselect all options
                 for (let i = 0; i < options.length; i++) {
                     options[i].selected = isChecked;
                 }
 
-                // Trigger change event to update UI (if needed)
                 operationsSelect.dispatchEvent(new Event('change'));
+            });
+
+            // Use event delegation for the toggle switches
+            // This attaches the handler to the table body which is always present
+            $('#permission-table tbody').on('change', '.permission-su-toggle', function() {
+                const permissionId = this.dataset.permissionId;
+                const isSuperUserOnly = this.checked ? 1 : 0;
+                const toggleElement = this;
+                const row = this.closest('tr');
+
+                // Display permission details for better alerts
+                const featureCell = row.querySelector('td:nth-child(2)');
+                const operationCell = row.querySelector('td:nth-child(3)');
+                const permissionName =
+                    `${featureCell.textContent.trim()}.${operationCell.textContent.trim()}`;
+
+                // Show loading state
+                toggleElement.disabled = true;
+                row.classList.add('table-warning');
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('permission_id', permissionId);
+                formData.append('is_super_user_only', isSuperUserOnly);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                // Fetch API
+                fetch('{{ route('permission.toggle-superuser') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Server responded with an error');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Success handling
+                        alert(data.message || 'Permission updated successfully');
+                        row.classList.remove('table-warning');
+                        row.classList.add('table-success');
+                        setTimeout(() => row.classList.remove('table-success'), 2000);
+                    })
+                    .catch(error => {
+                        // Error handling
+                        let errorMsg = 'Failed to update permission';
+                        console.error('Error:', error);
+
+                        // Revert toggle state
+                        toggleElement.checked = !isSuperUserOnly;
+                        alert(errorMsg);
+
+                        // Visual feedback for error
+                        row.classList.remove('table-warning');
+                        row.classList.add('table-danger');
+                        setTimeout(() => row.classList.remove('table-danger'), 2000);
+                    })
+                    .finally(() => {
+                        // Always run this
+                        toggleElement.disabled = false;
+                        setTimeout(() => {
+                            row.classList.remove('table-warning');
+                            // Update the label text if needed
+                            const label = row.querySelector('.label-su-toggle');
+                            if (label) {
+                                label.textContent = toggleElement.checked ? 'Yes' : 'No';
+                                label.classList.toggle('text-danger', toggleElement.checked);
+                                label.classList.toggle('text-secondary', !toggleElement
+                                .checked);
+                            }
+                        }, 500);
+                    });
             });
         });
     </script>

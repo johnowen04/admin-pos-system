@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Permission;
+use App\Models\Position;
 use App\Models\Role;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PermissionRoleSeeder extends Seeder
+class PermissionPositionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -15,14 +15,14 @@ class PermissionRoleSeeder extends Seeder
     public function run(): void
     {
         // First, create super user role if it doesn't exist
-        $superUserRole = Role::firstOrCreate(
-            ['name' => 'Super User'],
+        $adminPosition = Position::firstOrCreate(
+            ['name' => 'Admin'],
         );
 
         // More efficient way to attach all permissions at once
         $permissionIds = Permission::pluck('id')->toArray();
-        $superUserRole->permissions()->sync($permissionIds);
+        $adminPosition->permissions()->sync($permissionIds);
 
-        $this->command->info('Super User role created and assigned all permissions successfully.');
+        $this->command->info('Admin position created and assigned all permissions successfully.');
     }
 }

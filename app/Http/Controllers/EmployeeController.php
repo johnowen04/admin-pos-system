@@ -5,29 +5,68 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Services\EmployeeService;
 use App\Services\OutletService;
-use App\Services\RoleService;
+use App\Services\PositionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EmployeeController extends Controller
 {
-    protected $roleService;
+    protected $positionService;
     protected $outletService;
     protected $employeeService;
 
     /**
      * Constructor to inject the EmployeeService.
      */
-    public function __construct(RoleService $roleService, OutletService $outletService, EmployeeService $employeeService)
+    public function __construct(PositionService $positionService, OutletService $outletService, EmployeeService $employeeService)
     {
         $this->middleware('permission:employee.view|employee.*')->only(['index', 'show']);
         $this->middleware('permission:employee.create|employee.*')->only(['create', 'store']);
         $this->middleware('permission:employee.edit|employee.*')->only(['edit', 'update']);
         $this->middleware('permission:employee.delete|employee.*')->only(['destroy']);
 
-        $this->roleService = $roleService;
+        $this->positionService = $positionService;
         $this->outletService = $outletService;
         $this->employeeService = $employeeService;
+    }
+
+    /**
+     * Get the current authenticated user.
+     */
+    protected function getCurrentUser()
+    {
+        return Auth::user();
+    }
+
+    /**
+     * Get the current user's position level.
+     */
+    protected function getCurrentUserLevel()
+    {
+        $user = $this->getCurrentUser();
+        $level = 0;
+
+        if (!$user) {
+            return $level;
+        }
+
+        try {
+            if (!$user->employee && ($user->role || $user->role->name === 'superuser')) {
+                $level = 100;
+            } else if ($user->employee && $user->employee->position) {
+                $position = $user->employee->position;
+                if ($position->level instanceof \App\Enums\PositionLevel) {
+                    $level = $position->level->value;
+                } else if (is_numeric($position->level)) {
+                    $level = (int)$position->level;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Error getting position level: ' . $e->getMessage());
+        }
+
+        return $level;
     }
 
     /**
@@ -35,8 +74,8 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $currentUserLevel = Auth::user()->employee->role->level->value;
-        $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualRole(roleLevel: $currentUserLevel, withTrashedRole: true); // Fetch all employees
+        $currentUserLevel = $this->getCurrentUserLevel();
+        $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualPosition(positionLevel: $currentUserLevel, withTrashedPosition: true); 
 
         return view('employee.index', compact('employees'));
     }
@@ -46,16 +85,16 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
-        $currentUserLevel = Auth::user()->employee->role->level->value;
-        $roles = $this->roleService->getAllRoleWithLowerOrEqualLevel($currentUserLevel); // Fetch all roles
+        $outlets = $this->outletService->getAllOutlets();
+        $currentUserLevel = $this->getCurrentUserLevel();
+        $positions = $this->positionService->getAllPositionWithLowerOrEqualLevel($currentUserLevel);
         return view('employee.create', [
             'action' => route('employee.store'),
             'method' => 'POST',
             'employee' => null,
             'outlets' => $outlets,
-            'selectedOutlets' => [], // No pre-selected outlets for create
-            'roles' => $roles,
+            'selectedOutlets' => [],
+            'positions' => $positions,
             'cancelRoute' => route('employee.index'),
         ]);
     }
@@ -65,22 +104,19 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'nip' => 'required|string|max:50|unique:employees,nip',
             'name' => 'required|string|max:100',
             'phone' => 'required|string|max:15',
             'email' => 'required|email|max:100|unique:users,email',
-            'roles_id' => 'required|exists:roles,id',
-            'password' => 'required|string|min:8', // Password is required for new employees
-            'outlets' => 'nullable|array', // Outlets can be null or an array
-            'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
+            'username' => 'nullable|string|max:100|unique:users,username,',
+            'password' => 'nullable|string|min:8',
+            'position_id' => 'required|exists:positions,id',
+            'outlets' => 'nullable|array',
+            'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Use the service to create the employee
         $this->employeeService->createEmployee($validatedData);
-
-        // Redirect back with a success message
         return redirect()->route('employee.index')->with('success', 'Employee created successfully.');
     }
 
@@ -97,17 +133,17 @@ class EmployeeController extends Controller
      */
     public function edit(Employee $employee)
     {
-        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
-        $selectedOutlets = $this->employeeService->getSelectedOutlets($employee); // Get selected outlets for the employee
-        $currentUserLevel = Auth::user()->employee->role->level->value;
-        $roles = $this->roleService->getAllRoleWithLowerOrEqualLevel($currentUserLevel); // Fetch all roles
+        $outlets = $this->outletService->getAllOutlets();
+        $selectedOutlets = $this->employeeService->getSelectedOutlets($employee);
+        $currentUserLevel = $this->getCurrentUserLevel();
+        $positions = $this->positionService->getAllPositionWithLowerOrEqualLevel($currentUserLevel);
         return view('employee.edit', [
             'action' => route('employee.update', $employee->id),
             'method' => 'PUT',
             'employee' => $employee,
             'outlets' => $outlets,
-            'selectedOutlets' => $selectedOutlets, // No pre-selected outlets for create
-            'roles' => $roles,
+            'selectedOutlets' => $selectedOutlets,
+            'positions' => $positions,
             'cancelRoute' => route('employee.index'),
         ]);
     }
@@ -117,22 +153,20 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, Employee $employee)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'nip' => 'required|string|max:50|unique:employees,nip,' . $employee->id,
             'name' => 'required|string|max:100',
             'phone' => 'required|string|max:15',
             'email' => 'required|email|max:100|unique:users,email,' . $employee->user->id,
-            'roles_id' => 'required|exists:roles,id',
-            'password' => 'nullable|string|min:8', // Password is optional for updates
-            'outlets' => 'nullable|array', // Outlets can be null or an array
-            'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
+            'username' => 'nullable|string|max:100|unique:users,username,' . $employee->user->id,
+            'password' => 'nullable|string|min:8',
+            'position_id' => 'required|exists:positions,id',
+            'outlets' => 'nullable|array',
+            'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Use the service to update the employee
         $this->employeeService->updateEmployee($employee, $validatedData);
 
-        // Redirect back with a success message
         return redirect()->route('employee.index')->with('success', 'Employee updated successfully.');
     }
 
@@ -141,10 +175,7 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
-        // Use the service to delete the employee
         $this->employeeService->deleteEmployee($employee);
-
-        // Redirect back with a success message
         return redirect()->route('employee.index')->with('success', 'Employee deleted successfully.');
     }
 }

@@ -78,6 +78,7 @@ class PermissionController extends Controller
                 'max:20',
                 Rule::unique('permissions')->withoutTrashed() // Only check non-trashed records
             ],
+            'is_super_user_only' => 'boolean', // Ensure this is a boolean value
         ]);
 
         // Use the service to create the permission
@@ -127,6 +128,7 @@ class PermissionController extends Controller
                 'max:20',
                 Rule::unique('permissions')->ignore($permission->id)->withoutTrashed()
             ],
+            'is_super_user_only' => 'boolean', // Ensure this is a boolean value
         ]);
 
         // Use the service to update the permission
@@ -188,6 +190,7 @@ class PermissionController extends Controller
                         'feature_id' => $featureId,
                         'operation_id' => $operationId,
                         'slug' => $featureName . '.' . $operationName, // Example slug generation
+                        'is_super_user_only' => false, // Example slug generation
                     ];
                 }
             }
@@ -200,5 +203,37 @@ class PermissionController extends Controller
 
         // Redirect back to the permission index with a success message
         return redirect()->route('permission.index')->with('success', 'Permission created successfully.');
+    }
+
+    public function toggleSuperUserOnly(Request $request)
+    {
+        try {
+            $request->validate([
+                'permission_id' => 'required|exists:permissions,id',
+                'is_super_user_only' => 'required|boolean',
+            ]);
+
+            $permission = Permission::findOrFail($request->permission_id);
+            $oldValue = $permission->is_super_user_only;
+            $permission->is_super_user_only = $request->is_super_user_only;
+            $permission->save();
+
+            $newStatus = $request->is_super_user_only ? 'enabled' : 'disabled';
+
+            return response()->json([
+                'success' => true,
+                'message' => "Super User Only {$newStatus} for '{$permission->slug}'",
+                'permission' => [
+                    'id' => $permission->id,
+                    'slug' => $permission->slug,
+                    'is_super_user_only' => $permission->is_super_user_only
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update permission: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

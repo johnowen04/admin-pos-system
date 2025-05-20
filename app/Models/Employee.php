@@ -19,7 +19,8 @@ class Employee extends Model
         'name',
         'phone',
         'email',
-        'roles_id',
+        'position_id',
+        'user_id',
     ];
 
     protected $casts = [
@@ -29,14 +30,14 @@ class Employee extends Model
     ];
 
     // Relationships
-    public function role()
+    public function position()
     {
-        return $this->belongsTo(Role::class, 'roles_id');
+        return $this->belongsTo(Position::class);
     }
 
     public function user()
     {
-        return $this->hasOne(User::class, 'employee_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function outlets()

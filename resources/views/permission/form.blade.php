@@ -85,6 +85,22 @@
 
                 </div>
 
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_super_user_only"
+                                name="is_super_user_only" value="1"
+                                {{ old('is_super_user_only', $permission->is_super_user_only ?? false) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="is_super_user_only">
+                                Super User Only
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                If checked, only users with Super User role will be able to access this permission
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 

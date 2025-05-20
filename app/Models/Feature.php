@@ -16,6 +16,7 @@ class Feature extends Model
 
     protected $fillable = [
         'name',
+        'slug',
     ];
 
     protected $casts = [
@@ -27,13 +28,8 @@ class Feature extends Model
     // Relationships
     public function operations()
     {
-        return $this->hasManyThrough(
-            Operation::class,
-            Permission::class,
-            'feature_id', // Foreign key on the feature_operation table
-            'id', // Foreign key on the operations table
-            'id', // Local key on the features table
-            'operation_id' // Local key on the feature_operation table
-        );
+        return $this->belongsToMany(Operation::class, 'permissions', 'feature_id', 'operation_id')
+            ->withPivot('id', 'slug', 'is_super_user_only')
+            ->withTimestamps();
     }
 }

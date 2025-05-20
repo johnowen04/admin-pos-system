@@ -49,10 +49,10 @@
                                     <h4 class="mt-4">No Permission Data Available</h4>
                                     <p class="text-muted">
                                         There are no permissions configured in the system.
-                                        <br>Please create some features, operations, and roles first.
+                                        <br>Please create some features, operations, and positions first.
                                     </p>
                                     <div class="mt-3">
-                                        <a href="{{ route('role.index') }}" class="btn btn-primary me-2">
+                                        <a href="{{ route('position.index') }}" class="btn btn-primary me-2">
                                             <i class="fa fa-user-shield me-1"></i> Manage Roles
                                         </a>
                                         <a href="{{ route('feature.index') }}" class="btn btn-outline-primary">
@@ -74,9 +74,9 @@
                                                                     Operation
                                                                     <!-- Removed the feature-all checkbox from here -->
                                                                 </th>
-                                                                @foreach ($roles as $role)
+                                                                @foreach ($positions as $position)
                                                                     <th class="text-center">
-                                                                        {{ $role }}
+                                                                        {{ $position }}
                                                                     </th>
                                                                 @endforeach
                                                             </tr>
@@ -91,16 +91,16 @@
                                                                             data-feature="{{ $feature }}"
                                                                             data-operation="{{ $operation }}" disabled>
                                                                     </td>
-                                                                    @foreach ($roles as $role)
+                                                                    @foreach ($positions as $position)
                                                                         <td class="text-center">
                                                                             <input type="checkbox"
                                                                                 class="form-check-input permission-checkbox"
                                                                                 data-feature="{{ $feature }}"
                                                                                 data-operation="{{ $operation }}"
-                                                                                data-role="{{ $role }}"
-                                                                                name="permissions[{{ $role }}][{{ $feature }}][{{ $operation }}]"
+                                                                                data-position="{{ $position }}"
+                                                                                name="permissions[{{ $position }}][{{ $feature }}][{{ $operation }}]"
                                                                                 value="1" disabled
-                                                                                {{ isset($permissions[$feature][$operation][$role]) && $permissions[$feature][$operation][$role] == '1' ? 'checked' : '' }}>
+                                                                                {{ isset($permissions[$feature][$operation][$position]) && $permissions[$feature][$operation][$position] == '1' ? 'checked' : '' }}>
                                                                         </td>
                                                                     @endforeach
                                                                 </tr>

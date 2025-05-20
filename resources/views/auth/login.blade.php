@@ -26,15 +26,21 @@
                             <div class="row-md-4">
 
                                 <div class="form-group">
-                                    <label for="loginEmail">Email</label>
-                                    <input name="email" class="form-control" type="email" id="loginEmail"
-                                        placeholder="Email" required>
+                                    <label for="login">Email or Username</label>
+                                    <input name="login" class="form-control" type="text" id="login"
+                                        value="{{ old('login') }}" placeholder="Email" required autofocus>
+                                    @error('login')
+                                        <span>{{ $message }}</span>
+                                    @enderror
                                 </div>
 
                                 <div class="form-group">
                                     <label for="loginPassword">Password</label>
                                     <input name="password" class="form-control" type="password" id="loginPassword"
                                         placeholder="Password" required>
+                                    @error('password')
+                                        <span>{{ $message }}</span>
+                                    @enderror
                                 </div>
                             </div>
                         </div>

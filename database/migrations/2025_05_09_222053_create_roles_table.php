@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('name', 20);
             $table->integer('level')->default(0);
             $table->timestamps();
-            $table->softDeletes(); // Adds a nullable 'deleted_at' column
+            $table->softDeletes();
         });
     }
 

@@ -71,8 +71,13 @@
                             'link' => 'role',
                             'icon' => 'fas fa-user-shield',
                             'route' => 'role.index',
-                            'active' => request()->is('feature*') || request()->is('operation*') || request()->is('permission*') || request()->is('role*') || request()->is('acl*'),
+                            'active' => request()->is('role*') || request()->is('feature*') || request()->is('operation*') || request()->is('permission*') || request()->is('position*') || request()->is('acl*'),
                             'children' => [
+                                [
+                                    'name' => 'Role',
+                                    'route' => 'role.index',
+                                    'active' => request()->is('role'),
+                                ],
                                 [
                                     'name' => 'Feature',
                                     'route' => 'feature.index',
@@ -89,9 +94,9 @@
                                     'active' => request()->is('permission'),
                                 ],
                                 [
-                                    'name' => 'Role',
-                                    'route' => 'role.index',
-                                    'active' => request()->is('role'),
+                                    'name' => 'Position',
+                                    'route' => 'position.index',
+                                    'active' => request()->is('position'),
                                 ],
                                 [
                                     'name' => 'ACL',
@@ -101,18 +106,18 @@
                             ],
                         ],
                         [
-                            'name' => 'Outlet',
-                            'link' => 'outlet',
-                            'icon' => 'fas fa-building',
-                            'route' => 'outlet.index',
-                            'active' => request()->is('outlet*'),
-                        ],
-                        [
                             'name' => 'Employee',
                             'link' => 'employee',
                             'icon' => 'fas fa-user',
                             'route' => 'employee.index',
                             'active' => request()->is('employee*'),
+                        ],
+                        [
+                            'name' => 'Outlet',
+                            'link' => 'outlet',
+                            'icon' => 'fas fa-building',
+                            'route' => 'outlet.index',
+                            'active' => request()->is('outlet*'),
                         ],
                         [
                             'name' => 'Unit',
@@ -183,7 +188,7 @@
                             'link' => 'pos',
                             'route' => 'pos.index',
                             'icon' => 'fas fa-shopping-cart',
-                            'active' => request()->is('pos*'),
+                            'active' => request()->is('pointofsale*'), // redo later
                         ],
                     ]; ?>
 

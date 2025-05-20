@@ -3,52 +3,56 @@
 namespace App\Services;
 
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class EmployeeService
 {
+    public $roleService;
+
+    public function __construct(RoleService $roleService)
+    {
+        $this->roleService = $roleService;
+    }
+
     /**
      * Get all employees.
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getAllEmployees($withTrashed = false, $withTrashedRole = false)
+    public function getAllEmployees($withTrashed = false, $withTrashedPosition = false)
     {
         $query = $withTrashed ? Employee::withTrashed() : Employee::query();
 
-        // Load relationships, considering their trashed status
         $query->with([
-            'role' => function ($query) use ($withTrashedRole) {
-                if ($withTrashedRole) {
+            'position' => function ($query) use ($withTrashedPosition) {
+                if ($withTrashedPosition) {
                     $query->withTrashed();
                 }
             },
         ]);
 
-        // Only return permissions with existing relationships
-        if (!$withTrashedRole) {
-            $query->whereHas('role');
+        if (!$withTrashedPosition) {
+            $query->whereHas('position');
         }
 
         return $query->get();
     }
 
-    public function getAllEmployeesWithLowerOrEqualRole($roleLevel, $withTrashed = false, $withTrashedRole = false)
+    public function getAllEmployeesWithLowerOrEqualPosition($positionLevel, $withTrashed = false, $withTrashedPosition = false)
     {
         $query = $withTrashed ? Employee::withTrashed() : Employee::query();
 
-        // Load relationships, considering their trashed status
         $query->with([
-            'role' => function ($query) use ($withTrashedRole) {
-                if ($withTrashedRole) {
+            'position' => function ($query) use ($withTrashedPosition) {
+                if ($withTrashedPosition) {
                     $query->withTrashed();
                 }
             },
         ]);
 
-        // Only return employees with existing relationships
-        $query->whereHas('role', function ($query) use ($roleLevel) {
-            $query->where('level', '<=', $roleLevel);
+        $query->whereHas('position', function ($query) use ($positionLevel) {
+            $query->where('level', '<=', $positionLevel);
         });
 
         return $query->get();
@@ -62,21 +66,26 @@ class EmployeeService
      */
     public function createEmployee(array $data)
     {
-        // Create the employee
+        $user = null;
+        $roleId = $this->roleService->getRoleByName('employee')->id;
+
+        if (isset($data['password'])) {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'username' => $data['username'],
+                'password' => Hash::make($data['password']),
+                'role_id' => $roleId,
+            ]);
+        }
+
         $employee = Employee::create([
             'nip' => $data['nip'],
             'name' => $data['name'],
             'phone' => $data['phone'],
             'email' => $data['email'],
-            'roles_id' => $data['roles_id'],
-        ]);
-
-        // Create the associated user
-        $employee->user()->create([
-            'name' => $data['name'], // Use the employee's name for the user
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']), // Hash the password
-            'employee_id' => $employee->id, // Link the user to the employee
+            'position_id' => $data['position_id'],
+            'user_id' => $user ? $user->id : null,
         ]);
 
         // Sync outlets
@@ -96,21 +105,22 @@ class EmployeeService
      */
     public function updateEmployee(Employee $employee, array $data)
     {
-        // Update the employee
         $employee->update([
             'nip' => $data['nip'],
             'name' => $data['name'],
             'phone' => $data['phone'],
             'email' => $data['email'],
-            'roles_id' => $data['roles_id'],
+            'position_id' => $data['position_id'],
         ]);
 
-        // Update the associated user
-        $employee->user()->update([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => isset($data['password']) ? Hash::make($data['password']) : $employee->user->password,
-        ]);
+        if ($employee->user) {
+            $employee->user()->update([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'username' => $data['username'],
+                'password' => isset($data['password']) ? Hash::make($data['password']) : $employee->user->password,
+            ]);
+        }
 
         // Sync outlets
         if (!empty($data['outlets'])) {
@@ -128,13 +138,10 @@ class EmployeeService
      */
     public function deleteEmployee(Employee $employee)
     {
-        // Delete the associated user
         $employee->user()->delete();
-
-        // Delete the employee
         return $employee->delete();
     }
-    
+
     /**
      * Get the selected outlets for an employee.
      *
