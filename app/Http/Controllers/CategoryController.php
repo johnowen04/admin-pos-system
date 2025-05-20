@@ -19,10 +19,10 @@ class CategoryController extends Controller
      */
     public function __construct(DepartmentService $departmentService, OutletService $outletService, CategoryService $categoryService)
     {
-        $this->middleware('permission:category.view')->only(['index', 'show']);
-        $this->middleware('permission:category.create')->only(['create', 'store']);
-        $this->middleware('permission:category.edit')->only(['edit', 'update']);
-        $this->middleware('permission:category.delete')->only(['destroy']);
+        $this->middleware('permission:category.view|category.*')->only(['index', 'show']);
+        $this->middleware('permission:category.create|category.*')->only(['create', 'store']);
+        $this->middleware('permission:category.edit|category.*')->only(['edit', 'update']);
+        $this->middleware('permission:category.delete|category.*')->only(['destroy']);
 
         $this->departmentService = $departmentService;
         $this->outletService = $outletService;

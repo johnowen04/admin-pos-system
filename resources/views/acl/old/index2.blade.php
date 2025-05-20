@@ -72,11 +72,16 @@
                                                             <tr>
                                                                 <th class="text-center">
                                                                     Operation
-                                                                    <!-- Removed the feature-all checkbox from here -->
+                                                                    <input type="checkbox"
+                                                                        class="form-check-input ms-2 feature-all"
+                                                                        data-feature="{{ $feature }}" disabled>
                                                                 </th>
                                                                 @foreach ($roles as $role)
                                                                     <th class="text-center">
                                                                         {{ $role }}
+                                                                        <input type="checkbox"
+                                                                            class="form-check-input ms-2 role-all"
+                                                                            data-role="{{ $role }}" disabled>
                                                                     </th>
                                                                 @endforeach
                                                             </tr>

@@ -15,10 +15,10 @@ class BaseUnitController extends Controller
      */
     public function __construct(BaseUnitService $baseUnitService)
     {
-        $this->middleware('permission:bu.view')->only(['index', 'show']);
-        $this->middleware('permission:bu.create')->only(['create', 'store']);
-        $this->middleware('permission:bu.edit')->only(['edit', 'update']);
-        $this->middleware('permission:bu.delete')->only(['destroy']);
+        $this->middleware('permission:bu.view|bu.*')->only(['index', 'show']);
+        $this->middleware('permission:bu.create|bu.*')->only(['create', 'store']);
+        $this->middleware('permission:bu.edit|bu.*')->only(['edit', 'update']);
+        $this->middleware('permission:bu.delete|bu.*')->only(['destroy']);
 
         $this->baseUnitService = $baseUnitService;
     }

@@ -30,6 +30,32 @@ class AccessControlService
 
     public function hasPermission(string $permissionName): bool
     {
-        return in_array($permissionName, $this->permissions);
+        // Direct match - existing functionality
+        if (in_array($permissionName, $this->permissions)) {
+            return true;
+        }
+
+        // Handle wildcard permissions (like acl.*)
+        if (strpos($permissionName, '*') !== false) {
+            $prefix = str_replace('*', '', $permissionName);
+
+            foreach ($this->permissions as $userPermission) {
+                if (strpos($userPermission, $prefix) === 0) {
+                    return true;
+                }
+            }
+        }
+
+        // Handle regular permissions that might match a wildcard the user has
+        foreach ($this->permissions as $userPermission) {
+            if (strpos($userPermission, '*') !== false) {
+                $pattern = '/^' . str_replace('*', '.*', $userPermission) . '$/';
+                if (preg_match($pattern, $permissionName)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

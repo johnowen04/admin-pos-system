@@ -24,8 +24,8 @@ class ACLController extends Controller
         PermissionService $permissionService,
         RoleService $roleService
     ) {
-        $this->middleware('permission:acl.view')->only(['index']);
-        $this->middleware('permission:acl.edit')->only(['update']);
+        $this->middleware('permission:acl.view|acl.*')->only(['index']);
+        $this->middleware('permission:acl.edit|acl.*')->only(['update']);
 
         $this->featureService = $featureService;
         $this->operationService = $operationService;

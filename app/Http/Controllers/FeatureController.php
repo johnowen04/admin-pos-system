@@ -16,10 +16,10 @@ class FeatureController extends Controller
      */
     public function __construct(FeatureService $featureService)
     {
-        $this->middleware('permission:feature.view')->only(['index', 'show']);
-        $this->middleware('permission:feature.create')->only(['create', 'store']);
-        $this->middleware('permission:feature.edit')->only(['edit', 'update']);
-        $this->middleware('permission:feature.delete')->only(['destroy']);
+        $this->middleware('permission:feature.view|feature.*')->only(['index', 'show']);
+        $this->middleware('permission:feature.create|feature.*')->only(['create', 'store']);
+        $this->middleware('permission:feature.edit|feature.*')->only(['edit', 'update']);
+        $this->middleware('permission:feature.delete|feature.*')->only(['destroy']);
 
         $this->featureService = $featureService;
     }

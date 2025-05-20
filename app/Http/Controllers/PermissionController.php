@@ -20,10 +20,10 @@ class PermissionController extends Controller
      */
     public function __construct(FeatureService $featureService, OperationService $operationService, PermissionService $permissionService)
     {
-        $this->middleware('permission:permission.view')->only(['index', 'show']);
-        $this->middleware('permission:permission.create')->only(['create', 'store']);
-        $this->middleware('permission:permission.edit')->only(['edit', 'update']);
-        $this->middleware('permission:permission.delete')->only(['destroy']);
+        $this->middleware('permission:permission.view|permission.*')->only(['index', 'show']);
+        $this->middleware('permission:permission.create|permission.*')->only(['create', 'store']);
+        $this->middleware('permission:permission.edit|permission.*')->only(['edit', 'update']);
+        $this->middleware('permission:permission.delete|permission.*')->only(['destroy']);
 
         $this->featureService = $featureService;
         $this->operationService = $operationService;

@@ -20,10 +20,10 @@ class EmployeeController extends Controller
      */
     public function __construct(RoleService $roleService, OutletService $outletService, EmployeeService $employeeService)
     {
-        $this->middleware('permission:employee.view')->only(['index', 'show']);
-        $this->middleware('permission:employee.create')->only(['create', 'store']);
-        $this->middleware('permission:employee.edit')->only(['edit', 'update']);
-        $this->middleware('permission:employee.delete')->only(['destroy']);
+        $this->middleware('permission:employee.view|employee.*')->only(['index', 'show']);
+        $this->middleware('permission:employee.create|employee.*')->only(['create', 'store']);
+        $this->middleware('permission:employee.edit|employee.*')->only(['edit', 'update']);
+        $this->middleware('permission:employee.delete|employee.*')->only(['destroy']);
 
         $this->roleService = $roleService;
         $this->outletService = $outletService;

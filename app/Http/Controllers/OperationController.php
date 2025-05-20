@@ -16,10 +16,10 @@ class OperationController extends Controller
      */
     public function __construct(OperationService $operationService)
     {
-        $this->middleware('permission:operation.view')->only(['index', 'show']);
-        $this->middleware('permission:operation.create')->only(['create', 'store']);
-        $this->middleware('permission:operation.edit')->only(['edit', 'update']);
-        $this->middleware('permission:operation.delete')->only(['destroy']);
+        $this->middleware('permission:operation.view|operation.*')->only(['index', 'show']);
+        $this->middleware('permission:operation.create|operation.*')->only(['create', 'store']);
+        $this->middleware('permission:operation.edit|operation.*')->only(['edit', 'update']);
+        $this->middleware('permission:operation.delete|operation.*')->only(['destroy']);
 
         $this->operationService = $operationService;
     }

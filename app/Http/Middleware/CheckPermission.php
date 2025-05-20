@@ -23,6 +23,17 @@ class CheckPermission
         }
 
         $accessControl = new AccessControlService($employee);
+        
+        // Check if there are multiple permissions (using | separator)
+        if (strpos($permission, '|') !== false) {
+            $permissions = explode('|', $permission);
+            foreach ($permissions as $singlePermission) {
+                if ($accessControl->hasPermission($singlePermission)) {
+                    return $next($request);
+                }
+            }
+            abort(403, 'Forbidden');
+        }
 
         if (!$accessControl->hasPermission($permission)) {
             abort(403, 'Forbidden');

@@ -15,10 +15,10 @@ class OutletController extends Controller
      */
     public function __construct(OutletService $outletService)
     {
-        $this->middleware('permission:outlet.view')->only(['index', 'show']);
-        $this->middleware('permission:outlet.create')->only(['create', 'store']);
-        $this->middleware('permission:outlet.edit')->only(['edit', 'update']);
-        $this->middleware('permission:outlet.delete')->only(['destroy']);
+        $this->middleware('permission:outlet.view|outlet.*')->only(['index', 'show']);
+        $this->middleware('permission:outlet.create|outlet.*')->only(['create', 'store']);
+        $this->middleware('permission:outlet.edit|outlet.*')->only(['edit', 'update']);
+        $this->middleware('permission:outlet.delete|outlet.*')->only(['destroy']);
 
         $this->outletService = $outletService;
     }

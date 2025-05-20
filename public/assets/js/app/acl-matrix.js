@@ -141,7 +141,7 @@ function toggleEditMode() {
     // Only enable checkboxes in open details elements for better performance
     openDetailsElements.forEach((detail) => {
         const checkboxes = detail.querySelectorAll(
-            ".permission-checkbox, .feature-all, .role-all, .operation-all"
+            ".permission-checkbox, .operation-all"
         );
         checkboxes.forEach((cb) => (cb.disabled = false));
     });
@@ -162,7 +162,7 @@ function cancelEdit() {
     const cancelEditBtn = document.getElementById("cancelEditBtn");
     const saveChangesBtn = document.getElementById("saveChangesBtn");
     const checkboxes = document.querySelectorAll(
-        ".permission-checkbox, .feature-all, .role-all, .operation-all"
+        ".permission-checkbox, .operation-all"
     );
 
     // Show loading indicator
@@ -190,56 +190,7 @@ function initializeCheckboxes() {
     // Get all checkboxes with improved selector performance
     const container = document.getElementById("permissions-container");
 
-    // Feature-all checkboxes - only affect the current feature
-    container.querySelectorAll(".feature-all").forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-            // Show loading indicator
-            showLoading();
-
-            const feature = this.dataset.feature;
-            // Only affect the current details element
-            const currentDetails = this.closest("details");
-
-            if (currentDetails && currentDetails.open) {
-                const checkboxes = currentDetails.querySelectorAll(
-                    `.permission-checkbox[data-feature="${feature}"]:not([disabled])`
-                );
-                const isChecked = this.checked;
-
-                // Use requestAnimationFrame for better performance during DOM updates
-                requestAnimationFrame(() => {
-                    checkboxes.forEach((cb) => (cb.checked = isChecked));
-                    updateAllCheckboxStates();
-                });
-            }
-        });
-    });
-
-    // Role-all checkboxes - only affect the current feature
-    container.querySelectorAll(".role-all").forEach((checkbox) => {
-        checkbox.addEventListener("change", function () {
-            // Show loading indicator
-            showLoading();
-
-            const role = this.dataset.role;
-            // Only affect checkboxes within the current open feature
-            const currentDetails = this.closest("details");
-
-            if (currentDetails && currentDetails.open) {
-                const checkboxes = currentDetails.querySelectorAll(
-                    `.permission-checkbox[data-role="${role}"]:not([disabled])`
-                );
-                const isChecked = this.checked;
-
-                requestAnimationFrame(() => {
-                    checkboxes.forEach((cb) => (cb.checked = isChecked));
-                    updateAllCheckboxStates();
-                });
-            }
-        });
-    });
-
-    // Operation-all checkboxes - only affect the current feature
+    // Operation-all checkboxes - check all permissions across all roles for this feature-operation
     container.querySelectorAll(".operation-all").forEach((checkbox) => {
         checkbox.addEventListener("change", function () {
             // Show loading indicator
@@ -250,15 +201,36 @@ function initializeCheckboxes() {
             const currentDetails = this.closest("details");
 
             if (currentDetails && currentDetails.open) {
-                const checkboxes = currentDetails.querySelectorAll(
-                    `.permission-checkbox[data-feature="${feature}"][data-operation="${operation}"]:not([disabled])`
-                );
                 const isChecked = this.checked;
-
-                requestAnimationFrame(() => {
-                    checkboxes.forEach((cb) => (cb.checked = isChecked));
-                    updateAllCheckboxStates();
-                });
+                
+                // Special handling for * operation
+                if (operation === "*") {
+                    // Only select the permission-checkbox with operation=* for all roles
+                    const wildcardCheckboxes = currentDetails.querySelectorAll(
+                        `.permission-checkbox[data-feature="${feature}"][data-operation="*"]:not([disabled])`
+                    );
+                    
+                    requestAnimationFrame(() => {
+                        wildcardCheckboxes.forEach((cb) => {
+                            cb.checked = isChecked;
+                            
+                            // Always trigger their change event to cascade effect - both for checking AND unchecking
+                            const event = new Event('change', { bubbles: true });
+                            cb.dispatchEvent(event);
+                        });
+                        updateAllCheckboxStates();
+                    });
+                } else {
+                    // Regular behavior for non-* operations - check all roles for this operation
+                    const checkboxes = currentDetails.querySelectorAll(
+                        `.permission-checkbox[data-feature="${feature}"][data-operation="${operation}"]:not([disabled])`
+                    );
+                    
+                    requestAnimationFrame(() => {
+                        checkboxes.forEach((cb) => (cb.checked = isChecked));
+                        updateAllCheckboxStates();
+                    });
+                }
             }
         });
     });
@@ -271,6 +243,27 @@ function initializeCheckboxes() {
         // Show loading indicator
         showLoading();
 
+        // Special handling for wildcard operation (*)
+        if (target.dataset.operation === "*") {
+            const feature = target.dataset.feature;
+            const role = target.dataset.role;
+            const isChecked = target.checked;
+            const currentDetails = target.closest("details");
+
+            if (currentDetails && currentDetails.open) {
+                // Find all checkboxes for the same role and feature
+                const relatedCheckboxes = currentDetails.querySelectorAll(
+                    `.permission-checkbox[data-feature="${feature}"][data-role="${role}"]:not([data-operation="*"]):not([disabled])`
+                );
+
+                // Update all related checkboxes
+                requestAnimationFrame(() => {
+                    relatedCheckboxes.forEach((cb) => (cb.checked = isChecked));
+                    updateAllCheckboxStates();
+                });
+            }
+        }
+
         // Avoid excessive DOM operations by batching updates
         requestAnimationFrame(() => {
             // Update header checkbox states
@@ -278,7 +271,7 @@ function initializeCheckboxes() {
         });
     });
 
-    // Initialize header checkboxes state for open details
+    // Initialize operation checkboxes state for open details
     updateAllCheckboxStates();
 }
 
@@ -297,59 +290,24 @@ const debounce = (func, wait) => {
     };
 };
 
+// Also update the updateAllCheckboxStates function to handle special case for * operation
 const updateAllCheckboxStates = debounce(() => {
     // Only update checkboxes in open details elements
     const openDetailsElements = document.querySelectorAll("details[open]");
 
     // Batch DOM reads and writes for better performance
-    const featureUpdates = [];
-    const roleUpdates = [];
     const operationUpdates = [];
+    const wildCardUpdates = [];
 
     // Process each open details element separately
     openDetailsElements.forEach((detail) => {
-        // Feature checkboxes - calculate state based on current detail only
-        detail
-            .querySelectorAll(".feature-all:not([disabled])")
-            .forEach((checkbox) => {
-                const feature = checkbox.dataset.feature;
-                // Only consider checkboxes within this details element
-                const checkboxes = detail.querySelectorAll(
-                    `.permission-checkbox[data-feature="${feature}"]:not([disabled])`
-                );
-
-                if (checkboxes.length > 0) {
-                    const allChecked = Array.from(checkboxes).every(
-                        (cb) => cb.checked
-                    );
-                    featureUpdates.push({ checkbox, checked: allChecked });
-                }
-            });
-
-        // Role checkboxes - only consider current detail
-        detail
-            .querySelectorAll(".role-all:not([disabled])")
-            .forEach((checkbox) => {
-                const role = checkbox.dataset.role;
-                // Only consider checkboxes within this details element
-                const checkboxes = detail.querySelectorAll(
-                    `.permission-checkbox[data-role="${role}"]:not([disabled])`
-                );
-
-                if (checkboxes.length > 0) {
-                    const allChecked = Array.from(checkboxes).every(
-                        (cb) => cb.checked
-                    );
-                    roleUpdates.push({ checkbox, checked: allChecked });
-                }
-            });
-
         // Operation checkboxes - only consider current detail
         detail
             .querySelectorAll(".operation-all:not([disabled])")
             .forEach((checkbox) => {
                 const feature = checkbox.dataset.feature;
                 const operation = checkbox.dataset.operation;
+
                 // Only consider checkboxes within this details element
                 const checkboxes = detail.querySelectorAll(
                     `.permission-checkbox[data-feature="${feature}"][data-operation="${operation}"]:not([disabled])`
@@ -362,17 +320,40 @@ const updateAllCheckboxStates = debounce(() => {
                     operationUpdates.push({ checkbox, checked: allChecked });
                 }
             });
+
+        // Check wildcard (*) operation checkboxes status based on if all operations are checked
+        detail
+            .querySelectorAll(
+                '.permission-checkbox[data-operation="*"]:not([disabled])'
+            )
+            .forEach((wildcardCheckbox) => {
+                const feature = wildcardCheckbox.dataset.feature;
+                const role = wildcardCheckbox.dataset.role;
+
+                // Get all non-wildcard checkboxes for this feature and role
+                const normalCheckboxes = detail.querySelectorAll(
+                    `.permission-checkbox[data-feature="${feature}"][data-role="${role}"]:not([data-operation="*"]):not([disabled])`
+                );
+
+                if (normalCheckboxes.length > 0) {
+                    // A wildcard should be checked only if ALL operations are checked
+                    const allOperationsChecked = Array.from(
+                        normalCheckboxes
+                    ).every((cb) => cb.checked);
+                    wildCardUpdates.push({
+                        checkbox: wildcardCheckbox,
+                        checked: allOperationsChecked,
+                    });
+                }
+            });
     });
 
     // Apply all updates at once (DOM writes)
     requestAnimationFrame(() => {
-        featureUpdates.forEach(
-            (update) => (update.checkbox.checked = update.checked)
-        );
-        roleUpdates.forEach(
-            (update) => (update.checkbox.checked = update.checked)
-        );
         operationUpdates.forEach(
+            (update) => (update.checkbox.checked = update.checked)
+        );
+        wildCardUpdates.forEach(
             (update) => (update.checkbox.checked = update.checked)
         );
     });
@@ -396,7 +377,7 @@ document.addEventListener("click", function (e) {
 
                 setTimeout(() => {
                     const checkboxes = details.querySelectorAll(
-                        ".permission-checkbox, .feature-all, .role-all, .operation-all"
+                        ".permission-checkbox, .operation-all"
                     );
                     checkboxes.forEach((cb) => (cb.disabled = false));
 

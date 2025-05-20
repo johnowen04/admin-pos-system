@@ -17,10 +17,10 @@ class UnitController extends Controller
      */
     public function __construct(BaseUnitService $baseUnitService, UnitService $unitService)
     {
-        $this->middleware('permission:unit.view')->only(['index', 'show']);
-        $this->middleware('permission:unit.create')->only(['create', 'store']);
-        $this->middleware('permission:unit.edit')->only(['edit', 'update']);
-        $this->middleware('permission:unit.delete')->only(['destroy']);
+        $this->middleware('permission:unit.view|unit.*')->only(['index', 'show']);
+        $this->middleware('permission:unit.create|unit.*')->only(['create', 'store']);
+        $this->middleware('permission:unit.edit|unit.*')->only(['edit', 'update']);
+        $this->middleware('permission:unit.delete|unit.*')->only(['destroy']);
 
         $this->unitService = $unitService;
         $this->baseUnitService = $baseUnitService;
