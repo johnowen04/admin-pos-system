@@ -14,7 +14,17 @@ class DepartmentSeeder extends Seeder
     {
         DB::table('departments')->insert([
             [
-                'name' => 'Food and Beverages',
+                'name' => 'Ice Cream',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'LSC',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Toko',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

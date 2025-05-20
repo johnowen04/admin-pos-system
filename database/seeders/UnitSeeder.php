@@ -14,6 +14,10 @@ class UnitSeeder extends Seeder
     {
         DB::table('units')->insert([
             ['name' => 'piece', 'conversion_unit' => 1, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'pack', 'conversion_unit' => 1, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'paket', 'conversion_unit' => 1, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'jam', 'conversion_unit' => 1, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'lapangan', 'conversion_unit' => 1, 'to_base_unit_id' => 1, 'created_at' => now(), 'updated_at' => now()],
         ]);
     }
 }

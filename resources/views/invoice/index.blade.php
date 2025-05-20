@@ -20,11 +20,51 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">{{ $invoiceType }} List</h4>
-                            <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location=@if ($invoiceType === 'Purchase') '{{ route('purchase.create') }}' @else '{{ route('sales.create') }}' @endif">
-                                <i class="fa fa-plus"></i>
-                                Add {{ $invoiceType }}
-                            </button>
+                            <div class="d-flex gap-1 ms-auto">
+                                @if ($invoiceType === 'Sales')
+                                    <!-- Button to trigger modal -->
+                                    <button type="button" class="btn btn-secondary btn-round" data-bs-toggle="modal"
+                                        data-bs-target="#exportModal">
+                                        Export Product Sales Report
+                                    </button>
+
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <!-- Modal Header -->
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold" id="exportModalLabel">Export Product Sales Report</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                    
+                                                <!-- Modal Body -->
+                                                <div class="modal-body">
+                                                    <!-- Export Form -->
+                                                    <form action="{{ route('export.product-sales') }}" method="GET">
+                                                        <div class="mb-3">
+                                                            <label for="start_date" class="form-label fw-semibold">Start Date</label>
+                                                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <label for="end_date" class="form-label fw-semibold">End Date</label>
+                                                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                                        </div>
+                                                        <div class="d-flex justify-content-between">
+                                                            <button type="submit" class="btn btn-primary">Export</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                                <button class="btn btn-primary btn-round ms-auto"
+                                    onclick="window.location=@if ($invoiceType === 'Purchase') '{{ route('purchase.create') }}' @else '{{ route('sales.create') }}' @endif">
+                                    <i class="fa fa-plus"></i>
+                                    Add {{ $invoiceType }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">

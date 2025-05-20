@@ -24,6 +24,9 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+Route::get('/export-product-sales', [SalesController::class, 'exportProductSalesReport'])->name('export.product-sales');
+Route::post('/import-products', [ProductController::class, 'importProducts'])->name('import.products');
+
 // Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

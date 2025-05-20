@@ -30,7 +30,7 @@
                                     <tr>
                                         <th>SKU</th>
                                         <th>Name</th>
-                                        <th hidden>Category</th>
+                                        <th>Category</th>
                                         <th>Initial</th>
                                         <th>Purchased</th>
                                         <th>Sold</th>
@@ -44,7 +44,7 @@
                                         <tr>
                                             <td>{{ $product->sku }}</td>
                                             <td>{{ $product->name }}</td>
-                                            <td hidden>{{ $product->category->name }}</td>
+                                            <td>{{ $product->category->name }}</td>
                                             <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? [])) }}
                                             </td>
                                             <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['purchase'] ?? [])) }}
@@ -173,11 +173,11 @@
                 ]
             });
 
-            // Handle row click to show modal
-            $('.view-details-btn').on('click', function() {
-                const product = $(this).data('product');
-                console.log(product);
-                const stockDetails = $(this).data('stock');
+            // Use event delegation to handle dynamically loaded buttons
+            $(document).on('click', '.view-details-btn', function() {
+                const button = $(this);
+                const product = JSON.parse(button.attr('data-product'));
+                const stockDetails = JSON.parse(button.attr('data-stock'));
 
                 // Populate product details
                 $('#modalProductSKU').text(product.sku);
@@ -207,29 +207,27 @@
                         getPurchasedOrSoldQuantity(soldArray);
                 }
 
-
                 stockTableBody.empty(); // Clear previous rows
-                if (stockDetails.length === 0) {
+                if (Object.keys(stockDetails).length === 0) {
                     // Show "No inventories available" message if stockDetails is empty
                     stockTableBody.append(`
-                        <tr>
-                            <td colspan="3" class="text-center">No inventories available</td>
-                        </tr>
-                    `);
+                <tr>
+                    <td colspan="6" class="text-center">No inventories available</td>
+                </tr>
+            `);
                 } else {
                     // Populate stock rows
                     Object.entries(stockDetails).forEach(([outletId, outletData]) => {
                         stockTableBody.append(`
-                            <tr>
-                                <td>${outletData.name}</td>
-                                <td>${getInitialQuantity(outletData.initial)}</td>
-                                <td>${getPurchasedOrSoldQuantity(outletData.purchase || [])}</td>
-                                <td>${getPurchasedOrSoldQuantity(outletData.sale || [])}</td>
-                                <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [])}</td>
-                                <td>${product.unit.name}</td>
-                            </tr>
-                        `);
-
+                    <tr>
+                        <td>${outletData.name}</td>
+                        <td>${getInitialQuantity(outletData.initial)}</td>
+                        <td>${getPurchasedOrSoldQuantity(outletData.purchase || [])}</td>
+                        <td>${getPurchasedOrSoldQuantity(outletData.sale || [])}</td>
+                        <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [])}</td>
+                        <td>${product.unit.name}</td>
+                    </tr>
+                `);
                     });
                 }
 

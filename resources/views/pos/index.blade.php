@@ -63,7 +63,7 @@
 
                         <div class="card-body">
                             <!-- Product Grid -->
-                            <div id="productGrid" class="row g-4" style="max-height: 350px; overflow-y: auto;">
+                            <div id="productGrid" class="row g-4" style="max-height: 80vh; overflow-y: auto;">
                                 @foreach ($products as $product)
                                     <div class="col-6 col-md-4 col-lg-3 product-item" data-id="{{ $product['id'] }}"
                                         data-name="{{ $product['name'] }}" data-sku="{{ $product['sku'] }}"

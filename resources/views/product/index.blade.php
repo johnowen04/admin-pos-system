@@ -16,11 +16,53 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Product List</h4>
-                            <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('product.create') }}'">
-                                <i class="fa fa-plus"></i>
-                                Add Product
-                            </button>
+                            <div class="d-flex gap-1 ms-auto">
+                                <button type="button" class="btn btn-secondary btn-round" data-bs-toggle="modal"
+                                    data-bs-target="#exportModal">
+                                    <i class="fa fa-plus"></i>
+                                    Import Product
+                                </button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <!-- Modal Header -->
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fw-bold" id="exportModalLabel">Import Product From
+                                                    Excel</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+
+                                            <!-- Modal Body -->
+                                            <div class="modal-body">
+                                                <!-- Import Form -->
+                                                <form action="{{ route('import.products') }}" method="POST"
+                                                    enctype="multipart/form-data">
+                                                    @csrf
+                                                    <div class="mb-3">
+                                                        <label for="file" class="form-label fw-semibold">Select
+                                                            File</label>
+                                                        <input type="file" class="form-control" id="file"
+                                                            name="file" required>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end">
+                                                        <button type="submit" class="btn btn-primary">Import</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary btn-round ms-auto"
+                                    onclick="window.location='{{ route('product.create') }}'">
+                                    <i class="fa fa-plus"></i>
+                                    Add Product
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -92,9 +134,13 @@
         $(document).ready(function() {
             $('#product-table').DataTable({
                 "pageLength": 10,
-                "order": [[0, "asc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": -1 } // Disable sorting on the Action column
+                "order": [
+                    [0, "asc"]
+                ],
+                "columnDefs": [{
+                        "orderable": false,
+                        "targets": -1
+                    } // Disable sorting on the Action column
                 ]
             });
         });
