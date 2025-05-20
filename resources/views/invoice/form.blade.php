@@ -70,7 +70,7 @@
 
                 </div>
                 <div id="productTableContainer">
-                    <x-product-table :invoice="$invoice" :products="$products">
+                    <x-product-table :invoiceType="$invoiceType" :invoice="$invoice" :products="$products">
                         <button type="button" class="btn btn-primary" id="addProductRow" data-bs-toggle="modal"
                             data-bs-target="#productModal">Add Product</button>
                         <button type="button" class="btn btn-danger" id="removeAllProducts">Remove All

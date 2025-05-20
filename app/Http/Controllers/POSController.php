@@ -173,9 +173,30 @@ class POSController extends Controller
         $employee_id = Auth::user()->employee->id;
         $outletId = Auth::user()->employee->outlets[0]->id;
 
+        // Get all product IDs from cart
+        $productIds = array_keys($cart);
+
+        // Fetch all products in a single query
+        $dbProducts = $this->productService->getProductsByIds($productIds);
+
+        // Create a lookup array for easier access
+        $productLookup = [];
+        foreach ($dbProducts as $product) {
+            $productLookup[$product->id] = $product;
+        }
+
+        // Process cart items with the fetched products
         $products = [];
         foreach ($cart as $id => $product) {
             $product['id'] = $id;
+
+            if (isset($productLookup[$id]) && isset($productLookup[$id]->base_price)) {
+                $product['base_price'] = $productLookup[$id]->base_price;
+            } else {
+                Log::warning("Product ID {$id} in cart not found in database or missing base price");
+                $product['base_price'] = 0;
+            }
+
             $products[] = $product;
         }
 

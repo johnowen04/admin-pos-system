@@ -30,6 +30,39 @@ class ProductService
     }
 
     /**
+     * Get a product by ID.
+     *
+     * @param int $id
+     * @return \App\Models\Product|null
+     */
+    public function getProductById(int $id)
+    {
+        return Product::find($id);
+    }
+
+    /**
+     * Get products by IDs.
+     *
+     * @param array $ids
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getProductsByIds(array $ids)
+    {
+        return Product::whereIn('id', $ids)->get();
+    }
+
+    /**
+     * Get a product by SKU.
+     *
+     * @param string $sku
+     * @return \App\Models\Product|null
+     */
+    public function getProductBySku(string $sku)
+    {
+        return Product::find($sku); // Use SKU as the primary key
+    }
+
+    /**
      * Get all products with their stocks and outlet names.
      *
      * @return \Illuminate\Database\Eloquent\Collection
@@ -82,7 +115,7 @@ class ProductService
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'base_price' => $data['base_price'] ?? 0,
-            'buy_price' => $data['buy_price'],
+            'buy_price' => $data['buy_price'] ?? 0,
             'sell_price' => $data['sell_price'],
             'min_qty' => $data['min_qty'],
             'is_shown' => $data['is_shown'],
@@ -122,7 +155,6 @@ class ProductService
         $product->update([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'base_price' => $data['base_price'] ?? 0,
             'buy_price' => $data['buy_price'],
             'sell_price' => $data['sell_price'],
             'min_qty' => $data['min_qty'],
@@ -209,16 +241,5 @@ class ProductService
     public function getSelectedOutlets(Product $product)
     {
         return $product->outlets->pluck('id')->toArray();
-    }
-
-    /**
-     * Get a product by SKU.
-     *
-     * @param string $sku
-     * @return \App\Models\Product|null
-     */
-    public function getProductBySku(string $sku)
-    {
-        return Product::find($sku); // Use SKU as the primary key
     }
 }

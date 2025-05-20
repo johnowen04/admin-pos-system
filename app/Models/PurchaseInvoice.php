@@ -42,7 +42,7 @@ class PurchaseInvoice extends Model
     public function products()
     {
         return $this->belongsToMany(Product::class, 'purchase_invoice_product', 'purchase_invoice_id', 'products_id')
-            ->withPivot('quantity', 'unit_price', 'total_price')
+            ->withPivot('quantity', 'base_price', 'unit_price', 'total_price')
             ->withTimestamps();
     }
 }

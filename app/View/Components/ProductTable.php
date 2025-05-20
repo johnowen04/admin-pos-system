@@ -10,14 +10,16 @@ class ProductTable extends Component
 {
     public $products;
     public $invoice;
+    public $invoiceType;
     
     /**
      * Create a new component instance.
      */
-    public function __construct($products = [], $invoice)
+    public function __construct($products = [], $invoice, $invoiceType)
     {
         $this->products = $products;
         $this->invoice = $invoice;
+        $this->invoiceType = $invoiceType;
     }
 
     /**

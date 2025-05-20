@@ -78,6 +78,7 @@ class PurchaseController extends Controller
             'products' => 'required|array',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|numeric|min:1',
+            'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
             'employee_id' => 'required|numeric',
         ]);
@@ -129,6 +130,7 @@ class PurchaseController extends Controller
             'products' => 'required|array',
             'products.*.id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|numeric|min:1',
+            'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
             'employee_id' => 'required|numeric',
         ]);

@@ -119,7 +119,7 @@
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="basic-addon3">Rp</span>
 
-                            <input type="number" class="form-control" id="productBuyPrice" placeholder="0"
+                            <input readonly type="number" class="form-control" id="productBuyPrice" placeholder="0"
                                 name="buy_price" value="{{ old('buy_price', $product->buy_price ?? '') }}" tabindex="10"/>
                         </div>
                     </div>
@@ -135,12 +135,10 @@
 
                     <div class="form-group">
                         <label for="productMinOrder">Minimum Order</label>
-                        <div class="input-group mb-3">
+                        <div class="input-group">
                             <input type="number" class="form-control" id="productMinOrder"
                                 placeholder="Ex: 1, 2, 3" name="min_qty"
                                 value="{{ old('min_qty', $product->min_qty ?? '') }}" tabindex="9"/>
-
-                            <span class="input-group-text" id="minimumOrderUnit"></span>
                         </div>
                     </div>
 
@@ -182,8 +180,6 @@
 
                 // Update the conversion input field
                 conversionInput.value = conversionValue || '';
-
-                minimumOrderUnit.textContent = unitName || '';
             });
 
             // Trigger the change event on page load to set the initial values

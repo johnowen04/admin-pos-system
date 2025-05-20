@@ -8,6 +8,15 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseInvoiceService
 {
+    protected $productService;
+    protected $inventoryService;
+
+    public function __construct(ProductService $productService, InventoryService $inventoryService)
+    {
+        $this->productService = $productService;
+        $this->inventoryService = $inventoryService;
+    }
+
     /**
      * Get all purchase invoices.
      *
@@ -16,6 +25,21 @@ class PurchaseInvoiceService
     public function getAllPurchaseInvoices()
     {
         return PurchaseInvoice::with(['outlet', 'employee', 'products'])->get();
+    }
+
+    public function getPreviousPurchasesForProduct(int $productId)
+    {
+        $product = $this->productService->getProductById($productId);
+
+        return $product->purchaseInvoices()
+            ->withPivot(['quantity', 'unit_price'])
+            ->get()
+            ->map(function ($invoice) {
+                return (object) [
+                    'quantity' => $invoice->pivot->quantity,
+                    'unit_price' => $invoice->pivot->unit_price
+                ];
+            });
     }
 
     /**
@@ -42,9 +66,17 @@ class PurchaseInvoiceService
                 foreach ($data['products'] as $product) {
                     $products[$product['id']] = [
                         'quantity' => $product['quantity'],
+                        'base_price' => $product['base_price'],
                         'unit_price' => $product['unit_price'],
                         'total_price' => $product['quantity'] * $product['unit_price'],
                     ];
+
+                    // Update product prices using historical data approach
+                    $this->updateProductPrices(
+                        $product['id'],
+                        $product['unit_price'],
+                        $product['quantity']
+                    );
                 }
                 $purchaseInvoice->products()->attach($products);
             }
@@ -88,6 +120,7 @@ class PurchaseInvoiceService
                 foreach ($data['products'] as $product) {
                     $products[$product['id']] = [
                         'quantity' => $product['quantity'],
+                        'base_price' => $product['base_price'],
                         'unit_price' => $product['unit_price'],
                         'total_price' => $product['quantity'] * $product['unit_price'],
                     ];
@@ -129,5 +162,43 @@ class PurchaseInvoiceService
     public function generatePurchaseInvoiceNumber()
     {
         return InvoiceNumberGenerator::generate('PO', PurchaseInvoice::class);
+    }
+
+    /**
+     * Update product buy_price using weighted average cost method based on historical purchases
+     * 
+     * @param int $productId
+     * @param float $unitPrice
+     * @param int $newQuantity
+     * @return void
+     */
+    private function updateProductPrices($productId, $unitPrice, $newQuantity)
+    {
+        $product = $this->productService->getProductById($productId);
+        if (!$product) return;
+
+        // Get all previous purchases of this product
+        $previousPurchases = $this->getPreviousPurchasesForProduct($productId);
+
+        // Calculate weighted average buy price
+        $totalQuantity = 0;
+        $totalAmount = 0;
+
+        foreach ($previousPurchases as $purchase) {
+            $totalQuantity += $purchase->quantity;
+            $totalAmount += $purchase->quantity * $purchase->unit_price;
+        }
+
+        // Add current purchase
+        $totalQuantity += $newQuantity;
+        $totalAmount += $newQuantity * $unitPrice;
+
+        // Calculate weighted average
+        if ($totalQuantity > 0) {
+            $weightedAverage = $totalAmount / $totalQuantity;
+            $product->buy_price = $weightedAverage;
+            $product->base_price = $weightedAverage * 1; // Add markup if needed
+            $product->save();
+        }
     }
 }

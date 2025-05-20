@@ -16,6 +16,7 @@ class CreatePurchaseInvoiceProductTable extends Migration
             $table->unsignedBigInteger('purchase_invoice_id'); // Foreign key to purchase_invoices
             $table->unsignedBigInteger('products_id'); // Foreign key to products
             $table->integer('quantity'); // Quantity of the product
+            $table->decimal('base_price', 15, 2); // Unit price of the product
             $table->decimal('unit_price', 15, 2); // Unit price of the product
             $table->decimal('total_price', 15, 2); // Total price (quantity * unit_price)
             $table->timestamps(); // Created and updated timestamps

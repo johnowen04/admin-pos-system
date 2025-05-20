@@ -46,6 +46,7 @@ class SalesInvoiceService
                 foreach ($data['products'] as $product) {
                     $products[$product['id']] = [
                         'quantity' => $product['quantity'],
+                        'base_price' => $product['base_price'],
                         'unit_price' => $product['unit_price'],
                         'total_price' => $product['quantity'] * $product['unit_price'],
                     ];
@@ -89,6 +90,7 @@ class SalesInvoiceService
             foreach ($data['products'] as $product) {
                 $products[$product['id']] = [
                     'quantity' => $product['quantity'],
+                    'base_price' => $product['base_price'],
                     'unit_price' => $product['unit_price'],
                     'total_price' => $product['quantity'] * $product['unit_price'],
                 ];

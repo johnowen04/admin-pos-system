@@ -10,9 +10,14 @@
             <thead>
                 <tr>
                     <th style="width: 14%;">Actions</th>
-                    <th style="width: 32%;">Product</th>
+                    <th style="width: 24%;">Product</th>
+                    <th style="width: 15%;">Base Price</th>
                     <th style="width: 10%;">Quantity</th>
-                    <th style="width: 22%;">Unit Price</th>
+                    @if ($invoiceType === 'Purchase')
+                        <th style="width: 15%;">Buy Price</th>
+                    @else
+                        <th style="width: 15%;">Sell Price</th>
+                    @endif
                     <th style="width: 22%;">Total Price</th>
                 </tr>
             </thead>
@@ -27,6 +32,11 @@
                                 <input type="hidden" name="products[{{ $loop->index }}][id]"
                                     value="{{ $product->id }}">
                                 {{ $product->name }}
+                            </td>
+                            <td>
+                                <input readonly type="number" name="products[{{ $loop->index }}][base_price]"
+                                    class="form-control product-base-price" value="{{ $product->pivot->base_price }}"
+                                    min="0" step="0.01">
                             </td>
                             <td>
                                 <input type="number" name="products[{{ $loop->index }}][quantity]"
@@ -56,6 +66,7 @@
             </tbody>
             <tfoot>
                 <tr>
+                    <td></td>
                     <td colspan="2" style="text-align: end; font-weight: bold;">GRAND TOTAL</td>
                     <td id="totalQuantity">0</td>
                     <td></td>
@@ -98,8 +109,9 @@
                                     <td>{{ $product['quantity'] }}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary add-single-product"
-                                            data-id="{{ $product['id'] }}" data-sku="{{ $product['sku'] }}"
-                                            data-name="{{ $product['name'] }}">
+                                            data-id="{{ $product['id'] }}"
+                                            data-base-price="{{ $product['base_price'] }}"
+                                            data-sku="{{ $product['sku'] }}" data-name="{{ $product['name'] }}">
                                             Add
                                         </button>
                                     </td>
@@ -203,7 +215,7 @@
             }
 
             // Add a new product row to the table
-            function addProductRow(id, name) {
+            function addProductRow(id, name, basePrice) {
                 if (isProductInTable(id)) {
                     alert(`The product "${name}" is already added to the table.`);
                     return;
@@ -214,6 +226,7 @@
                 <tr>
                     <td><button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button></td>
                     <td>${name} <input type="hidden" name="products[${rowCount}][id]" value="${id}"></td>
+                    <td><input type="number" readonly class="form-control product-base-price" name="products[${rowCount}][base_price]" value="${basePrice}" min="0" step="0.01" required></td>
                     <td><input type="number" class="form-control product-quantity" name="products[${rowCount}][quantity]" value="1" min="1" required></td>
                     <td><input type="number" class="form-control product-unit-price" name="products[${rowCount}][unit_price]" value="0" min="0" step="0.01" required></td>
                     <td>
@@ -283,7 +296,7 @@
                                     <td>${product.quantity}</td>
                                     <td>
                                         <button type="button" class="btn btn-primary add-single-product"
-                                            data-id="${product.id}" data-sku="${product.sku}"
+                                            data-id="${product.id}" data-base-price="${product.base_price}" data-sku="${product.sku}"
                                             data-name="${product.name}">
                                             Add
                                         </button>
@@ -336,7 +349,8 @@
                 if (event.target.classList.contains('add-single-product')) {
                     const id = event.target.getAttribute('data-id');
                     const name = event.target.getAttribute('data-name');
-                    addProductRow(id, name);
+                    const basePrice = event.target.getAttribute('data-base-price');
+                    addProductRow(id, name, basePrice);
 
                     // Optional: close modal after adding a single product
                     // const modalInstance = bootstrap.Modal.getInstance(productModal);

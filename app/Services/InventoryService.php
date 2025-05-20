@@ -31,6 +31,7 @@ class InventoryService
                     'id' => $item->product_id,
                     'sku' => $item->product->sku ?? 'XXXXXX', // Get SKU or fallback
                     'name' => $item->product->name ?? 'Unknown Product', // Get product name or fallback
+                    'base_price' => $item->product->base_price ?? 0, // Get product sell price or fallback
                     'sell_price' => $item->product->sell_price ?? 0, // Get product sell price or fallback
                     'categories_id' => $item->product->categories_id ?? 0, // Get product category ID or fallback
                     'quantity' => $item->quantity,
