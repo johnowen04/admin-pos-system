@@ -42,6 +42,13 @@ class POSController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $accessibleOutlets = $user->employee->outlets;
+
+        // Check if employee has any outlets assigned
+        if ($accessibleOutlets->isEmpty()) {
+            return view('pos.index')->with('error', 'You do not have any outlets assigned. Please contact an administrator.');
+        }
+
         $accessibleOutletIds = $user->employee->outlets->pluck('id')->toArray();
         $products = $this->outletService->getProductsWithStocksFromOutlet($accessibleOutletIds[0]);
         $categories = $this->categoryService->getAllCategories();

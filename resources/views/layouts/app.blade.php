@@ -202,7 +202,8 @@
                         <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
                             <div class="container-fluid">
 
-                                @if (Route::is('pos.*'))
+                                @if (Route::is('pos.*') && Auth::user()->employee->outlets->isNotEmpty())
+                                    <!-- Additional Feature: Add dropdown outlets for user that has more than 1 outlet assigned -->
                                     <!-- Active Outlet Section -->
                                     <span class="profile-outlet">
                                         <span class="fw-bold">Active Outlet:
