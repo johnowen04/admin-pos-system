@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\AccessControlService;
 use App\Services\InventoryService;
 use App\Services\OutletService;
+use App\Services\StockMovementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(InventoryService::class);
         $this->app->singleton(OutletService::class, function ($app) {
             return new OutletService($app->make(InventoryService::class));
+        });
+
+        $this->app->singleton(StockMovementService::class, function($app) {
+            return new StockMovementService($app->make(InventoryService::class));
         });
     }
 

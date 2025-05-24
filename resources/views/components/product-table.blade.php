@@ -26,7 +26,7 @@
                     @foreach ($invoice->products as $product)
                         <tr>
                             <td>
-                                <button type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button>
+                                <button @if ($method === 'PUT') disabled @endif type="button" class="btn btn-danger btn-sm remove-product-row">Remove</button>
                             </td>
                             <td>
                                 <input type="hidden" name="products[{{ $loop->index }}][id]"
@@ -39,12 +39,12 @@
                                     min="0" step="0.01">
                             </td>
                             <td>
-                                <input type="number" name="products[{{ $loop->index }}][quantity]"
+                                <input @if ($method === 'PUT') disabled @endif type="number" name="products[{{ $loop->index }}][quantity]"
                                     class="form-control product-quantity" value="{{ $product->pivot->quantity }}"
                                     min="1">
                             </td>
                             <td>
-                                <input type="number" name="products[{{ $loop->index }}][unit_price]"
+                                <input @if ($method === 'PUT') disabled @endif type="number" name="products[{{ $loop->index }}][unit_price]"
                                     class="form-control product-unit-price" value="{{ $product->pivot->unit_price }}"
                                     min="0" step="0.01">
                             </td>

@@ -4,22 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Exports\SalesReportExport;
 use App\Models\SalesInvoice;
+use App\Services\AccessControlService;
+use App\Services\InventoryService;
 use App\Services\SalesInvoiceService;
 use App\Services\OutletService;
 use App\Services\ProductService;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SalesController extends Controller
 {
-    protected $salesInvoiceService;
+    protected $inventoryService;
     protected $outletService;
     protected $productService;
+    protected $salesInvoiceService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the services.
      */
     public function __construct(
+        InventoryService $inventoryService,
         SalesInvoiceService $salesInvoiceService,
         OutletService $outletService,
         ProductService $productService
@@ -29,9 +35,12 @@ class SalesController extends Controller
         $this->middleware('permission:sales.edit|sales.*')->only(['edit', 'update']);
         $this->middleware('permission:sales.delete|sales.*')->only(['destroy']);
 
-        $this->salesInvoiceService = $salesInvoiceService;
+        $this->inventoryService = $inventoryService;
         $this->outletService = $outletService;
         $this->productService = $productService;
+        $this->salesInvoiceService = $salesInvoiceService;
+
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -39,7 +48,12 @@ class SalesController extends Controller
      */
     public function index()
     {
-        $salesInvoices = $this->salesInvoiceService->getAllSalesInvoices();
+        $selectedOutletId = session('selected_outlet_id');
+        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
+            $salesInvoices = $this->salesInvoiceService->getAllSalesInvoices();
+        } else {
+            $salesInvoices = $this->salesInvoiceService->getSalesInvoicesByOutletId($selectedOutletId);
+        }
         return view('invoice.index', [
             'invoiceType' => 'Sales',
             'invoices' => $salesInvoices,
@@ -51,8 +65,15 @@ class SalesController extends Controller
      */
     public function create()
     {
+        $selectedOutletId = session('selected_outlet_id');
         $outlets = $this->outletService->getAllOutlets();
-        $products = $this->outletService->getProductsWithStocksFromOutlet($outlets[0]->id ?? null);
+
+        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
+            $products = $this->inventoryService->getStocksAllOutlet();
+        } else {
+            $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
+        }
+
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
         return view('invoice.create', [
             'action' => route('sales.store'),
@@ -61,6 +82,7 @@ class SalesController extends Controller
             'invoice' => null,
             'outlets' => $outlets,
             'products' => $products,
+            'selectedOutletId' => $selectedOutletId,
             'nextInvoiceNumber' => $nextInvoiceNumber,
             'cancelRoute' => route('sales.index'),
         ]);
@@ -82,9 +104,10 @@ class SalesController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'nullable|numeric',
-            'created_by' => 'required|numeric',
         ]);
+
+        $validatedData['created_by'] = $this->accessControlService->getUser()->id;
+        $validatedData['employee_id'] = $this->accessControlService->getUser()->employee ? $this->accessControlService->getUser()->employee->id : null; // Assuming the employee is the current user
 
         // Use the service to create the sales invoice
         $this->salesInvoiceService->createSalesInvoice($validatedData);
@@ -109,7 +132,7 @@ class SalesController extends Controller
         $outlets = $this->outletService->getAllOutlets();
         $products = $this->outletService->getProductsWithStocksFromOutlet($outlets[0]->id ?? null);
         return view('invoice.edit', [
-            'action' => route('sales.update', $sale->id),
+            'action' => route('sales.void', $sale->id),
             'method' => 'PUT',
             'invoiceType' => 'Sales',
             'invoice' => $sale,
@@ -135,7 +158,6 @@ class SalesController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'required|numeric',
         ]);
 
         // Use the service to update the sales invoice
@@ -143,6 +165,25 @@ class SalesController extends Controller
 
         // Redirect back with a success message
         return redirect()->route('sales.index')->with('success', 'Sales invoice updated successfully.');
+    }
+
+    public function void(Request $request, SalesInvoice $sale)
+    {
+        // Validate optional reason input from form
+        $validatedData = $request->validate([
+            'void_reason' => 'nullable|string|max:255',
+        ]);
+        
+        $voidedBy = $this->accessControlService->getUser()->id;
+        try {
+            $sale->void($validatedData['void_reason'] ?? 'No reason provided', $voidedBy, app(StockMovementService::class));
+
+            return redirect()->route('sales.index')
+                ->with('success', 'Invoice #' . $sale->invoice_number . ' has been voided successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to void invoice: ' . $e->getMessage()]);
+        }
     }
 
     /**

@@ -75,6 +75,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/select-outlet', [OutletController::class, 'select'])->name('outlets.select');
     Route::resource('outlet', OutletController::class);
 
+    Route::put('/purchase/{purchase}/void', [PurchaseController::class, 'void'])->name('purchase.void');
+    Route::resource('purchase', PurchaseController::class);
+
+    Route::put('/sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
+    Route::resource('sales', SalesController::class);
+
     // Standard resource controllers
     Route::resource('bu', BaseUnitController::class);
     Route::resource('category', CategoryController::class);
@@ -84,10 +90,8 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('inventory', InventoryController::class);
     Route::resource('operation', OperationController::class);
     Route::resource('product', ProductController::class);
-    Route::resource('purchase', PurchaseController::class);
     Route::resource('position', PositionController::class);
     Route::resource('role', RoleController::class);
-    Route::resource('sales', SalesController::class);
     Route::resource('unit', UnitController::class);
 
     // Authentication

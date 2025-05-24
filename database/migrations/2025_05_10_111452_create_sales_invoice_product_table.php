@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sales_invoice_product', function (Blueprint $table) {
             $table->id(); // Primary key
             $table->unsignedBigInteger('sales_invoice_id'); // Foreign key to sales_invoices
-            $table->unsignedBigInteger('products_id'); // Foreign key to products
+            $table->unsignedBigInteger('product_id'); // Foreign key to products
             $table->integer('quantity'); // Quantity of the product
             $table->decimal('base_price', 15, 2); // Unit price of the product
             $table->decimal('unit_price', 15, 2); // Unit price of the product
@@ -23,7 +23,7 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('sales_invoice_id')->references('id')->on('sales_invoices')->onDelete('cascade');
-            $table->foreign('products_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

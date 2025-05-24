@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\StockMovement;
 use App\Services\InventoryService;
 use App\Enums\StockMovementType;
+use App\Contracts\ReversibleInvoice;
 use Illuminate\Support\Facades\DB;
 
 class StockMovementService
@@ -85,6 +86,14 @@ class StockMovementService
             $this->inventoryService->incrementStock($outletId, $productId, $quantity);
         } elseif ($quantity < 0) {
             $this->inventoryService->decrementStock($outletId, $productId, abs($quantity));
+        }
+    }
+
+    public function reverseInvoice(ReversibleInvoice $invoice, int $employeeId, string $reason): void
+    {
+        foreach ($invoice->products as $product) {
+            $reversedQty = $invoice->reversedQuantityFor($product->pivot);
+            $this->recordAdjustment($invoice->outlet_id, $product->pivot->product_id, $employeeId, $reversedQty, 'Void invoice #' . $invoice->invoice_number . ': ' . $reason);
         }
     }
 }

@@ -52,7 +52,7 @@
                 @yield('content')
             </div>
         @else
-            <div class="wrapper {{ Route::is('pos.*') ? 'sidebar_minimize' : '' }}">
+            <div class="wrapper {{ Route::is('pos.*') ? 'sidebar_minimize sidebar_minimize_hover' : '' }}">
                 <!-- Sidebar -->
                 <x-sidebar />
                 

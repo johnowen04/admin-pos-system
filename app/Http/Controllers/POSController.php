@@ -61,14 +61,14 @@ class POSController extends Controller
             return view('pos.index')->with('error', 'You do not have any outlets assigned. Please contact an administrator.');
         }
 
-        if ($selectedOutletId== 'all') {
+        if ($selectedOutletId == 'all') {
             $products = $this->inventoryService->getStocksAllOutlet();
         } elseif ($selectedOutletId && $accessibleOutlets->contains('id', $selectedOutletId)) {
             $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
         } else {
             $selectedOutletId = $accessibleOutlets[0]->id;
             session(['selected_outlet_id' => $selectedOutletId]);
-            
+
             $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
         }
 
@@ -266,6 +266,7 @@ class POSController extends Controller
             $employee = $this->accessControlService->getUser()->employee ?? null;
             $creator = $this->accessControlService->getUser();
             $outletId = session('selected_outlet_id');
+            $outlet = $this->outletService->getOutletById($outletId);
 
             if ($previousRoute === 'pos.payment') {
                 $receiptData = $this->getReceiptDataFromSession();
@@ -291,18 +292,19 @@ class POSController extends Controller
                     ->with('error', 'Invalid receipt access. Please complete a transaction first.');
             }
 
-            return view('pos.receipt', compact(
-                'cart',
-                'grandTotal',
-                'date',
-                'employee',
-                'creator',
-                'outlet',
-                'invoiceNumber',
-                'previousRoute',
-                'amountPaid',
-                'paymentMethod'
-            ));
+            return view('pos.receipt', [
+                'cart' => $cart,
+                'grandTotal' => $grandTotal,
+                'date' => $date,
+                'employee' => $employee,
+                'creator' => $creator,
+                'outlet' => $outlet,
+                'invoiceNumber' => $invoiceNumber,
+                'previousRoute' => $previousRoute,
+                'creator' => $creator,
+                'amountPaid' => $amountPaid,
+                'isVoided' => $isVoided ?? false,
+            ]);
         } catch (\Exception $e) {
             Log::error('Error generating receipt: ' . $e->getMessage());
             return redirect()->route('pos.index')
@@ -386,7 +388,8 @@ class POSController extends Controller
                 'creator' => $sales->creator,
                 'outlet' => $sales->outlet,
                 'amountPaid' => $sales->amount_paid ?? $sales->grand_total,
-                'paymentMethod' => $sales->payment_method ?? 'Cash'
+                'paymentMethod' => $sales->payment_method ?? 'Cash',
+                'isVoided' => $sales->is_voided ?? false,
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching sales invoice: ' . $e->getMessage());

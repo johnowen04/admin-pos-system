@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Contracts\ReversibleInvoice;
+use App\Traits\Voidable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class SalesInvoice extends Model
+class SalesInvoice extends Model implements ReversibleInvoice
 {
-    use SoftDeletes;
+    use SoftDeletes, Voidable;
 
     protected $table = 'sales_invoices';
     protected $primaryKey = 'id';
@@ -21,6 +23,10 @@ class SalesInvoice extends Model
         'outlet_id',
         'employee_id',
         'created_by',
+        'is_voided',
+        'void_reason',
+        'voided_by',
+        'voided_at',
     ];
 
     protected $casts = [
@@ -28,6 +34,11 @@ class SalesInvoice extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function reversedQuantityFor($item): int
+    {
+        return +$item->quantity;
+    }
 
     // Relationships
     public function outlet()
@@ -47,7 +58,7 @@ class SalesInvoice extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'sales_invoice_product', 'sales_invoice_id', 'products_id')
+        return $this->belongsToMany(Product::class, 'sales_invoice_product', 'sales_invoice_id', 'product_id')
             ->withPivot('quantity', 'base_price', 'unit_price', 'total_price')
             ->withTimestamps();
     }

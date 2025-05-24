@@ -10,7 +10,11 @@
                     <div class="card-header bg-white">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="card-title mb-0">Payment Receipt</h4>
-                            <span class="badge bg-success">Completed</span>
+                            @if (route($previousRoute) !== route('pos.index'))
+                                <span class="badge @if ($isVoided) bg-danger @else bg-success @endif">{{ $isVoided ? "Void" : "Completed" }}</span>
+                            @else
+                                <span class="badge bg-success">Completed</span>
+                            @endif
                         </div>
                     </div>
 
@@ -18,7 +22,8 @@
                         <!-- Header Information -->
                         <div class="text-center mb-4">
                             <h5 class="mb-1 fw-bold">{{ $outlet->name }}</h5>
-                            <small class="text-muted d-block">Cashier: {{ $employee ? $employee->name : $creator->name }}</small>
+                            <small class="text-muted d-block">Cashier:
+                                {{ $employee ? $employee->name : $creator->name }}</small>
                             <small class="text-muted d-block">{{ $date }}</small>
                             <div class="mt-2">
                                 <span class="fw-bold">Invoice:</span> {{ $invoiceNumber }}

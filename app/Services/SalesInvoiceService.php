@@ -18,6 +18,14 @@ class SalesInvoiceService
         return SalesInvoice::with(['products', 'outlet'])->get();
     }
 
+    public function getSalesInvoicesByOutletId(int $outletId)
+    {
+        return SalesInvoice::where('outlet_id', $outletId)
+            ->with(['outlet', 'employee', 'products'])
+            ->get();
+    }
+
+
     public function getSalesInvoiceById($id)
     {
         return SalesInvoice::with(['products', 'outlet'])->findOrFail($id);

@@ -16,11 +16,6 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Inventory List</h4>
-                            {{-- <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('product.create') }}'">
-                                <i class="fa fa-plus"></i>
-                                Add Product
-                            </button> --}}
                         </div>
                     </div>
                     <div class="card-body">
@@ -30,10 +25,11 @@
                                     <tr>
                                         <th>SKU</th>
                                         <th>Name</th>
-                                        <th>Category</th>
+                                        <th hidden>Category</th>
                                         <th>Initial</th>
                                         <th>Purchased</th>
                                         <th>Sold</th>
+                                        <th>Adjustment</th>
                                         <th>End</th>
                                         <th>Unit</th>
                                         <th>Action</th>
@@ -44,12 +40,14 @@
                                         <tr>
                                             <td>{{ $product->sku }}</td>
                                             <td>{{ $product->name }}</td>
-                                            <td>{{ $product->category->name }}</td>
+                                            <td hidden>{{ $product->category->name }}</td>
                                             <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? [])) }}
                                             </td>
                                             <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['purchase'] ?? [])) }}
                                             </td>
                                             <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['sale'] ?? [])) }}
+                                            </td>
+                                            <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['adjustment'] ?? [])) }}
                                             </td>
                                             <td>{{ array_sum(
                                                 array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? []),
@@ -65,7 +63,14 @@
                                                         fn($items) => array_sum(array_column($items, 'quantity')),
                                                         $groupedGlobal[$product->id]['sale'] ?? [],
                                                     ),
+                                                ) +
+                                                array_sum(
+                                                    array_map(
+                                                        fn($items) => array_sum(array_column($items, 'quantity')),
+                                                        $groupedGlobal[$product->id]['adjustment'] ?? [],
+                                                    ),
                                                 ) }}
+
                                             </td>
                                             <td>{{ $product->unit->name }}</td>
 
@@ -106,7 +111,7 @@
 
     <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="productDetailsModalLabel">Stock All Outlet</h5>
@@ -140,6 +145,8 @@
                                     <th>Initial</th>
                                     <th>Purchased</th>
                                     <th>Sold</th>
+                                    <th>Returned</th>
+                                    <th>Refunded</th>
                                     <th>End</th>
                                     <th>Unit</th>
                                 </tr>
@@ -201,10 +208,29 @@
                     return 0;
                 }
 
-                function getEndQuantity(initialArray, purchasedArray, soldArray) {
+                function getReturnedQuantity(movementsArray) {
+                    if (movementsArray.length === 0) return 0;
+
+                    // Convert negative values to positive for display purposes
+                    return Math.abs(movementsArray
+                        .filter(item => parseFloat(item.quantity) < 0)
+                        .reduce((total, item) => total + parseFloat(item.quantity), 0));
+                }
+
+                function getRefundedQuantity(movementsArray) {
+                    if (movementsArray.length === 0) return 0;
+
+                    return movementsArray
+                        .filter(item => parseFloat(item.quantity) > 0)
+                        .reduce((total, item) => total + parseFloat(item.quantity), 0);
+                }
+
+                function getEndQuantity(initialArray, purchasedArray, soldArray, adjustmentArray) {
                     return getInitialQuantity(initialArray) +
                         getPurchasedOrSoldQuantity(purchasedArray) -
-                        getPurchasedOrSoldQuantity(soldArray);
+                        getPurchasedOrSoldQuantity(soldArray) -
+                        getReturnedQuantity(adjustmentArray) +
+                        getRefundedQuantity(adjustmentArray) ;
                 }
 
                 stockTableBody.empty(); // Clear previous rows
@@ -224,7 +250,9 @@
                         <td>${getInitialQuantity(outletData.initial)}</td>
                         <td>${getPurchasedOrSoldQuantity(outletData.purchase || [])}</td>
                         <td>${getPurchasedOrSoldQuantity(outletData.sale || [])}</td>
-                        <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [])}</td>
+                        <td>${getReturnedQuantity(outletData.adjustment || [])}</td>
+                        <td>${getRefundedQuantity(outletData.adjustment || [])}</td>
+                        <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [], outletData.adjustment || [])}</td>
                         <td>${product.unit.name}</td>
                     </tr>
                 `);

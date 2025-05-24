@@ -8,6 +8,7 @@ use Illuminate\View\Component;
 
 class ProductTable extends Component
 {
+    public $method;
     public $products;
     public $invoice;
     public $invoiceType;
@@ -15,8 +16,9 @@ class ProductTable extends Component
     /**
      * Create a new component instance.
      */
-    public function __construct($products = [], $invoice, $invoiceType)
+    public function __construct($method = "POST", $products = [], $invoice, $invoiceType)
     {
+        $this->method = $method;
         $this->products = $products;
         $this->invoice = $invoice;
         $this->invoiceType = $invoiceType;

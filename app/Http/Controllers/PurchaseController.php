@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseInvoice;
+use App\Services\AccessControlService;
 use App\Services\InventoryService;
 use App\Services\PurchaseInvoiceService;
 use App\Services\OutletService;
 use App\Services\ProductService;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
@@ -15,6 +17,7 @@ class PurchaseController extends Controller
     protected $outletService;
     protected $productService;
     protected $purchaseInvoiceService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the services.
@@ -28,12 +31,14 @@ class PurchaseController extends Controller
         $this->middleware('permission:purchase.view|purchase.*')->only(['index', 'show']);
         $this->middleware('permission:purchase.create|purchase.*')->only(['create', 'store']);
         $this->middleware('permission:purchase.edit|purchase.*')->only(['edit', 'update']);
-        $this->middleware('permission:purchase.delete|purchase.*')->only(['destroy']);
+        $this->middleware('permission:purchase.delete|purchase.*')->only(['void', 'destroy']);
 
         $this->inventoryService = $inventoryService;
         $this->outletService = $outletService;
         $this->purchaseInvoiceService = $purchaseInvoiceService;
         $this->productService = $productService;
+
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -75,6 +80,7 @@ class PurchaseController extends Controller
             'invoice' => null,
             'outlets' => $outlets,
             'products' => $products,
+            'selectedOutletId' => $selectedOutletId,
             'nextInvoiceNumber' => $nextInvoiceNumber,
             'cancelRoute' => route('purchase.index'),
         ]);
@@ -96,9 +102,10 @@ class PurchaseController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'nullable|numeric',
-            'created_by' => 'required|numeric',
         ]);
+
+        $validatedData['created_by'] = $this->accessControlService->getUser()->id;
+        $validatedData['employee_id'] = $this->accessControlService->getUser()->employee ? $this->accessControlService->getUser()->employee->id : null; // Assuming the employee is the current user
 
         // Use the service to create the purchase invoice
         $this->purchaseInvoiceService->createPurchaseInvoice($validatedData);
@@ -123,7 +130,7 @@ class PurchaseController extends Controller
         $outlets = $this->outletService->getAllOutlets();
         $products = $this->inventoryService->getStocksByOutlet($purchase->outlet_id);
         return view('invoice.edit', [
-            'action' => route('purchase.update', $purchase->id),
+            'action' => route('purchase.void', $purchase->id),
             'method' => 'PUT',
             'invoiceType' => 'Purchase',
             'invoice' => $purchase,
@@ -149,7 +156,6 @@ class PurchaseController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'required|numeric',
         ]);
 
         // Use the service to update the purchase invoice
@@ -157,6 +163,25 @@ class PurchaseController extends Controller
 
         // Redirect back with a success message
         return redirect()->route('purchase.index')->with('success', 'Purchase invoice updated successfully.');
+    }
+
+    public function void(Request $request, PurchaseInvoice $purchase)
+    {
+        // Validate optional reason input from form
+        $validatedData = $request->validate([
+            'void_reason' => 'nullable|string|max:255',
+        ]);
+
+        $voidedBy = $this->accessControlService->getUser()->id;
+        try {
+            $purchase->void($validatedData['void_reason'] ?? 'No reason provided', $voidedBy, app(StockMovementService::class));
+
+            return redirect()->route('purchase.index')
+                ->with('success', 'Invoice #' . $purchase->invoice_number . ' has been voided successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => 'Failed to void invoice: ' . $e->getMessage()]);
+        }
     }
 
     /**
