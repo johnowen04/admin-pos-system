@@ -6,10 +6,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Services\AccessControlService;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    protected $accessControlService;
+
+    public function __construct()
+    {
+        $this->accessControlService = app(AccessControlService::class);
+    }
+
     public function showLogin()
     {
         return view('auth.login');
@@ -21,6 +29,7 @@ class AuthController extends Controller
 
         if (Auth::attempt($this->credentials($request), $request->boolean('remember'))) {
             $request->session()->regenerate();
+            $this->accessControlService->setUser(Auth::user());
 
             return redirect()->intended('/dashboard');
         }
@@ -77,6 +86,7 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
+        $this->accessControlService->setUser(Auth::user());
         return redirect('/dashboard');
     }
 }

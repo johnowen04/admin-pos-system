@@ -53,7 +53,7 @@
                                     </p>
                                     <div class="mt-3">
                                         <a href="{{ route('position.index') }}" class="btn btn-primary me-2">
-                                            <i class="fa fa-user-shield me-1"></i> Manage Roles
+                                            <i class="fa fa-user-shield me-1"></i> Manage Position
                                         </a>
                                         <a href="{{ route('feature.index') }}" class="btn btn-outline-primary">
                                             <i class="fa fa-tasks me-1"></i> Manage Features

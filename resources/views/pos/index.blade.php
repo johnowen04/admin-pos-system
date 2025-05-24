@@ -14,7 +14,7 @@
     @endif
 
     <div class="page-inner">
-        @if (!Auth::user()->employee->outlets || Auth::user()->employee->outlets->isEmpty())
+        @if (Auth::user()->employee && (!Auth::user()->employee->outlets || Auth::user()->employee->outlets->isEmpty()))
             <div class="card">
                 <div class="card-body">
                     <div class="empty-state text-center py-5">
@@ -170,7 +170,7 @@
 @endsection
 
 @push('scripts')
-    @if (Auth::user()->employee->outlets && !Auth::user()->employee->outlets->isEmpty())
+    @if (session()->get('selected_outlet'))
         {{-- Define global variables for the external JavaScript --}}
         <script>
             // Pass data to the JS file

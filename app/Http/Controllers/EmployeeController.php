@@ -3,18 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Services\AccessControlService;
 use App\Services\EmployeeService;
 use App\Services\OutletService;
 use App\Services\PositionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class EmployeeController extends Controller
 {
     protected $positionService;
     protected $outletService;
     protected $employeeService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the EmployeeService.
@@ -29,44 +29,8 @@ class EmployeeController extends Controller
         $this->positionService = $positionService;
         $this->outletService = $outletService;
         $this->employeeService = $employeeService;
-    }
 
-    /**
-     * Get the current authenticated user.
-     */
-    protected function getCurrentUser()
-    {
-        return Auth::user();
-    }
-
-    /**
-     * Get the current user's position level.
-     */
-    protected function getCurrentUserLevel()
-    {
-        $user = $this->getCurrentUser();
-        $level = 0;
-
-        if (!$user) {
-            return $level;
-        }
-
-        try {
-            if (!$user->employee && ($user->role || $user->role->name === 'superuser')) {
-                $level = 100;
-            } else if ($user->employee && $user->employee->position) {
-                $position = $user->employee->position;
-                if ($position->level instanceof \App\Enums\PositionLevel) {
-                    $level = $position->level->value;
-                } else if (is_numeric($position->level)) {
-                    $level = (int)$position->level;
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Error getting position level: ' . $e->getMessage());
-        }
-
-        return $level;
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -74,7 +38,7 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        $currentUserLevel = $this->getCurrentUserLevel();
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
         $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualPosition(positionLevel: $currentUserLevel, withTrashedPosition: true); 
 
         return view('employee.index', compact('employees'));
@@ -86,7 +50,7 @@ class EmployeeController extends Controller
     public function create()
     {
         $outlets = $this->outletService->getAllOutlets();
-        $currentUserLevel = $this->getCurrentUserLevel();
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
         $positions = $this->positionService->getAllPositionWithLowerOrEqualLevel($currentUserLevel);
         return view('employee.create', [
             'action' => route('employee.store'),
@@ -135,7 +99,7 @@ class EmployeeController extends Controller
     {
         $outlets = $this->outletService->getAllOutlets();
         $selectedOutlets = $this->employeeService->getSelectedOutlets($employee);
-        $currentUserLevel = $this->getCurrentUserLevel();
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
         $positions = $this->positionService->getAllPositionWithLowerOrEqualLevel($currentUserLevel);
         return view('employee.edit', [
             'action' => route('employee.update', $employee->id),

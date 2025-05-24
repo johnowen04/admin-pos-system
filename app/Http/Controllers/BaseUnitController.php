@@ -31,7 +31,7 @@ class BaseUnitController extends Controller
         $baseUnits = $this->baseUnitService->getAllBaseUnits();
         return view('bu.index', [
             'baseUnits' => $baseUnits, // Placeholder for base units
-            'createRoute' => route('baseunit.create'),
+            'createRoute' => route('bu.create'),
         ]);
     }
 
@@ -41,10 +41,10 @@ class BaseUnitController extends Controller
     public function create()
     {
         return view('bu.create', [
-            'action' => route('baseunit.store'),
+            'action' => route('bu.store'),
             'method' => 'POST',
             'baseUnit' => null,
-            'cancelRoute' => route('baseunit.index'),
+            'cancelRoute' => route('bu.index'),
         ]);
     }
 
@@ -62,7 +62,7 @@ class BaseUnitController extends Controller
         $this->baseUnitService->createBaseUnit($validatedData);
 
         // Redirect back to the base unit index with a success message
-        return redirect()->route('baseunit.index')->with('success', 'Base Unit created successfully.');
+        return redirect()->route('bu.index')->with('success', 'Base Unit created successfully.');
     }
 
     /**
@@ -76,20 +76,20 @@ class BaseUnitController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(BaseUnit $baseUnit)
+    public function edit(BaseUnit $bu)
     {
         return view('bu.edit', [
-            'action' => route('baseunit.update', $baseUnit->id),
+            'action' => route('bu.update', $bu->id),
             'method' => 'PUT',
-            'baseUnit' => $baseUnit,
-            'cancelRoute' => route('baseunit.index'),
+            'baseUnit' => $bu,
+            'cancelRoute' => route('bu.index'),
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, BaseUnit $baseUnit)
+    public function update(Request $request, BaseUnit $bu)
     {
         // Validate the incoming request
         $validatedData = $request->validate([
@@ -97,21 +97,21 @@ class BaseUnitController extends Controller
         ]);
 
         // Update the base unit
-        $this->baseUnitService->updateBaseUnit($baseUnit, $validatedData);
+        $this->baseUnitService->updateBaseUnit($bu, $validatedData);
 
         // Redirect back to the base unit index with a success message
-        return redirect()->route('baseunit.index')->with('success', 'Base Unit updated successfully.');
+        return redirect()->route('bu.index')->with('success', 'Base Unit updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(BaseUnit $baseUnit)
+    public function destroy(BaseUnit $bu)
     {
         // Perform soft delete
-        $this->baseUnitService->deleteBaseUnit($baseUnit);
+        $this->baseUnitService->deleteBaseUnit($bu);
 
         // Redirect back to the base unit index with a success message
-        return redirect()->route('baseunit.index')->with('success', 'Base Unit deleted successfully.');
+        return redirect()->route('bu.index')->with('success', 'Base Unit deleted successfully.');
     }
 }

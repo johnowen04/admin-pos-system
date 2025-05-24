@@ -72,14 +72,16 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
+    Route::post('/select-outlet', [OutletController::class, 'select'])->name('outlets.select');
+    Route::resource('outlet', OutletController::class);
+
     // Standard resource controllers
-    Route::resource('baseunit', BaseUnitController::class);
+    Route::resource('bu', BaseUnitController::class);
     Route::resource('category', CategoryController::class);
     Route::resource('department', DepartmentController::class);
     Route::resource('employee', EmployeeController::class);
     Route::resource('feature', FeatureController::class);
     Route::resource('inventory', InventoryController::class);
-    Route::resource('outlet', OutletController::class);
     Route::resource('operation', OperationController::class);
     Route::resource('product', ProductController::class);
     Route::resource('purchase', PurchaseController::class);

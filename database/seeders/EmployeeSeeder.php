@@ -26,7 +26,7 @@ class EmployeeSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'username' => 'admin',
                 'password' => 'password123',
-                'role_id' => $superUserRole->id,
+                'role_id' => $employeeRole->id,
                 'position_id' => 2,
                 'outlets' => [1, 2],
             ],

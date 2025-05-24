@@ -42,7 +42,7 @@ class ACLController extends Controller
     {
         $positions = $this->positionService->getAllPositions();
 
-        $permissions = $this->permissionService->getAllPermissions();
+        $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
 
         [$aclMatrix, $featuresForTemplate] = $this->buildACLMatrix($positions, $permissions);
 

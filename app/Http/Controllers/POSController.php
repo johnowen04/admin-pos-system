@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
+use App\Services\AccessControlService;
 use App\Services\SalesInvoiceService;
 use App\Services\CategoryService;
 use App\Services\OutletService;
 use App\Services\ProductService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -17,6 +17,7 @@ class POSController extends Controller
     protected $categoryService;
     protected $outletService;
     protected $productService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the services.
@@ -34,6 +35,8 @@ class POSController extends Controller
         $this->categoryService = $categoryService;
         $this->outletService = $outletService;
         $this->productService = $productService;
+
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -41,16 +44,18 @@ class POSController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        $accessibleOutlets = $user->employee->outlets;
+        if ($this->accessControlService->isSuperUser()) {
+            $accessibleOutlets = $this->outletService->getAllOutlets();
+        } else {
+            $accessibleOutlets = $this->accessControlService->getUser()->employee->outlets;
+        }
 
         // Check if employee has any outlets assigned
         if ($accessibleOutlets->isEmpty()) {
             return view('pos.index')->with('error', 'You do not have any outlets assigned. Please contact an administrator.');
         }
 
-        $accessibleOutletIds = $user->employee->outlets->pluck('id')->toArray();
-        $products = $this->outletService->getProductsWithStocksFromOutlet($accessibleOutletIds[0]);
+        $products = $this->outletService->getProductsWithStocksFromOutlet(session('selected_outlet_id'));
         $categories = $this->categoryService->getAllCategories();
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
         $cart = session()->get('cart', []);

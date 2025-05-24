@@ -43,7 +43,7 @@
                                             <td>{{ $outlet->name }}</td>
                                             <td>{{ $outlet->address }}</td>
                                             <td>
-                                                @if ($outlet->type == 'pos')
+                                                @if ($outlet->type->value === 'pos')
                                                     <span class="badge bg-success text-white">Point of Sales</span>
                                                 @else
                                                     <span class="badge bg-danger text-white">Warehouse</span>

@@ -64,6 +64,10 @@
                                 <br>Please create some features and operations first.
                             </p>
                             <div class="mt-3">
+                                <a href="{{ route('permission.index') }}" class="btn btn-sm btn-primary">
+                                    <i class="fa fa-tasks me-1"></i> Manage Permission
+                                </a>
+
                                 <a href="{{ route('feature.index') }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fa fa-tasks me-1"></i> Manage Features
                                 </a>

@@ -17,7 +17,7 @@
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Base Unit List</h4>
                             <button class="btn btn-primary btn-round ms-auto"
-                                onclick="window.location='{{ route('baseunit.create') }}'">
+                                onclick="window.location='{{ route('bu.create') }}'">
                                 <i class="fa fa-plus"></i>
                                 Add Base Unit
                             </button>
@@ -40,12 +40,12 @@
                                             <td>{{ $baseUnit->name }}</td>
                                             <td>
                                                 <div class="form-button-action">
-                                                    <a href="{{ route('baseunit.edit', $baseUnit->id) }}"
+                                                    <a href="{{ route('bu.edit', $baseUnit->id) }}"
                                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                         title="Edit">
                                                         <i class="fa fa-edit"></i>
                                                     </a>
-                                                    <form action="{{ route('baseunit.destroy', $baseUnit->id) }}"
+                                                    <form action="{{ route('bu.destroy', $baseUnit->id) }}"
                                                         method="POST" style="display: inline-block;">
                                                         @csrf
                                                         @method('DELETE')

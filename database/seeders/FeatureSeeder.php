@@ -13,13 +13,14 @@ class FeatureSeeder extends Seeder
     public function run(): void
     {
         $features = [
-            ['name' => 'Dashboard', 'slug' => 'dashboard'],
             ['name' => 'Feature', 'slug' => 'feature'],
             ['name' => 'Operation', 'slug' => 'operation'],
             ['name' => 'Permission', 'slug' => 'permission'],
             ['name' => 'Role', 'slug' => 'role'],
             ['name' => 'ACL', 'slug' => 'acl'],
+            ['name' => 'Dashboard', 'slug' => 'dashboard'],
             ['name' => 'Outlet', 'slug' => 'outlet'],
+            ['name' => 'Position', 'slug' => 'position'],
             ['name' => 'Employee', 'slug' => 'employee'],
             ['name' => 'Base Unit', 'slug' => 'bu'],
             ['name' => 'Unit', 'slug' => 'unit'],

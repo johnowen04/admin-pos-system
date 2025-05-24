@@ -13,9 +13,13 @@ class PermissionService
      * @param bool $withTrashed Include soft-deleted permissions
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function getAllPermissions($withTrashed = false, $withTrashedFeatures = false, $withTrashedOperations = false)
+    public function getAllPermissions($withTrashed = false, $withTrashedFeatures = false, $withTrashedOperations = false, $onlyNonSuperUser = false)
     {
         $query = $withTrashed ? Permission::withTrashed() : Permission::query();
+
+        if ($onlyNonSuperUser) {
+            $query->where('is_super_user_only', 0);
+        }
 
         // Load relationships, considering their trashed status
         $query->with([

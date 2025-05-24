@@ -4,98 +4,206 @@ namespace App\View\Components;
 
 use App\Services\AccessControlService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Component;
 
 class Sidebar extends Component
 {
-    public $menuItems;
     public $filteredMenuItems;
+    protected AccessControlService $accessControl;
 
-    /**
-     * Create a new component instance.
-     *
-     * @return void
-     */
-    public function __construct($menuItems = [])
+    public function __construct(AccessControlService $accessControl)
     {
-        $this->menuItems = $menuItems;
-        $this->filteredMenuItems = $this->filterMenuItems($menuItems);
+        $this->accessControl = $accessControl;
+
+        if (Auth::check()) {
+            $this->accessControl->setUser(Auth::user());
+        }
+
+        $this->filteredMenuItems = $this->filterMenuItems($this->menuStructure());
     }
 
-    /**
-     * Filter menu items based on permissions
-     */
-    protected function filterMenuItems($items)
+    protected function isActive(array|string $patterns): bool
     {
-        if (!Auth::check()) {
+        foreach ((array) $patterns as $pattern) {
+            if (Route::is($pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected function menuStructure(): array
+    {
+        return [
+            [
+                'name' => 'Dashboard',
+                'children' => [
+                    [
+                        'name' => 'Dashboard',
+                        'link' => 'dashboard',
+                        'icon' => 'fas fa-home',
+                        'route' => 'dashboard',
+                        'active' => $this->isActive('dashboard'),
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Super User',
+                'children' => [
+                    [
+                        'name' => 'Role & Permission',
+                        'link' => 'role',
+                        'icon' => 'fas fa-user-shield',
+                        'route' => 'role.index',
+                        'active' => $this->isActive(['role.*', 'feature.*', 'operation.*', 'permission.*', 'acl.*']),
+                        'children' => [
+                            ['name' => 'Role', 'route' => 'role.index', 'active' => $this->isActive('role')],
+                            ['name' => 'Feature', 'route' => 'feature.index', 'active' => $this->isActive('feature')],
+                            ['name' => 'Operation', 'route' => 'operation.index', 'active' => $this->isActive('operation')],
+                            ['name' => 'Permission', 'route' => 'permission.index', 'active' => $this->isActive('permission')],
+                            ['name' => 'ACL Matrix', 'route' => 'acl.index', 'active' => $this->isActive('acl')],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Admin',
+                'children' => [
+                    [
+                        'name' => 'Employee',
+                        'link' => 'employee',
+                        'icon' => 'fas fa-user',
+                        'route' => 'employee.index',
+                        'active' => $this->isActive(['employee.*', 'position.*']),
+                        'children' => [
+                            ['name' => 'Employee', 'route' => 'employee.index', 'active' => $this->isActive('employee')],
+                            ['name' => 'Position', 'route' => 'position.index', 'active' => $this->isActive('position')],
+                        ],
+                    ],
+                    [
+                        'name' => 'Outlet',
+                        'link' => 'outlet',
+                        'icon' => 'fas fa-building',
+                        'route' => 'outlet.index',
+                        'active' => $this->isActive('outlet.*'),
+                    ],
+                    [
+                        'name' => 'Unit',
+                        'link' => 'unit',
+                        'icon' => 'fas fa-ruler-horizontal',
+                        'route' => 'unit.index',
+                        'active' => $this->isActive(['unit.*', 'bu.*']),
+                        'children' => [
+                            ['name' => 'Base Unit', 'route' => 'bu.index', 'active' => $this->isActive('bu')],
+                            ['name' => 'Unit', 'route' => 'unit.index', 'active' => $this->isActive('unit')],
+                        ],
+                    ],
+                    [
+                        'name' => 'Product',
+                        'link' => 'product',
+                        'icon' => 'fas fa-box-open',
+                        'route' => 'product.index',
+                        'active' => $this->isActive(['product.*', 'category.*', 'department.*']),
+                        'children' => [
+                            ['name' => 'Department', 'route' => 'department.index', 'active' => $this->isActive('department')],
+                            ['name' => 'Category', 'route' => 'category.index', 'active' => $this->isActive('category')],
+                            ['name' => 'Product', 'route' => 'product.index', 'active' => $this->isActive('product')],
+                        ],
+                    ],
+                    [
+                        'name' => 'Inventory',
+                        'link' => 'inventory',
+                        'icon' => 'fas fa-boxes',
+                        'route' => 'inventory.index',
+                        'active' => $this->isActive(['inventory.*', 'purchase.*']),
+                        'children' => [
+                            ['name' => 'Inventory', 'route' => 'inventory.index', 'active' => $this->isActive('inventory')],
+                            ['name' => 'Purchase', 'route' => 'purchase.index', 'active' => $this->isActive('purchase')],
+                        ],
+                    ],
+                    [
+                        'name' => 'Sales',
+                        'link' => 'sales',
+                        'icon' => 'fas fa-tags',
+                        'route' => 'sales.index',
+                        'active' => $this->isActive('sales.*'),
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Point of Sales',
+                'children' => [
+                    [
+                        'name' => 'POS',
+                        'link' => 'pos',
+                        'route' => 'pos.index',
+                        'icon' => 'fas fa-shopping-cart',
+                        'active' => $this->isActive('pos.*'),
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    protected function getPermissionSlug(string $route): string
+    {
+        if (empty($route)) {
+            return '';
+        }
+
+        $parts = explode('.', $route);
+        return $parts[0] . '.view';
+    }
+
+    protected function filterMenuItems(array $items): array
+    {
+        if (!$this->accessControl->hasUser()) {
             return [];
         }
 
-        $user = Auth::user();
+        if ($this->accessControl->isSuperUser()) {
+            return $items;
+        }
 
-        $accessControl = new AccessControlService($user);
         $filteredItems = [];
 
-        foreach ($items as $item) {
-            $permissionSlug = $this->getPermissionSlug($item['name']);
-
-            if (isset($item['children']) && is_array($item['children'])) {
+        foreach ($items as $section) {
+            $filteredSection = [];
+            foreach ($section['children'] as $item) {
+                $permissionSlug = $this->getPermissionSlug($item['route'] ?? '');
+                $itemHasPermission = $this->accessControl->hasPermission($permissionSlug);
+    
                 $filteredChildren = [];
-
-                foreach ($item['children'] as $child) {
-                    $childPermissionSlug = $this->getPermissionSlug($child['name']);
-
-                    if ($accessControl->hasPermission($childPermissionSlug)) {
-                        $filteredChildren[] = $child;
-                    }
+                if (!empty($item['children'])) {
+                    $filteredChildren = array_filter($item['children'], function ($child) {
+                        $childSlug = $this->getPermissionSlug($child['route'] ?? '');
+                        return $this->accessControl->hasPermission($childSlug);
+                    });
                 }
-
-                if (!empty($filteredChildren) || $accessControl->hasPermission($permissionSlug)) {
-                    $item['children'] = $filteredChildren;
-                    $filteredItems[] = $item;
+    
+                if (!empty($filteredChildren) || $itemHasPermission) {
+                    $item['children'] = array_values($filteredChildren);
+                    $filteredSection[] = $item;
                 }
-            } else if ($accessControl->hasPermission($permissionSlug)) {
-                $filteredItems[] = $item;
+            }
+
+            if (!empty($filteredSection)) {
+                $section['children'] = array_values($filteredSection);
+                $filteredItems[] = $section;
             }
         }
 
         return $filteredItems;
     }
 
-    /**
-     * Get permission slug from menu name
-     */
-    protected function getPermissionSlug($name)
-    {
-        if (empty($name)) {
-            return '';
-        }
-
-        $slug = strtolower(str_replace('&', '', $name));
-        $slug = str_replace(' ', '-', $slug);
-
-        // Handle special cases that need mapping
-        switch ($slug) {
-            case 'role-permission':
-                return 'role.view';
-            case 'pos':
-                return 'pos.view';
-            case 'base-unit':
-                return 'bu.view';
-            default:
-                return $slug . '.view';
-        }
-    }
-
-    /**
-     * Get the view / contents that represent the component.
-     *
-     * @return \Illuminate\View\View|string
-     */
     public function render()
     {
+        $menuItems = $this->menuStructure();
+        $this->filteredMenuItems = $this->filterMenuItems($menuItems);
+
         return view('components.sidebar', [
-            'menuItems' => $this->filteredMenuItems
+            'filteredMenuItems' => $this->filteredMenuItems,
         ]);
     }
 }

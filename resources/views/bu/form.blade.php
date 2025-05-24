@@ -21,7 +21,7 @@
                 <div class="form-group">
                     <label for="baseUnitName">Base Unit Name</label>
                     <input type="text" class="form-control" id="baseUnitName" name="name"
-                        placeholder="Ex: Kilogram, Gram, Pieces etc" value="{{ old('name', $baseunit->name ?? '') }}"
+                        placeholder="Ex: Kilogram, Gram, Pieces etc" value="{{ old('name', $baseUnit->name ?? '') }}"
                         required />
                 </div>
             </div>

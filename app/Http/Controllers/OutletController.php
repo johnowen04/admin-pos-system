@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Outlet;
+use App\Services\AccessControlService;
 use App\Services\OutletService;
 
 class OutletController extends Controller
 {
     protected $outletService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the OutletService.
@@ -21,6 +23,7 @@ class OutletController extends Controller
         $this->middleware('permission:outlet.delete|outlet.*')->only(['destroy']);
 
         $this->outletService = $outletService;
+        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -126,6 +129,37 @@ class OutletController extends Controller
         // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet deleted successfully.');
     }
+
+    /**
+     * Controller to select an outlet.
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function select(Request $request)
+    {
+        $id = $request->input('id');
+
+        if ($id === 'all') {
+            session([
+                'selected_outlet' => 'All Outlet',
+                'selected_outlet_id' => null,
+            ]);
+        } else {
+            $outlet = $this->outletService->getOutletById($id);
+            if (!$this->accessControlService->isSuperUser() && (!$outlet || !$this->accessControlService->getUser()->employee->outlets->contains($outlet))) {
+                return response()->json(['error' => 'Invalid outlet'], 403);
+            }
+
+            session([
+                'selected_outlet' => $outlet->name,
+                'selected_outlet_id' => $outlet->id,
+            ]);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
 
     /**
      * API to Get products by outlet ID.

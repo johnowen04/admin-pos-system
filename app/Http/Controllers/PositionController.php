@@ -4,17 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Enums\PositionLevel;
 use App\Models\Position;
+use App\Services\AccessControlService;
 use App\Services\PermissionService;
 use App\Services\PositionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class PositionController extends Controller
 {
     protected $permissionService;
     protected $positionService;
+    protected $accessControlService;
 
     /**
      * Constructor to inject the PositionService.
@@ -28,52 +28,16 @@ class PositionController extends Controller
 
         $this->permissionService = $permissionService;
         $this->positionService = $positionService;
+        $this->accessControlService = app(AccessControlService::class);
     }
 
-    /**
-     * Get the current authenticated user.
-     */
-    protected function getCurrentUser()
-    {
-        return Auth::user();
-    }
-
-    /**
-     * Get the current user's position level.
-     */
-    protected function getCurrentUserLevel()
-    {
-        $user = $this->getCurrentUser();
-        $level = 0;
-
-        if (!$user) {
-            return $level;
-        }
-
-        try {
-            if (!$user->employee && ($user->role || $user->role->name === 'superuser')) {
-                $level = 100;
-            } else if ($user->employee && $user->employee->position) {
-                $position = $user->employee->position;
-                if ($position->level instanceof PositionLevel) {
-                    $level = $position->level->value;
-                } else if (is_numeric($position->level)) {
-                    $level = (int)$position->level;
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Error getting position level: ' . $e->getMessage());
-        }
-
-        return $level;
-    }
 
     /**
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $currentUserLevel = $this->getCurrentUserLevel();
+    {   
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
         $positions = $this->positionService->getAllPositionWithLowerOrEqualLevel($currentUserLevel);
         return view('position.index', [
             'positions' => $positions,
@@ -86,15 +50,15 @@ class PositionController extends Controller
      */
     public function create()
     {
-        $currentUserLevel = $this->getCurrentUserLevel();
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
 
-        if (!$this->getCurrentUser()->employee) {
+        if ($this->accessControlService->isSuperUser()) {
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $currentUserLevel >= $level->value);
         } else {
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $level->value <= $currentUserLevel);
         }
 
-        $permissions = $this->permissionService->getAllPermissions();
+        $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
 
         $groupedPermissions = $permissions->groupBy(function ($permission) {
             return $permission->feature->id;
@@ -168,15 +132,15 @@ class PositionController extends Controller
      */
     public function edit(Position $position)
     {
-        $currentUserLevel = $this->getCurrentUserLevel();
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
 
-        if (!$this->getCurrentUser()->employee) {
+        if ($this->accessControlService->isSuperUser()) {
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $currentUserLevel >= $level->value);
         } else {
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $level->value <= $currentUserLevel);
         }
         
-        $permissions = $this->permissionService->getAllPermissions();
+        $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
 
         $groupedPermissions = $permissions->groupBy(function ($permission) {
             return $permission->feature->id;
@@ -239,8 +203,7 @@ class PositionController extends Controller
             'permissions' => 'nullable|array',
         ]);
 
-        $user = Auth::user();
-        $currentUserLevel = $user->employee->position->level->value;
+        $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
 
         if ($validatedData['level'] > $currentUserLevel) {
             return back()->withErrors([
