@@ -45,7 +45,13 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = $this->productService->getAllProducts();
+        $selectedOutletId = session('selected_outlet_id');
+        if ($selectedOutletId == 'all' || !$selectedOutletId) {
+            $products = $this->productService->getAllProducts();
+        } else {
+            $products = $this->outletService->getProductsByOutletId($selectedOutletId);
+        }
+        
         return view('product.index', [
             'products' => $products,
             'createRoute' => route('product.create'),

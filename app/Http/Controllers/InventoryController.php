@@ -30,13 +30,19 @@ class InventoryController extends Controller
         $products = $this->productService->getProductsWithMovements();
         $groupedGlobal = [];
         $groupedDetail = [];
+        $hasInventoryData = false;
+
+        $selectedOutletId = session('selected_outlet_id');
 
         foreach ($products as $product) {
             $productId = $product->id; // Or $product->sku
 
             foreach ($product->movements as $movement) {
-                $movementType = $movement->movement_type->value ?? 'unknown';
                 $outletId = $movement->outlet_id ?? 'unknown';
+                if ($outletId !== $selectedOutletId) {
+                    continue;
+                }
+                $movementType = $movement->movement_type->value ?? 'unknown';
 
                 // Grouped Global
                 $groupedGlobal[$productId][$movementType][$outletId][] = $movement;
@@ -44,6 +50,8 @@ class InventoryController extends Controller
                 // Grouped Detail
                 $groupedDetail[$productId][$outletId]['name'] = $movement->outlet->name ?? 'Unknown Outlet';
                 $groupedDetail[$productId][$outletId][$movementType][] = $movement;
+
+                $hasInventoryData = true;
             }
         }
 
@@ -51,6 +59,7 @@ class InventoryController extends Controller
             'products' => $products,
             'groupedGlobal' => $groupedGlobal,
             'groupedDetail' => $groupedDetail,
+            'hasInventoryData' => $hasInventoryData,
             'createRoute' => route('inventory.create'),
         ]);
     }

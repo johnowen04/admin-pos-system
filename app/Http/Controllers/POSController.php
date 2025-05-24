@@ -9,7 +9,6 @@ use App\Services\InventoryService;
 use App\Services\OutletService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class POSController extends Controller

@@ -66,62 +66,84 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="product-table" class="display table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>SKU</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Base Price</th>
-                                        <th>Buy Price</th>
-                                        <th>Sell Price</th>
-                                        <th>Shown in menu?</th>
-                                        <th style="width: 10%">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($products as $product)
+                        @if ($products->isEmpty())
+                            <div class="empty-state text-center py-5">
+                                <div class="empty-state-icon">
+                                    <i class="fa fa-box-open fa-3x text-muted"></i>
+                                </div>
+                                <h4 class="mt-4">No Products Available</h4>
+                                <p class="text-muted">
+                                    There are no products in the system yet.
+                                    <br>Add your first product or import products from Excel.
+                                </p>
+                                <div class="mt-3">
+                                    <a href="{{ route('product.create') }}" class="btn btn-primary me-2">
+                                        <i class="fa fa-plus me-1"></i> Add Product
+                                    </a>
+                                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#exportModal">
+                                        <i class="fa fa-file-import me-1"></i> Import from Excel
+                                    </button>
+                                </div>
+                            </div>
+                        @else
+                            <div class="table-responsive">
+                                <table id="product-table" class="display table table-striped table-hover">
+                                    <thead>
                                         <tr>
-                                            <td>{{ $product->id }}</td>
-                                            <td>{{ $product->sku }}</td>
-                                            <td>{{ $product->name }}</td>
-                                            <td>{{ $product->category->name }}</td>
-                                            <td>Rp{{ $product->base_price }}</td>
-                                            <td>Rp{{ $product->buy_price }}</td>
-                                            <td>Rp{{ $product->sell_price }}</td>
-                                            <td>
-                                                @if ($product->is_shown)
-                                                    <span class="badge bg-success text-white">Active</span>
-                                                @else
-                                                    <span class="badge bg-danger text-white">Inactive</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="form-button-action">
-                                                    <a href="{{ route('product.edit', $product->id) }}"
-                                                        class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
-                                                        title="Edit">
-                                                        <i class="fa fa-edit"></i>
-                                                    </a>
-                                                    <form action="{{ route('product.destroy', $product->id) }}"
-                                                        method="POST" style="display: inline-block;">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-link btn-danger"
-                                                            data-toggle="tooltip" title="Delete"
-                                                            onclick="return confirm('Are you sure you want to delete this product?')">
-                                                            <i class="fa fa-times"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
+                                            <th>ID</th>
+                                            <th>SKU</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Base Price</th>
+                                            <th>Buy Price</th>
+                                            <th>Sell Price</th>
+                                            <th>Shown in menu?</th>
+                                            <th style="width: 10%">Action</th>
                                         </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($products as $product)
+                                            <tr>
+                                                <td>{{ $product->id }}</td>
+                                                <td>{{ $product->sku }}</td>
+                                                <td>{{ $product->name }}</td>
+                                                <td>{{ $product->category->name }}</td>
+                                                <td>Rp{{ $product->base_price }}</td>
+                                                <td>Rp{{ $product->buy_price }}</td>
+                                                <td>Rp{{ $product->sell_price }}</td>
+                                                <td>
+                                                    @if ($product->is_shown)
+                                                        <span class="badge bg-success text-white">Active</span>
+                                                    @else
+                                                        <span class="badge bg-danger text-white">Inactive</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <div class="form-button-action">
+                                                        <a href="{{ route('product.edit', $product->id) }}"
+                                                            class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
+                                                            title="Edit">
+                                                            <i class="fa fa-edit"></i>
+                                                        </a>
+                                                        <form action="{{ route('product.destroy', $product->id) }}"
+                                                            method="POST" style="display: inline-block;">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-link btn-danger"
+                                                                data-toggle="tooltip" title="Delete"
+                                                                onclick="return confirm('Are you sure you want to delete this product?')">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

@@ -118,8 +118,9 @@ class Sidebar extends Component
                         'route' => 'inventory.index',
                         'active' => $this->isActive(['inventory.*', 'purchase.*']),
                         'children' => [
-                            ['name' => 'Inventory', 'route' => 'inventory.index', 'active' => $this->isActive('inventory')],
                             ['name' => 'Purchase', 'route' => 'purchase.index', 'active' => $this->isActive('purchase')],
+                            ['name' => 'Inventory', 'route' => 'inventory.index', 'active' => $this->isActive('inventory')],
+
                         ],
                     ],
                     [
@@ -173,7 +174,7 @@ class Sidebar extends Component
             foreach ($section['children'] as $item) {
                 $permissionSlug = $this->getPermissionSlug($item['route'] ?? '');
                 $itemHasPermission = $this->accessControl->hasPermission($permissionSlug);
-    
+
                 $filteredChildren = [];
                 if (!empty($item['children'])) {
                     $filteredChildren = array_filter($item['children'], function ($child) {
@@ -181,7 +182,7 @@ class Sidebar extends Component
                         return $this->accessControl->hasPermission($childSlug);
                     });
                 }
-    
+
                 if (!empty($filteredChildren) || $itemHasPermission) {
                     $item['children'] = array_values($filteredChildren);
                     $filteredSection[] = $item;
