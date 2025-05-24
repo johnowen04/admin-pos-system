@@ -69,7 +69,7 @@
                         <div class="card-body">
                             <!-- Product Grid -->
                             <div id="productGrid" class="row g-4" style="max-height: 80vh; overflow-y: auto;">
-                                @if (!isset($products) || $products->isEmpty())
+                                @if (!isset($products) || empty($products))
                                     <div class="col-12">
                                         <div class="empty-state text-center py-5">
                                             <div class="empty-state-icon">
@@ -82,16 +82,18 @@
                                                     <br>Try selecting a different outlet or check inventory levels.
                                                 @endif
                                             </p>
-                                            <div class="mt-3">
-                                                <a href="{{ route('product.create') }}" class="btn btn-primary me-2"
-                                                    target="_blank">
-                                                    <i class="fa fa-plus me-1"></i> Add New Product
-                                                </a>
-                                                <a href="{{ route('inventory.create') }}" class="btn btn-secondary"
-                                                    target="_blank">
-                                                    <i class="fa fa-warehouse me-1"></i> Add Stock
-                                                </a>
-                                            </div>
+                                            @can('product.create')
+                                                <div class="mt-3">
+                                                    <a href="{{ route('product.create') }}" class="btn btn-primary me-2"
+                                                        target="_blank">
+                                                        <i class="fa fa-plus me-1"></i> Add New Product
+                                                    </a>
+                                                    <a href="{{ route('inventory.create') }}" class="btn btn-secondary"
+                                                        target="_blank">
+                                                        <i class="fa fa-warehouse me-1"></i> Add Stock
+                                                    </a>
+                                                </div>
+                                            @endcan
                                         </div>
                                     </div>
                                 @else
@@ -195,7 +197,8 @@
                             </div>
                             <form action="{{ route('pos.payment') }}" method="GET" id="paymentForm">
                                 @csrf
-                                <input type="hidden" name="cart" id="cartInput" value="{{ json_encode($cart ?? []) }}">
+                                <input type="hidden" name="cart" id="cartInput"
+                                    value="{{ json_encode($cart ?? []) }}">
                                 <button type="submit" id="checkoutButton" class="btn btn-success w-100 mt-2"
                                     {{ empty($cart) || count($cart) === 0 ? 'disabled' : '' }}>
                                     Checkout
