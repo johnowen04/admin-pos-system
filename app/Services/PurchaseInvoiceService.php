@@ -27,6 +27,13 @@ class PurchaseInvoiceService
         return PurchaseInvoice::with(['outlet', 'employee', 'products'])->get();
     }
 
+    public function getPurchaseInvoicesByOutletId(int $outletId)
+    {
+        return PurchaseInvoice::where('outlet_id', $outletId)
+            ->with(['outlet', 'employee', 'products'])
+            ->get();
+    }
+
     public function getPreviousPurchasesForProduct(int $productId)
     {
         $product = $this->productService->getProductById($productId);
@@ -53,11 +60,12 @@ class PurchaseInvoiceService
         DB::transaction(function () use ($data, &$purchaseInvoice) {
             // Create the purchase invoice
             $purchaseInvoice = PurchaseInvoice::create([
-                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
-                'employee_id' => $data['employee_id'],
+                'employee_id' => $data['employee_id'] ?? null,
+                'created_by' => $data['created_by'],
             ]);
 
             // Attach products to the purchase invoice
@@ -95,6 +103,7 @@ class PurchaseInvoiceService
         return $purchaseInvoice;
     }
 
+    // Update -> Void
     /**
      * Update an existing purchase invoice.
      *
@@ -107,11 +116,12 @@ class PurchaseInvoiceService
         DB::transaction(function () use ($purchaseInvoice, $data) {
             // Update the purchase invoice
             $purchaseInvoice->update([
-                'outlets_id' => $data['outlets'][0], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
-                'employee_id' => $data['employee_id'],
+                'employee_id' => $data['employee_id'] ?? null,
+                'created_by' => $data['created_by'],
             ]);
 
             // Update products associated with the purchase invoice
@@ -184,9 +194,9 @@ class PurchaseInvoiceService
         $totalQuantity = 0;
         $totalAmount = 0;
 
-        foreach ($previousPurchases as $purchase) {
-            $totalQuantity += $purchase->quantity;
-            $totalAmount += $purchase->quantity * $purchase->unit_price;
+        foreach ($previousPurchases as $purchaseInvoice) {
+            $totalQuantity += $purchaseInvoice->quantity;
+            $totalAmount += $purchaseInvoice->quantity * $purchaseInvoice->unit_price;
         }
 
         // Add current purchase

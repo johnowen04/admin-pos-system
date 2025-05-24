@@ -33,11 +33,12 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($data) {
             $salesInvoice = SalesInvoice::create([
-                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
-                'employee_id' => $data['employee_id'],
+                'employee_id' => $data['employee_id'] ?? null,
+                'created_by' => $data['created_by'],
             ]);
 
             // Attach products to the purchase invoice
@@ -68,6 +69,7 @@ class SalesInvoiceService
         });
     }
 
+    // Update -> Void
     /**
      * Update an existing sales invoice.
      *
@@ -79,7 +81,7 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($salesInvoice, $data) {
             $salesInvoice->update([
-                'outlets_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],

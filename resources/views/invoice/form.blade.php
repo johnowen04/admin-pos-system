@@ -27,7 +27,7 @@
                         <option value="" disabled>Select outlet</option>
                         @foreach ($outlets as $outlet)
                             <option value="{{ $outlet->id }}"
-                                {{ old('outlets_id', $invoice->outlets_id ?? '') == $outlet->id ? 'selected' : '' }}>
+                                {{ old('outlet_id', $invoice->outlet_id ?? '') == $outlet->id ? 'selected' : '' }}>
                                 {{ $outlet->name }}
                             </option>
                         @endforeach
@@ -53,8 +53,17 @@
                         value="{{ old('description', $invoice->description ?? '') }}" />
                 </div>
 
+                @if ($method === 'PUT')
+                    <div class="form-group">
+                        <label for="creator">{{ $invoiceType }} Invoice Creator</label>
+                        <input readonly type="text" class="form-control" id="creator" name="creator"
+                            value="{{ old('creator', $invoice->creator->name ?? '') }}" />
+                    </div>
+                @endif
+
                 <!-- Hidden input for NIP -->
-                <input type="hidden" name="employee_id" value="{{ Auth::user()->employee->id }}">
+                <input type="hidden" name="employee_id" value="{{ Auth::user()->employee->id ?? null }}">
+                <input type="hidden" name="created_by" value="{{ Auth::user()->id }}">
 
             </div>
         </div>

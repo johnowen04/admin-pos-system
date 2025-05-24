@@ -18,7 +18,7 @@
                         <!-- Header Information -->
                         <div class="text-center mb-4">
                             <h5 class="mb-1 fw-bold">{{ $outlet->name }}</h5>
-                            <small class="text-muted d-block">Cashier: {{ $employee->name }}</small>
+                            <small class="text-muted d-block">Cashier: {{ $employee ? $employee->name : $creator->name }}</small>
                             <small class="text-muted d-block">{{ $date }}</small>
                             <div class="mt-2">
                                 <span class="fw-bold">Invoice:</span> {{ $invoiceNumber }}

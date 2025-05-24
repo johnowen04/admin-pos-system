@@ -41,8 +41,8 @@ class AppServiceProvider extends ServiceProvider
                 }
                 
                 $view->with('outlets', $outlets);
-                $view->with('selectedOutlet', session('selected_outlet', 'All Outlet'));
-                $view->with('selectedOutletId', session('selected_outlet_id'));
+                $view->with('selectedOutlet', session('selected_outlet', $outlets->first()->name ?? null));
+                $view->with('selectedOutletId', session('selected_outlet_id', $outlets->first()->id ?? null));
             } else {
                 $view->with('outlets', []);
                 $view->with('selectedOutlet', null);

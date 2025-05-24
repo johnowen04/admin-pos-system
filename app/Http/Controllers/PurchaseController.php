@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\PurchaseInvoice;
+use App\Services\InventoryService;
 use App\Services\PurchaseInvoiceService;
 use App\Services\OutletService;
 use App\Services\ProductService;
@@ -10,16 +11,18 @@ use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
 {
-    protected $purchaseInvoiceService;
+    protected $inventoryService;
     protected $outletService;
     protected $productService;
+    protected $purchaseInvoiceService;
 
     /**
      * Constructor to inject the services.
      */
     public function __construct(
-        PurchaseInvoiceService $purchaseInvoiceService,
+        InventoryService $inventoryService,
         OutletService $outletService,
+        PurchaseInvoiceService $purchaseInvoiceService,
         ProductService $productService
     ) {
         $this->middleware('permission:purchase.view|purchase.*')->only(['index', 'show']);
@@ -27,8 +30,9 @@ class PurchaseController extends Controller
         $this->middleware('permission:purchase.edit|purchase.*')->only(['edit', 'update']);
         $this->middleware('permission:purchase.delete|purchase.*')->only(['destroy']);
 
-        $this->purchaseInvoiceService = $purchaseInvoiceService;
+        $this->inventoryService = $inventoryService;
         $this->outletService = $outletService;
+        $this->purchaseInvoiceService = $purchaseInvoiceService;
         $this->productService = $productService;
     }
 
@@ -37,7 +41,12 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        $purchaseInvoices = $this->purchaseInvoiceService->getAllPurchaseInvoices();
+        $selectedOutletId = session('selected_outlet_id');
+        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
+            $purchaseInvoices = $this->purchaseInvoiceService->getAllPurchaseInvoices();
+        } else {
+            $purchaseInvoices = $this->purchaseInvoiceService->getPurchaseInvoicesByOutletId($selectedOutletId);
+        }
         return view('invoice.index', [
             'invoiceType' => 'Purchase',
             'invoices' => $purchaseInvoices,
@@ -49,8 +58,15 @@ class PurchaseController extends Controller
      */
     public function create()
     {
+        $selectedOutletId = session('selected_outlet_id');
         $outlets = $this->outletService->getAllOutlets();
-        $products = $this->outletService->getProductsWithStocksFromOutlet($outlets[0]->id ?? null);
+
+        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
+            $products = $this->inventoryService->getStocksAllOutlet();
+        } else {
+            $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
+        }
+
         $nextInvoiceNumber = $this->purchaseInvoiceService->generatePurchaseInvoiceNumber();
         return view('invoice.create', [
             'action' => route('purchase.store'),
@@ -80,7 +96,8 @@ class PurchaseController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'required|numeric',
+            'employee_id' => 'nullable|numeric',
+            'created_by' => 'required|numeric',
         ]);
 
         // Use the service to create the purchase invoice
@@ -104,7 +121,7 @@ class PurchaseController extends Controller
     public function edit(PurchaseInvoice $purchase)
     {
         $outlets = $this->outletService->getAllOutlets();
-        $products = $this->productService->getAllProducts();
+        $products = $this->inventoryService->getStocksByOutlet($purchase->outlet_id);
         return view('invoice.edit', [
             'action' => route('purchase.update', $purchase->id),
             'method' => 'PUT',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\AccessControlService;
 use App\Services\SalesInvoiceService;
 use App\Services\CategoryService;
+use App\Services\InventoryService;
 use App\Services\OutletService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class POSController extends Controller
 {
     protected $salesInvoiceService;
     protected $categoryService;
+    protected $inventoryService;
     protected $outletService;
     protected $productService;
     protected $accessControlService;
@@ -25,6 +27,7 @@ class POSController extends Controller
     public function __construct(
         SalesInvoiceService $salesInvoiceService,
         CategoryService $categoryService,
+        InventoryService $inventoryService,
         OutletService $outletService,
         ProductService $productService
     ) {
@@ -33,6 +36,7 @@ class POSController extends Controller
 
         $this->salesInvoiceService = $salesInvoiceService;
         $this->categoryService = $categoryService;
+        $this->inventoryService = $inventoryService;
         $this->outletService = $outletService;
         $this->productService = $productService;
 
@@ -44,6 +48,8 @@ class POSController extends Controller
      */
     public function index()
     {
+        $selectedOutletId = session('selected_outlet_id');
+
         if ($this->accessControlService->isSuperUser()) {
             $accessibleOutlets = $this->outletService->getAllOutlets();
         } else {
@@ -55,7 +61,17 @@ class POSController extends Controller
             return view('pos.index')->with('error', 'You do not have any outlets assigned. Please contact an administrator.');
         }
 
-        $products = $this->outletService->getProductsWithStocksFromOutlet(session('selected_outlet_id'));
+        if ($selectedOutletId== 'all') {
+            $products = $this->inventoryService->getStocksAllOutlet();
+        } elseif ($selectedOutletId && $accessibleOutlets->contains('id', $selectedOutletId)) {
+            $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
+        } else {
+            $selectedOutletId = $accessibleOutlets[0]->id;
+            session(['selected_outlet_id' => $selectedOutletId]);
+            
+            $products = $this->inventoryService->getStocksByOutlet($selectedOutletId);
+        }
+
         $categories = $this->categoryService->getAllCategories();
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
         $cart = session()->get('cart', []);
@@ -145,7 +161,6 @@ class POSController extends Controller
      */
     public function payment()
     {
-
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
         $cart = session()->get('cart', []);
         $grandTotal = array_reduce($cart, function ($total, $item) {
@@ -175,8 +190,9 @@ class POSController extends Controller
         }, 0);
 
         $nextInvoiceNumber = $this->salesInvoiceService->generateSalesInvoiceNumber();
-        $employee_id = Auth::user()->employee->id;
-        $outletId = Auth::user()->employee->outlets[0]->id;
+        $employee_id = $this->accessControlService->getUser()->employee->id ?? null;
+        $created_by = $this->accessControlService->getUser()->id;
+        $outletId = session('selected_outlet_id');
 
         // Get all product IDs from cart
         $productIds = array_keys($cart);
@@ -212,6 +228,7 @@ class POSController extends Controller
             'outlet_id' => $outletId,
             'products' => $products,
             'employee_id' => $employee_id,
+            'created_by' => $created_by,
         ];
 
         if ($request->filled('amount_paid')) {
@@ -246,8 +263,9 @@ class POSController extends Controller
             $amountPaid = null;
             $paymentMethod = null;
 
-            $employee = Auth::user()->employee;
-            $outlet = $employee->outlets->first();
+            $employee = $this->accessControlService->getUser()->employee ?? null;
+            $creator = $this->accessControlService->getUser();
+            $outletId = session('selected_outlet_id');
 
             if ($previousRoute === 'pos.payment') {
                 $receiptData = $this->getReceiptDataFromSession();
@@ -278,6 +296,7 @@ class POSController extends Controller
                 'grandTotal',
                 'date',
                 'employee',
+                'creator',
                 'outlet',
                 'invoiceNumber',
                 'previousRoute',
@@ -364,7 +383,8 @@ class POSController extends Controller
                 'invoiceNumber' => $sales->invoice_number,
                 'date' => $sales->created_at->format('d/m/Y H:i'),
                 'employee' => $sales->employee,
-                'outlet' => $sales->employee->outlets->first(),
+                'creator' => $sales->creator,
+                'outlet' => $sales->outlet,
                 'amountPaid' => $sales->amount_paid ?? $sales->grand_total,
                 'paymentMethod' => $sales->payment_method ?? 'Cash'
             ];

@@ -16,7 +16,7 @@ class SalesReportService
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.products_id')
             ->join('categories as c', 'p.categories_id', '=', 'c.id')
-            ->join('outlets as o', 'si.outlets_id', '=', 'o.id')
+            ->join('outlets as o', 'si.outlet_id', '=', 'o.id')
             ->whereBetween('si.created_at', [$startDate, $endDate])
             ->select([
                 DB::raw('DATE(si.created_at) as sale_date'),

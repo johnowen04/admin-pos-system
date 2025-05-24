@@ -18,8 +18,9 @@ class PurchaseInvoice extends Model
         'invoice_number',
         'grand_total',
         'description',
-        'outlets_id',
+        'outlet_id',
         'employee_id',
+        'created_by',
     ];
 
     protected $casts = [
@@ -31,12 +32,17 @@ class PurchaseInvoice extends Model
     // Relationships
     public function outlet()
     {
-        return $this->belongsTo(Outlet::class, 'outlets_id');
+        return $this->belongsTo(Outlet::class, 'outlet_id');
     }
 
     public function employee()
     {
         return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function products()

@@ -170,7 +170,7 @@
 @endsection
 
 @push('scripts')
-    @if (session()->get('selected_outlet'))
+    @if (session()->get('selected_outlet_id'))
         {{-- Define global variables for the external JavaScript --}}
         <script>
             // Pass data to the JS file

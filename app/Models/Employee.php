@@ -42,7 +42,7 @@ class Employee extends Model
 
     public function outlets()
     {
-        return $this->belongsToMany(Outlet::class, 'employee_outlet', 'employee_id', 'outlets_id');
+        return $this->belongsToMany(Outlet::class, 'employee_outlet', 'employee_id', 'outlet_id');
     }
 
     public function purchaseInvoices()

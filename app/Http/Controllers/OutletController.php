@@ -143,7 +143,7 @@ class OutletController extends Controller
         if ($id === 'all') {
             session([
                 'selected_outlet' => 'All Outlet',
-                'selected_outlet_id' => null,
+                'selected_outlet_id' => 'all',
             ]);
         } else {
             $outlet = $this->outletService->getOutletById($id);

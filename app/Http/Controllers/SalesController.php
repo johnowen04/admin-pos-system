@@ -82,7 +82,8 @@ class SalesController extends Controller
             'products.*.quantity' => 'required|numeric|min:1',
             'products.*.base_price' => 'required|numeric|min:0',
             'products.*.unit_price' => 'required|numeric|min:0',
-            'employee_id' => 'required|numeric',
+            'employee_id' => 'nullable|numeric',
+            'created_by' => 'required|numeric',
         ]);
 
         // Use the service to create the sales invoice

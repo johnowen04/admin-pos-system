@@ -5,9 +5,9 @@
         <div class="sidebar-content">
             <ul class="nav nav-secondary">
                 <!-- Full Outlet Selector (visible when sidebar expanded) -->
-                <div class="nav-item outlet-selector">
-                    <div class="card p-3">
-                        @if ($outlets->isEmpty() || (Auth::user()->employee && Auth::user()->employee->outlets->isEmpty()))
+                @if ($outlets->isEmpty() || (Auth::user()->employee && Auth::user()->employee->outlets->isEmpty()))
+                    <div class="nav-item outlet-selector">
+                        <div class="card p-3">
                             <div class="alert alert-info text-center py-4">
                                 <div class="mb-3">
                                     <i class="fa fa-store-alt fa-2x text-info"></i>
@@ -35,7 +35,13 @@
                                     </p>
                                 @endcan
                             </div>
-                        @else
+                        </div>
+                    </div>
+                @elseif (
+                    !Auth::user()->employee ||
+                        (Auth::user()->employee && Auth::user()->employee->position->level->value > \App\Enums\PositionLevel::MANAGER->value))
+                    <div class="nav-item outlet-selector">
+                        <div class="card p-3">
                             <div class="card-header">
                                 <h6 class="fw-bold">Current Outlet</h6>
                             </div>
@@ -49,8 +55,7 @@
                                         </div>
                                         <select id="outletSelector" class="form-select form-control border-0"
                                             onchange="selectOutletFromDropdown(this)">
-                                            <option value="all"
-                                                {{ $selectedOutlet == 'All Outlet' ? 'selected' : '' }}>
+                                            <option value="all">
                                                 All Outlet
                                             </option>
                                             <optgroup label="──────────">
@@ -65,10 +70,9 @@
                                     </div>
                                 </div>
                             </div>
-                        @endif
+                        </div>
                     </div>
-                </div>
-
+                @endif
 
                 @foreach ($filteredMenuItems as $section)
                     <li class="nav-section">
@@ -145,7 +149,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        id: outletId
+                        id: outletId,
                     })
                 })
                 .then(response => {
