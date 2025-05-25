@@ -21,7 +21,6 @@ class PermissionService
             $query->where('is_super_user_only', 0);
         }
 
-        // Load relationships, considering their trashed status
         $query->with([
             'feature' => function ($query) use ($withTrashedFeatures) {
                 if ($withTrashedFeatures) {
@@ -35,7 +34,6 @@ class PermissionService
             }
         ]);
 
-        // Only return permissions with existing relationships
         if (!$withTrashedFeatures) {
             $query->whereHas('feature');
         }
@@ -55,7 +53,6 @@ class PermissionService
      */
     public function createPermission(array $data)
     {
-        // Check if there's a soft-deleted permission with the same name
         $existingPermission = Permission::withTrashed()
             ->where('feature_id', $data['feature_id'])
             ->where('operation_id', $data['operation_id'])
@@ -63,7 +60,6 @@ class PermissionService
 
         if ($existingPermission) {
             if ($existingPermission->trashed()) {
-                // If found and trashed, restore and update it
                 $existingPermission->restore();
                 $existingPermission->update($data);
                 return $existingPermission;
@@ -75,6 +71,12 @@ class PermissionService
         return Permission::create($data);
     }
 
+    /**
+     * Create a batch of permissions.
+     *
+     * @param array $data
+     * @return void
+     */
     public function createPermissionBatch(array $data)
     {
         return DB::transaction(function () use ($data) {

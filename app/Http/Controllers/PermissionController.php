@@ -11,23 +11,19 @@ use Illuminate\Validation\Rule;
 
 class PermissionController extends Controller
 {
-    protected $featureService;
-    protected $operationService;
-    protected $permissionService;
 
     /**
      * Constructor to inject the PermissionService.
      */
-    public function __construct(FeatureService $featureService, OperationService $operationService, PermissionService $permissionService)
-    {
+    public function __construct(
+        protected FeatureService $featureService,
+        protected OperationService $operationService,
+        protected PermissionService $permissionService
+    ) {
         $this->middleware('permission:permission.view|permission.*')->only(['index', 'show']);
         $this->middleware('permission:permission.create|permission.*')->only(['create', 'store']);
         $this->middleware('permission:permission.edit|permission.*')->only(['edit', 'update']);
         $this->middleware('permission:permission.delete|permission.*')->only(['destroy']);
-
-        $this->featureService = $featureService;
-        $this->operationService = $operationService;
-        $this->permissionService = $permissionService;
     }
 
     /**
@@ -68,23 +64,19 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
-            'feature_id' => 'required|exists:features,id', // Ensure the feature exists
-            'operation_id' => 'required|exists:operations,id', // Ensure the operation exists
+            'feature_id' => 'required|exists:features,id',
+            'operation_id' => 'required|exists:operations,id',
             'slug' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('permissions')->withoutTrashed() // Only check non-trashed records
+                Rule::unique('permissions')->withoutTrashed()
             ],
-            'is_super_user_only' => 'boolean', // Ensure this is a boolean value
+            'is_super_user_only' => 'boolean',
         ]);
 
-        // Use the service to create the permission
         $this->permissionService->createPermission($validatedData);
-
-        // Redirect back to the permission index with a success message
         return redirect()->route('permission.index')->with('success', 'Permission created successfully.');
     }
 
@@ -118,7 +110,6 @@ class PermissionController extends Controller
      */
     public function update(Request $request, Permission $permission)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'feature_id' => 'required|exists:features,id',
             'operation_id' => 'required|exists:operations,id',
@@ -128,13 +119,10 @@ class PermissionController extends Controller
                 'max:20',
                 Rule::unique('permissions')->ignore($permission->id)->withoutTrashed()
             ],
-            'is_super_user_only' => 'boolean', // Ensure this is a boolean value
+            'is_super_user_only' => 'boolean',
         ]);
 
-        // Use the service to update the permission
         $this->permissionService->updatePermission($permission, $validatedData);
-
-        // Redirect back to the permission index with a success message
         return redirect()->route('permission.index')->with('success', 'Permission updated successfully.');
     }
 
@@ -143,10 +131,7 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        // Use the service to delete the permission
         $this->permissionService->deletePermission($permission);
-
-        // Redirect back to the permission index with a success message
         return redirect()->route('permission.index')->with('success', 'Permission deleted successfully.');
     }
 
@@ -161,9 +146,7 @@ class PermissionController extends Controller
             'operations.*' => 'exists:operations,id',
         ]);
 
-        // Check if there is data in the arrays
         if (!empty($validatedData['feature_id']) || !empty($validatedData['operations'])) {
-            // Prepare the data for batch creation
             $permissions = [];
             if (!empty($validatedData['feature_id']) && !empty($validatedData['operations'])) {
                 $featureId = $validatedData['feature_id'];
@@ -189,19 +172,16 @@ class PermissionController extends Controller
                     $permissions[] = [
                         'feature_id' => $featureId,
                         'operation_id' => $operationId,
-                        'slug' => $featureName . '.' . $operationName, // Example slug generation
-                        'is_super_user_only' => false, // Example slug generation
+                        'slug' => $featureName . '.' . $operationName,
+                        'is_super_user_only' => false,
                     ];
                 }
             }
-            // Use the service to create the permission
             $this->permissionService->createPermissionBatch($permissions);
         } else {
-            // Handle the case where both arrays are empty
             return redirect()->back()->withErrors(['error' => 'At least one feature or operation must be selected.']);
         }
 
-        // Redirect back to the permission index with a success message
         return redirect()->route('permission.index')->with('success', 'Permission created successfully.');
     }
 

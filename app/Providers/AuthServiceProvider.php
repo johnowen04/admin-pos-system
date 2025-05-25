@@ -32,7 +32,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Register a gate check handler for all permissions
         Gate::before(function ($user, $ability) {
             if (!$user) {
                 return false;
@@ -43,7 +42,6 @@ class AuthServiceProvider extends ServiceProvider
                 return true;
             }
 
-            // Return null to continue checking other gates
             return null;
         });
     }

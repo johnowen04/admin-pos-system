@@ -11,24 +11,20 @@ use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    protected $positionService;
-    protected $outletService;
-    protected $employeeService;
     protected $accessControlService;
 
     /**
      * Constructor to inject the EmployeeService.
      */
-    public function __construct(PositionService $positionService, OutletService $outletService, EmployeeService $employeeService)
-    {
+    public function __construct(
+        protected PositionService $positionService,
+        protected OutletService $outletService,
+        protected EmployeeService $employeeService
+    ) {
         $this->middleware('permission:employee.view|employee.*')->only(['index', 'show']);
         $this->middleware('permission:employee.create|employee.*')->only(['create', 'store']);
         $this->middleware('permission:employee.edit|employee.*')->only(['edit', 'update']);
         $this->middleware('permission:employee.delete|employee.*')->only(['destroy']);
-
-        $this->positionService = $positionService;
-        $this->outletService = $outletService;
-        $this->employeeService = $employeeService;
 
         $this->accessControlService = app(AccessControlService::class);
     }
@@ -39,8 +35,7 @@ class EmployeeController extends Controller
     public function index()
     {
         $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
-        $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualPosition(positionLevel: $currentUserLevel, withTrashedPosition: true); 
-
+        $employees = $this->employeeService->getAllEmployeesWithLowerOrEqualPosition(positionLevel: $currentUserLevel, withTrashedPosition: true);
         return view('employee.index', compact('employees'));
     }
 
@@ -130,7 +125,6 @@ class EmployeeController extends Controller
         ]);
 
         $this->employeeService->updateEmployee($employee, $validatedData);
-
         return redirect()->route('employee.index')->with('success', 'Employee updated successfully.');
     }
 

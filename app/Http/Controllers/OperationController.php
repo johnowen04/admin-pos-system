@@ -9,19 +9,15 @@ use Illuminate\Validation\Rule;
 
 class OperationController extends Controller
 {
-    protected $operationService;
-
     /**
      * Constructor to inject the OperationService.
      */
-    public function __construct(OperationService $operationService)
+    public function __construct(protected OperationService $operationService)
     {
         $this->middleware('permission:operation.view|operation.*')->only(['index', 'show']);
         $this->middleware('permission:operation.create|operation.*')->only(['create', 'store']);
         $this->middleware('permission:operation.edit|operation.*')->only(['edit', 'update']);
         $this->middleware('permission:operation.delete|operation.*')->only(['destroy']);
-
-        $this->operationService = $operationService;
     }
 
     /**
@@ -54,26 +50,22 @@ class OperationController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('operations')->withoutTrashed() // Only check non-trashed records
+                Rule::unique('operations')->withoutTrashed()
             ],
             'slug' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('operations')->withoutTrashed() // Only check non-trashed records
+                Rule::unique('operations')->withoutTrashed()
             ],
         ]);
 
-        // Use the service to create the operation
         $this->operationService->createOperation($validatedData);
-
-        // Redirect back to the operation index with a success message
         return redirect()->route('operation.index')->with('success', 'Operation created successfully.');
     }
 
@@ -103,7 +95,6 @@ class OperationController extends Controller
      */
     public function update(Request $request, Operation $operation)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -118,11 +109,8 @@ class OperationController extends Controller
                 Rule::unique('operations')->ignore($operation->id)->withoutTrashed()
             ],
         ]);
-
-        // Use the service to update the operation
+        
         $this->operationService->updateOperation($operation, $validatedData);
-
-        // Redirect back to the operation index with a success message
         return redirect()->route('operation.index')->with('success', 'Operation updated successfully.');
     }
 
@@ -131,10 +119,7 @@ class OperationController extends Controller
      */
     public function destroy(Operation $operation)
     {
-        // Use the service to delete the operation
         $this->operationService->deleteOperation($operation);
-
-        // Redirect back to the operation index with a success message
         return redirect()->route('operation.index')->with('success', 'Operation deleted successfully.');
     }
 }

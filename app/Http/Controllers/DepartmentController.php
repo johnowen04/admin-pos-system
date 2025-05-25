@@ -8,19 +8,15 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
-    protected $departmentService;
-
     /**
      * Constructor to inject the DepartmentService.
      */
-    public function __construct(DepartmentService $departmentService)
+    public function __construct(protected DepartmentService $departmentService)
     {
         $this->middleware('permission:department.view|department.*')->only(['index', 'show']);
         $this->middleware('permission:department.create|department.*')->only(['create', 'store']);
         $this->middleware('permission:department.edit|department.*')->only(['edit', 'update']);
         $this->middleware('permission:department.delete|department.*')->only(['destroy']);
-
-        $this->departmentService = $departmentService;
     }
 
     /**
@@ -53,15 +49,11 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
         ]);
 
-        // Use the service to create the department
         $this->departmentService->createDepartment($validatedData);
-
-        // Redirect back to the department index with a success message
         return redirect()->route('department.index')->with('success', 'Department created successfully.');
     }
 
@@ -91,15 +83,11 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, Department $department)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
         ]);
 
-        // Use the service to update the department
         $this->departmentService->updateDepartment($department, $validatedData);
-
-        // Redirect back to the department index with a success message
         return redirect()->route('department.index')->with('success', 'Department updated successfully.');
     }
 
@@ -108,10 +96,7 @@ class DepartmentController extends Controller
      */
     public function destroy(Department $department)
     {
-        // Use the service to delete the department
         $this->departmentService->deleteDepartment($department);
-
-        // Redirect back to the department index with a success message
         return redirect()->route('department.index')->with('success', 'Department deleted successfully.');
     }
 }

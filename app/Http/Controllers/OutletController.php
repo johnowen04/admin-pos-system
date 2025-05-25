@@ -4,26 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Outlet;
-use App\Services\AccessControlService;
 use App\Services\OutletService;
 
 class OutletController extends Controller
 {
-    protected $outletService;
-    protected $accessControlService;
-
     /**
      * Constructor to inject the OutletService.
      */
-    public function __construct(OutletService $outletService)
+    public function __construct(protected OutletService $outletService)
     {
         $this->middleware('permission:outlet.view|outlet.*')->only(['index', 'show']);
         $this->middleware('permission:outlet.create|outlet.*')->only(['create', 'store']);
         $this->middleware('permission:outlet.edit|outlet.*')->only(['edit', 'update']);
         $this->middleware('permission:outlet.delete|outlet.*')->only(['destroy']);
-
-        $this->outletService = $outletService;
-        $this->accessControlService = app(AccessControlService::class);
     }
 
     /**
@@ -67,10 +60,7 @@ class OutletController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        // Use the service to create the outlet
         $this->outletService->createOutlet($validatedData);
-
-        // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet created successfully.');
     }
 
@@ -111,10 +101,7 @@ class OutletController extends Controller
             'address' => 'nullable|string|max:255',
         ]);
 
-        // Use the service to update the outlet
         $this->outletService->updateOutlet($outlet, $validatedData);
-
-        // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet updated successfully.');
     }
 
@@ -123,50 +110,7 @@ class OutletController extends Controller
      */
     public function destroy(Outlet $outlet)
     {
-        // Use the service to delete the outlet
         $this->outletService->deleteOutlet($outlet);
-
-        // Redirect back to the outlet index with a success message
         return redirect()->route('outlet.index')->with('success', 'Outlet deleted successfully.');
-    }
-
-    /**
-     * Controller to select an outlet.
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function select(Request $request)
-    {
-        $id = $request->input('id');
-
-        if ($id === 'all') {
-            session([
-                'selected_outlet' => 'All Outlet',
-                'selected_outlet_id' => 'all',
-            ]);
-        } else {
-            $outlet = $this->outletService->getOutletById($id);
-            if (!$this->accessControlService->isSuperUser() && (!$outlet || !$this->accessControlService->getUser()->employee->outlets->contains($outlet))) {
-                return response()->json(['error' => 'Invalid outlet'], 403);
-            }
-
-            session([
-                'selected_outlet' => $outlet->name,
-                'selected_outlet_id' => $outlet->id,
-            ]);
-        }
-
-        return response()->json(['status' => 'ok']);
-    }
-
-
-    /**
-     * API to Get products by outlet ID.
-     */
-    public function getProductsByOutlet(int $outlet_Id)
-    {
-        $products = $this->outletService->getProductsWithStocksFromOutlet($outlet_Id);
-        return response()->json(['products' => $products]);
     }
 }

@@ -24,14 +24,12 @@ class CategoryService
      */
     public function createCategory(array $data)
     {
-        // Create the category
         $category = Category::create([
             'name' => $data['name'],
-            'departments_id' => $data['departments_id'],
+            'department_id' => $data['department_id'],
             'is_shown' => $data['is_shown'],
         ]);
 
-        // Attach outlets to the category (if any)
         if (!empty($data['outlets'])) {
             $category->outlets()->sync($data['outlets']);
         }
@@ -48,14 +46,12 @@ class CategoryService
      */
     public function updateCategory(Category $category, array $data)
     {
-        // Update the category
         $category->update([
             'name' => $data['name'],
-            'departments_id' => $data['departments_id'],
+            'department_id' => $data['department_id'],
             'is_shown' => $data['is_shown'],
         ]);
 
-        // Sync outlets
         if (!empty($data['outlets'])) {
             $category->outlets()->sync($data['outlets']);
         }

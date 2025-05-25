@@ -15,7 +15,7 @@ class Category extends Model
 
     protected $fillable = [
         'name',
-        'departments_id',
+        'department_id',
         'is_shown',
     ];
 
@@ -29,7 +29,7 @@ class Category extends Model
     // Relationships
     public function department()
     {
-        return $this->belongsTo(Department::class, 'departments_id');
+        return $this->belongsTo(Department::class, 'department_id');
     }
 
     public function outlets()

@@ -16,6 +16,16 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Inventory List</h4>
+                            <div class="d-flex ms-auto gap-2">
+                                <a href="{{ route('inventory.index', ['filter' => 'all']) }}"
+                                    class="btn btn-round btn-secondary {{ request('filter') === 'all' ? 'active' : '' }}">
+                                    Show All
+                                </a>
+                                <a href="{{ route('inventory.index', ['filter' => 'non-zero']) }}"
+                                    class="btn btn-round btn-secondary {{ request('filter') !== 'all' ? 'active' : '' }}">
+                                    Show Non-Zero
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">

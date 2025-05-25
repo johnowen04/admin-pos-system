@@ -10,27 +10,17 @@ use Illuminate\Http\Request;
 
 class ACLController extends Controller
 {
-    protected $featureService;
-    protected $operationService;
-    protected $permissionService;
-    protected $positionService;
-
     /**
      * Constructor to inject services.
      */
     public function __construct(
-        FeatureService $featureService,
-        OperationService $operationService,
-        PermissionService $permissionService,
-        PositionService $positionService
+        protected FeatureService $featureService,
+        protected OperationService $operationService,
+        protected PermissionService $permissionService,
+        protected PositionService $positionService
     ) {
         $this->middleware('permission:acl.view|acl.*')->only(['index']);
         $this->middleware('permission:acl.edit|acl.*')->only(['update']);
-
-        $this->featureService = $featureService;
-        $this->operationService = $operationService;
-        $this->permissionService = $permissionService;
-        $this->positionService = $positionService;
     }
 
     /**
@@ -41,9 +31,7 @@ class ACLController extends Controller
     public function index()
     {
         $positions = $this->positionService->getAllPositions();
-
         $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
-
         [$aclMatrix, $featuresForTemplate] = $this->buildACLMatrix($positions, $permissions);
 
         return view('acl.index', [
@@ -66,7 +54,6 @@ class ACLController extends Controller
         $permissions = $request->input('permissions', []);
 
         try {
-            // The service now handles the transaction
             $updatedPositions = $this->positionService->updateACLMatrix(
                 $permissions,
                 $this->featureService,
@@ -106,7 +93,6 @@ class ACLController extends Controller
             $featureName = $feature->name;
             $featureOperations = [];
 
-            // Process operations for this feature
             foreach ($operations as $operation) {
                 if (!$operation->name) continue;
 

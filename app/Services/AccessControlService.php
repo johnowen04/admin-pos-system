@@ -60,16 +60,12 @@ class AccessControlService
             return false;
         }
 
-        // Adjust this to match your exact superuser detection logic
         return !$this->user->employee && ($this->user->role && $this->user->role->name === 'Super User');
     }
 
     public function isSuperUserOnly(string $permissionSlug): bool
     {
-        // Cache permission model lookup if needed for performance
-
         $permModel = Permission::where('slug', $permissionSlug)->first();
-
         return $permModel && !empty($permModel->is_super_user_only);
     }
 
@@ -80,16 +76,13 @@ class AccessControlService
         }
 
         if ($this->isSuperUser()) {
-            // Superusers bypass permission checks
             return true;
         }
 
-        // Direct match
         if (in_array($permissionName, $this->permissions)) {
             return true;
         }
 
-        // Wildcard matching
         foreach ($this->permissions as $userPermission) {
             if (strpos($userPermission, '*') !== false) {
                 $pattern = '/^' . str_replace(['.', '*'], ['\.', '[^.]*'], $userPermission) . '$/';
@@ -99,7 +92,6 @@ class AccessControlService
             }
         }
 
-        // If requested permission is a wildcard that matches any user permission
         if (strpos($permissionName, '*') !== false) {
             $prefix = str_replace('*', '', $permissionName);
             foreach ($this->permissions as $userPermission) {

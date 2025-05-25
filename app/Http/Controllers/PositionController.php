@@ -12,22 +12,20 @@ use Illuminate\Validation\Rule;
 
 class PositionController extends Controller
 {
-    protected $permissionService;
-    protected $positionService;
     protected $accessControlService;
 
     /**
      * Constructor to inject the PositionService.
      */
-    public function __construct(PermissionService $permissionService, PositionService $positionService)
+    public function __construct(
+        protected PermissionService $permissionService,
+        protected PositionService $positionService)
     {
         $this->middleware('permission:position.view|position.*')->only(['index', 'show']);
         $this->middleware('permission:position.create|position.*')->only(['create', 'store']);
         $this->middleware('permission:position.edit|position.*')->only(['edit', 'update']);
         $this->middleware('permission:position.delete|position.*')->only(['destroy']);
 
-        $this->permissionService = $permissionService;
-        $this->positionService = $positionService;
         $this->accessControlService = app(AccessControlService::class);
     }
 
@@ -115,7 +113,6 @@ class PositionController extends Controller
         }
 
         $this->positionService->createPosition($positionData, $permissionIds);
-
         return redirect()->route('position.index')->with('success', 'Position created successfully.');
     }
 
@@ -222,7 +219,6 @@ class PositionController extends Controller
         }
 
         $this->positionService->updatePosition($position, $positionData, $permissionIds);
-
         return redirect()->route('position.index')->with('success', 'Position updated successfully.');
     }
 
@@ -232,7 +228,6 @@ class PositionController extends Controller
     public function destroy(Position $position)
     {
         $this->positionService->deletePosition($position);
-
         return redirect()->route('position.index')->with('success', 'Position deleted successfully.');
     }
 }

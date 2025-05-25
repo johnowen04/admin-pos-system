@@ -15,29 +15,19 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
-    protected $productService;
-    protected $outletService;
-    protected $categoryService;
-    protected $unitService;
-
     /**
      * Constructor to inject the services.
      */
     public function __construct(
-        ProductService $productService,
-        OutletService $outletService,
-        CategoryService $categoryService,
-        UnitService $unitService
+        protected ProductService $productService,
+        protected OutletService $outletService,
+        protected CategoryService $categoryService,
+        protected UnitService $unitService
     ) {
         $this->middleware('permission:product.view|product.*')->only(['index', 'show']);
         $this->middleware('permission:product.create|product.*')->only(['create', 'store']);
         $this->middleware('permission:product.edit|product.*')->only(['edit', 'update']);
         $this->middleware('permission:product.delete|product.*')->only(['destroy']);
-
-        $this->productService = $productService;
-        $this->outletService = $outletService;
-        $this->categoryService = $categoryService;
-        $this->unitService = $unitService;
     }
 
     /**
@@ -98,10 +88,7 @@ class ProductController extends Controller
             'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Use the service to create the product
         $this->productService->createProduct($validatedData);
-
-        // Redirect back to the product index with a success message
         return redirect()->route('product.index')->with('success', 'Product created successfully.');
     }
 
@@ -154,10 +141,7 @@ class ProductController extends Controller
             'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Use the service to update the product
         $this->productService->updateProduct($product, $validatedData);
-
-        // Redirect back to the product index with a success message
         return redirect()->route('product.index')->with('success', 'Product updated successfully.');
     }
 
@@ -166,10 +150,7 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        // Use the service to delete the product
         $this->productService->deleteProduct($product);
-
-        // Redirect back to the product index with a success message
         return redirect()->route('product.index')->with('success', 'Product deleted successfully.');
     }
 

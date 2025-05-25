@@ -3,25 +3,25 @@
 
 @extends('layouts.app')
 
-@section('title', 'Product Sales Report')
+@section('title', 'Category Sales Report')
 
 @section('content')
     <div class="page-inner">
         <div class="page-header">
-            <h3 class="fw-bold mb-3">Product Sales Report</h3>
+            <h3 class="fw-bold mb-3">Category Sales Report</h3>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Product Sales List</h4>
+                            <h4 class="card-title">Category Sales List</h4>
                             <div class="d-flex gap-1 ms-auto">
                                 <!-- Button to trigger modal -->
                                 <button type="button" class="btn btn-secondary btn-round" data-bs-toggle="modal"
                                     data-bs-target="#exportModal">
                                     <i class="fas fa-file-export me-1"></i>
-                                    Export Product Sales Report
+                                    Export Category Sales Report
                                 </button>
 
                                 <!-- Modal -->
@@ -31,7 +31,7 @@
                                         <div class="modal-content">
                                             <!-- Modal Header -->
                                             <div class="modal-header">
-                                                <h5 class="modal-title fw-bold" id="exportModalLabel">Export Product
+                                                <h5 class="modal-title fw-bold" id="exportModalLabel">Export Category
                                                     Sales Report</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="Close"></button>
@@ -40,7 +40,7 @@
                                             <!-- Modal Body -->
                                             <div class="modal-body">
                                                 <!-- Export Form -->
-                                                <form action="{{ route('reports.sales.product.export') }}" method="GET">
+                                                <form action="{{ route('reports.sales.category.export') }}" method="GET">
                                                     <div class="mb-3">
                                                         <label for="start_date" class="form-label fw-semibold">Start
                                                             Date</label>
@@ -87,40 +87,26 @@
                             </div>
                         @else
                             <div class="table-responsive">
-                                <table id="product-sales-table" class="display table table-striped table-hover">
+                                <table id="category-sales-table" class="display table table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Product</th>
-                                            <th>SKU</th>
                                             <th>Category</th>
-                                            <th>Outlet</th>
                                             <th>Quantity Sold</th>
                                             <th>Total Sold (Rp)</th>
-                                            <th>Quantity Refund</th>
-                                            <th>Total Refund (Rp)</th>
                                             <th>Total Qty (%)</th>
                                             <th>Total Sold (%)</th>
                                             <th>COGS (Rp)</th>
-                                            <th>Refund COGS (Rp)</th>
-                                            <th>Gross Profit (Rp)</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($report->rows() as $product)
+                                        @foreach ($report->rows() as $category)
                                             <tr>
-                                                <td>{{ $product['name'] }}</td>
-                                                <td>{{ $product['sku'] }}</td>
-                                                <td>{{ $product['category'] }}</td>
-                                                <td>{{ $product['outlet'] }}</td>
-                                                <td>{{ $product['sold_quantity'] }}</td>
-                                                <td>Rp{{ $product['total_sold'] }}</td>
-                                                <td>{{ $product['refund_quantity'] }}</td>
-                                                <td>Rp{{ $product['total_refund'] }}</td>
-                                                <td>{{ $product['percentage_qty'] }}%</td>
-                                                <td>{{ $product['percentage_revenue'] }}%</td>
-                                                <td>Rp{{ $product['total_sold_cogs'] }}</td>
-                                                <td>Rp{{ $product['total_refund_cogs'] }}</td>
-                                                <td>Rp{{ $product['gross_profit'] }}</td>
+                                                <td>{{ $category['name'] }}</td>
+                                                <td>{{ $category['sold_quantity'] }}</td>
+                                                <td>{{ $category['percentage_qty'] }}%</td>
+                                                <td>Rp{{ $category['total_sold'] }}</td>
+                                                <td>{{ $category['percentage_revenue'] }}%</td>
+                                                <td>Rp{{ $category['total_sold_cogs'] }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -137,7 +123,7 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            $('#product-sales-table').DataTable({
+            $('#category-sales-table').DataTable({
                 "pageLength": 10,
                 "order": [
                     [0, "asc"]

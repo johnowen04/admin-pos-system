@@ -2,22 +2,17 @@
 
 namespace App\Services;
 
+use App\Models\Outlet;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ProductService
 {
-    public $outletService;
-    public $inventoryService;
-    public $stockMovementService;
-
-    public function __construct(OutletService $outletService, InventoryService $inventoryService, StockMovementService $stockMovementService)
-    {
-        $this->outletService = $outletService;
-        $this->inventoryService = $inventoryService;
-        $this->stockMovementService = $stockMovementService;
-    }
+    public function __construct(
+        protected InventoryService $inventoryService,
+        protected StockMovementService $stockMovementService
+    ) {}
 
     /**
      * Get all products.
@@ -63,55 +58,40 @@ class ProductService
     }
 
     /**
-     * Get all products with their stocks and outlet names.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Create a new product.
      */
-    public function getProductsWithStocks()
+    public function createProduct(array $data): Product
     {
-        $products = $this->getAllProducts(); // Fetch all products
+        $product = Product::create($this->extractProductAttributes($data));
 
-        foreach ($products as $product) {
-            $product->stocks = $this->inventoryService->getStocksByProduct($product->id);
+        if (!empty($data['outlets'])) {
+            $this->initializeOutletsForProduct($product, $data['outlets']);
         }
 
-        return $products;
-    }
-
-    public function getProductsWithMovements(?int $outletId = null)
-    {
-        $products = $this->getAllProducts(); // Fetch all products
-
-        foreach ($products as $product) {
-            $product->movements = $this->stockMovementService->getAllMovements($product->id, $outletId);
-        }
-
-        return $products;
-    }
-
-    public function getProductsWithStocksAndMovements()
-    {
-        $products = $this->getAllProducts(); // Fetch all products
-
-        foreach ($products as $product) {
-            $product->stocks = $this->inventoryService->getStocksByProduct($product->id);
-            $product->movements = $this->stockMovementService->getMovementsByProduct($product->id);
-        }
-
-        return $products;
+        return $product;
     }
 
     /**
-     * Create a new product.
-     *
-     * @param array $data
-     * @return \App\Models\Product
+     * Update an existing product.
      */
-    public function createProduct(array $data)
+    public function updateProduct(Product $product, array $data): bool
     {
-        // Create the product
-        $product = Product::create([
-            'sku' => $data['sku'], // Explicitly set the SKU
+        $product->update($this->extractProductAttributes($data, updating: true));
+
+        if (!empty($data['outlets'])) {
+            $this->syncProductOutlets($product, $data['outlets']);
+        }
+
+        return true;
+    }
+
+    /**
+     * Extract product attributes from request data.
+     */
+    private function extractProductAttributes(array $data, bool $updating = false): array
+    {
+        return [
+            'sku' => $data['sku'] ?? ($updating ?: null),
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'base_price' => $data['base_price'] ?? 0,
@@ -121,54 +101,26 @@ class ProductService
             'is_shown' => $data['is_shown'],
             'categories_id' => $data['categories_id'],
             'units_id' => $data['units_id'],
-        ]);
-
-        $employeeId = Auth::user()->id;
-
-        // Attach outlets to the product (if any)
-        if (!empty($data['outlets'])) {
-            $this->inventoryService->initializeStockForNewProduct($data['outlets'], $product->id);
-            foreach ($data['outlets'] as  $_ => $outletId) {
-                // Record stock movements for each product
-                $this->stockMovementService->recordInitialStock(
-                    $outletId,
-                    $product['id'],
-                    $employeeId,
-                    0,
-                );
-            }
-        }
-
-        return $product;
+        ];
     }
 
     /**
-     * Update an existing product.
-     *
-     * @param \App\Models\Product $product
-     * @param array $data
-     * @return bool
+     * Initialize inventory and stock movement for a product.
      */
-    public function updateProduct(Product $product, array $data)
+    private function initializeOutletsForProduct(Product $product, array $outlets): void
     {
-        // Update the product
-        $product->update([
-            'name' => $data['name'],
-            'description' => $data['description'] ?? null,
-            'buy_price' => $data['buy_price'],
-            'sell_price' => $data['sell_price'],
-            'min_qty' => $data['min_qty'],
-            'is_shown' => $data['is_shown'],
-            'categories_id' => $data['categories_id'],
-            'units_id' => $data['units_id'],
-        ]);
+        $employeeId = Auth::id();
 
-        // Sync outlets
-        if (!empty($data['outlets'])) {
-            $this->syncProductOutlets($product, $data['outlets']);
+        $this->inventoryService->initializeStockForNewProduct($outlets, $product->id);
+
+        foreach ($outlets as $outletId) {
+            $this->stockMovementService->recordInitialStock(
+                $outletId,
+                $product->id,
+                $employeeId,
+                0
+            );
         }
-
-        return true;
     }
 
     /**
@@ -177,41 +129,25 @@ class ProductService
     private function syncProductOutlets(Product $product, array $outlets): void
     {
         $currentOutlets = $product->outlets()->pluck('outlet_id')->toArray();
-        $newOutlets = $outlets; // Extract outlet IDs from the provided data
 
-        // Find removed and added outlets
-        $removedOutlets = array_diff($currentOutlets, $newOutlets);
-        $addedOutlets = array_diff($newOutlets, $currentOutlets);
+        $removed = array_diff($currentOutlets, $outlets);
+        $added = array_diff($outlets, $currentOutlets);
 
-        // Handle removed outlets
-        $this->handleRemovedOutlets($product, $removedOutlets);
-
-        // Initialize stock for added outlets
-        $this->inventoryService->initializeStockForNewProduct($addedOutlets, $product->id);
-
-        $employeeId = Auth::user()->id;
-
-        foreach ($addedOutlets as $outletId) {
-            // Record stock movements for each product
-            $this->stockMovementService->recordInitialStock(
-                $outletId,
-                $product['id'],
-                $employeeId,
-                0,
-            );
-        }
+        $this->handleRemovedOutlets($product, $removed);
+        $this->initializeOutletsForProduct($product, $added);
     }
 
     /**
-     * Handle removed outlets.
+     * Handle removed outlets and clean inventory.
      */
-    private function handleRemovedOutlets(Product $product, array $removedOutlets): void
+    private function handleRemovedOutlets(Product $product, array $removed): void
     {
-        foreach ($removedOutlets as $outletId) {
+        foreach ($removed as $outletId) {
             $inventory = $this->inventoryService->getStock($outletId, $product->id);
 
             if ($inventory > 0) {
-                $outletName = $this->outletService->getOutletById($outletId)->name ?? "Unknown Outlet";
+                $outletName = Outlet::find($outletId)->name ?? "Unknown Outlet";
+
                 throw ValidationException::withMessages([
                     'outlet' => "Cannot remove outlet '{$outletName}' because its inventory is not empty."
                 ]);
@@ -223,14 +159,12 @@ class ProductService
 
     /**
      * Delete a product.
-     *
-     * @param \App\Models\Product $product
-     * @return bool|null
      */
-    public function deleteProduct(Product $product)
+    public function deleteProduct(Product $product): ?bool
     {
         return $product->delete();
     }
+
 
     /**
      * Get the selected outlets for a product.

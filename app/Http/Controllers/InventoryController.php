@@ -17,10 +17,11 @@ class InventoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $filter = $request->query('filter', 'non-zero'); // default to non-zero
         $data = $this->getProductWithMovementsData();
-        $viewModel = new InventoryViewModel($data);
+        $viewModel = new InventoryViewModel($data, $filter);
         return view('inventory.index', ['inventory' => $viewModel]);
     }
 

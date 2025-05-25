@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Services\AccessControlService;
 use App\Services\InventoryService;
 use App\Services\OutletService;
-use App\Services\StockMovementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -17,18 +16,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register AccessControlService as a singleton
         $this->app->singleton(AccessControlService::class, function ($app) {
             return new AccessControlService();
         });
 
-        $this->app->singleton(InventoryService::class);
         $this->app->singleton(OutletService::class, function ($app) {
-            return new OutletService($app->make(InventoryService::class));
-        });
-
-        $this->app->singleton(StockMovementService::class, function($app) {
-            return new StockMovementService($app->make(InventoryService::class));
+            return new OutletService();
         });
     }
 
@@ -39,12 +32,15 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
             if (Auth::check()) {
-                if (app(AccessControlService::class)->isSuperUser()) {
-                    $outlets = app(OutletService::class)->getAllOutlets();
+                $accessControl = app(AccessControlService::class);
+                $outletService = app(OutletService::class);
+
+                if ($accessControl->isSuperUser()) {
+                    $outlets = $outletService->getAllOutlets();
                 } else {
-                    $outlets = app(AccessControlService::class)->getUser()->employee->outlets;
+                    $outlets = $accessControl->getUser()->employee->outlets;
                 }
-                
+
                 $view->with('outlets', $outlets);
                 $view->with('selectedOutlet', session('selected_outlet', $outlets->first()->name ?? null));
                 $view->with('selectedOutletId', session('selected_outlet_id', $outlets->first()->id ?? null));

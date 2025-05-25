@@ -8,19 +8,15 @@ use Illuminate\Http\Request;
 
 class BaseUnitController extends Controller
 {
-    protected $baseUnitService;
-
     /**
      * Constructor to inject the BaseUnitService.
      */
-    public function __construct(BaseUnitService $baseUnitService)
+    public function __construct(protected BaseUnitService $baseUnitService)
     {
         $this->middleware('permission:bu.view|bu.*')->only(['index', 'show']);
         $this->middleware('permission:bu.create|bu.*')->only(['create', 'store']);
         $this->middleware('permission:bu.edit|bu.*')->only(['edit', 'update']);
         $this->middleware('permission:bu.delete|bu.*')->only(['destroy']);
-
-        $this->baseUnitService = $baseUnitService;
     }
 
     /**
@@ -53,15 +49,11 @@ class BaseUnitController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:45',
         ]);
 
-        // Create the base unit
         $this->baseUnitService->createBaseUnit($validatedData);
-
-        // Redirect back to the base unit index with a success message
         return redirect()->route('bu.index')->with('success', 'Base Unit created successfully.');
     }
 
@@ -91,15 +83,11 @@ class BaseUnitController extends Controller
      */
     public function update(Request $request, BaseUnit $bu)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:45',
         ]);
 
-        // Update the base unit
         $this->baseUnitService->updateBaseUnit($bu, $validatedData);
-
-        // Redirect back to the base unit index with a success message
         return redirect()->route('bu.index')->with('success', 'Base Unit updated successfully.');
     }
 
@@ -108,10 +96,7 @@ class BaseUnitController extends Controller
      */
     public function destroy(BaseUnit $bu)
     {
-        // Perform soft delete
         $this->baseUnitService->deleteBaseUnit($bu);
-
-        // Redirect back to the base unit index with a success message
         return redirect()->route('bu.index')->with('success', 'Base Unit deleted successfully.');
     }
 }

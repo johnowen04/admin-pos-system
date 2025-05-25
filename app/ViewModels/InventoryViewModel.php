@@ -8,7 +8,10 @@ class InventoryViewModel
 {
     protected ?Collection $mappedRows = null;
 
-    public function __construct(protected Collection $products) {}
+    public function __construct(
+        protected Collection $products,
+        protected string $filter = 'non-zero'
+    ) {}
 
     public function rows(): Collection
     {
@@ -16,7 +19,7 @@ class InventoryViewModel
             return $this->mappedRows;
         }
 
-        return $this->mappedRows = $this->products->map(function ($product) {
+        $this->mappedRows = $this->products->map(function ($product) {
             $movementGroups = [];
             $detailStock = [];
 
@@ -82,6 +85,22 @@ class InventoryViewModel
                 'balance' => $balance,
                 'stock' => $detailStock,
             ];
-        })->filter(fn($row) => $row['initial'] || $row['purchase'] || $row['sale'] || $row['adjustment'])->values();
+        })->filter(function ($row) {
+            if ($this->filter === 'all') {
+                return true;
+            }
+
+            return $this->isNonZero($row['initial'])
+                || $this->isNonZero($row['purchase'])
+                || $this->isNonZero($row['sale'])
+                || $this->isNonZero($row['adjustment']);
+        })->values();
+        
+        return $this->mappedRows;
+    }
+
+    private function isNonZero(float|string|null $value): bool
+    {
+        return (float) $value !== 0.0;
     }
 }

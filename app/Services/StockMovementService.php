@@ -6,6 +6,7 @@ use App\Models\StockMovement;
 use App\Services\InventoryService;
 use App\Enums\StockMovementType;
 use App\Contracts\ReversibleInvoice;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 
 class StockMovementService
@@ -14,7 +15,7 @@ class StockMovementService
 
     public function getProductsWithMovements(?int $outletId = null)
     {
-        $products = app(ProductService::class)->getAllProducts();
+        $products = Product::all();
 
         foreach ($products as $product) {
             $product->movements = $this->getAllMovements($product->id, $outletId);

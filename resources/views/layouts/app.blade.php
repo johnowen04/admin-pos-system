@@ -52,7 +52,8 @@
                 @yield('content')
             </div>
         @else
-            <div class="wrapper {{ Route::is('pos.*') ? 'sidebar_minimize' : '' }}">
+            {{-- <div class="wrapper {{ Route::is('pos.*') || Route::is('inventory.*') ? 'sidebar_minimize sidebar_minimize_hover' : '' }}"> --}}
+            <div class="wrapper sidebar_minimize sidebar_minimize_hover">
                 <!-- Sidebar -->
                 <x-sidebar />
                 

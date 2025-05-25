@@ -68,7 +68,6 @@ class PurchaseInvoiceService
                 'created_by' => $data['created_by'],
             ]);
 
-            // Attach products to the purchase invoice
             if (!empty($data['products'])) {
                 $products = [];
                 foreach ($data['products'] as $product) {
@@ -79,7 +78,6 @@ class PurchaseInvoiceService
                         'total_price' => $product['quantity'] * $product['unit_price'],
                     ];
 
-                    // Update product prices using historical data approach
                     $this->updateProductPrices(
                         $product['id'],
                         $product['unit_price'],
@@ -89,10 +87,9 @@ class PurchaseInvoiceService
                 $purchaseInvoice->products()->attach($products);
             }
 
-            // Record stock movements for each product
             foreach ($data['products'] as $product) {
                 app(StockMovementService::class)->recordPurchase(
-                    $data['outlet_id'], // Assuming one outlet is selected
+                    $data['outlet_id'],
                     $product['id'],
                     $data['employee_id'],
                     $product['quantity']
@@ -114,9 +111,8 @@ class PurchaseInvoiceService
     public function updatePurchaseInvoice(PurchaseInvoice $purchaseInvoice, array $data)
     {
         DB::transaction(function () use ($purchaseInvoice, $data) {
-            // Update the purchase invoice
             $purchaseInvoice->update([
-                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'], 
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
@@ -124,7 +120,6 @@ class PurchaseInvoiceService
                 'created_by' => $data['created_by'],
             ]);
 
-            // Update products associated with the purchase invoice
             if (!empty($data['products'])) {
                 $products = [];
                 foreach ($data['products'] as $product) {
@@ -187,10 +182,8 @@ class PurchaseInvoiceService
         $product = $this->productService->getProductById($productId);
         if (!$product) return;
 
-        // Get all previous purchases of this product
         $previousPurchases = $this->getPreviousPurchasesForProduct($productId);
 
-        // Calculate weighted average buy price
         $totalQuantity = 0;
         $totalAmount = 0;
 
@@ -199,15 +192,13 @@ class PurchaseInvoiceService
             $totalAmount += $purchaseInvoice->quantity * $purchaseInvoice->unit_price;
         }
 
-        // Add current purchase
         $totalQuantity += $newQuantity;
         $totalAmount += $newQuantity * $unitPrice;
 
-        // Calculate weighted average
         if ($totalQuantity > 0) {
             $weightedAverage = $totalAmount / $totalQuantity;
             $product->buy_price = $weightedAverage;
-            $product->base_price = $weightedAverage * 1; // Add markup if needed
+            $product->base_price = $weightedAverage * 1;
             $product->save();
         }
     }

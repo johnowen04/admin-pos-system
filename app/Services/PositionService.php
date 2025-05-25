@@ -31,11 +31,23 @@ class PositionService
         return $withTrashed ? Position::withTrashed()->get() : Position::all();
     }
 
+    /**
+     * Get a position by its name.
+     * 
+     * @param string $positionName
+     * @return \App\Models\Position|null
+     */
     public function getPositionByName(string $positionName)
     {
         return Position::where('name', $positionName)->first();
     }
 
+    /**
+     * Get all positions with a level lower than or equal to the specified level.
+     * 
+     * @param int $level
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function getAllPositionWithLowerOrEqualLevel(int $level)
     {
         return Position::where('level', '<=', $level)->get();
@@ -124,7 +136,6 @@ class PositionService
 
         try {
             foreach ($permissionsData as $positionName => $features) {
-                // Find the position by name
                 $position = $this->getPositionByName($positionName);
 
                 if (!$position) {

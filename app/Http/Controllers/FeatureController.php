@@ -9,19 +9,15 @@ use Illuminate\Validation\Rule;
 
 class FeatureController extends Controller
 {
-    protected $featureService;
-
     /**
      * Constructor to inject the FeatureService.
      */
-    public function __construct(FeatureService $featureService)
+    public function __construct(protected FeatureService $featureService)
     {
         $this->middleware('permission:feature.view|feature.*')->only(['index', 'show']);
         $this->middleware('permission:feature.create|feature.*')->only(['create', 'store']);
         $this->middleware('permission:feature.edit|feature.*')->only(['edit', 'update']);
         $this->middleware('permission:feature.delete|feature.*')->only(['destroy']);
-
-        $this->featureService = $featureService;
     }
 
     /**
@@ -54,26 +50,22 @@ class FeatureController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('features')->withoutTrashed() // Only check non-trashed records
+                Rule::unique('features')->withoutTrashed()
             ],
             'slug' => [
                 'required',
                 'string',
                 'max:20',
-                Rule::unique('features')->withoutTrashed() // Only check non-trashed records
+                Rule::unique('features')->withoutTrashed()
             ],
         ]);
 
-        // Use the service to create the feature
         $this->featureService->createFeature($validatedData);
-
-        // Redirect back to the feature index with a success message
         return redirect()->route('feature.index')->with('success', 'Feature created successfully.');
     }
 
@@ -103,7 +95,6 @@ class FeatureController extends Controller
      */
     public function update(Request $request, Feature $feature)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => [
                 'required',
@@ -119,10 +110,7 @@ class FeatureController extends Controller
             ],
         ]);
 
-        // Use the service to update the feature
         $this->featureService->updateFeature($feature, $validatedData);
-
-        // Redirect back to the feature index with a success message
         return redirect()->route('feature.index')->with('success', 'Feature updated successfully.');
     }
 
@@ -131,10 +119,7 @@ class FeatureController extends Controller
      */
     public function destroy(Feature $feature)
     {
-        // Use the service to delete the feature
         $this->featureService->deleteFeature($feature);
-
-        // Redirect back to the feature index with a success message
         return redirect()->route('feature.index')->with('success', 'Feature deleted successfully.');
     }
 }

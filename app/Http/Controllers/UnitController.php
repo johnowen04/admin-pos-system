@@ -9,21 +9,18 @@ use Illuminate\Http\Request;
 
 class UnitController extends Controller
 {
-    protected $unitService;
-    protected $baseUnitService;
 
     /**
      * Constructor to inject the UnitService.
      */
-    public function __construct(BaseUnitService $baseUnitService, UnitService $unitService)
-    {
+    public function __construct(
+        protected BaseUnitService $baseUnitService,
+        protected UnitService $unitService
+    ) {
         $this->middleware('permission:unit.view|unit.*')->only(['index', 'show']);
         $this->middleware('permission:unit.create|unit.*')->only(['create', 'store']);
         $this->middleware('permission:unit.edit|unit.*')->only(['edit', 'update']);
         $this->middleware('permission:unit.delete|unit.*')->only(['destroy']);
-
-        $this->unitService = $unitService;
-        $this->baseUnitService = $baseUnitService;
     }
 
     /**
@@ -33,7 +30,7 @@ class UnitController extends Controller
     {
         $units = $this->unitService->getAllUnits();
         return view('unit.index', [
-            'units' => $units, // Placeholder for units
+            'units' => $units,
             'createRoute' => route('unit.create'),
         ]);
     }
@@ -65,7 +62,6 @@ class UnitController extends Controller
         ]);
 
         $this->unitService->createUnit($validatedData);
-
         return redirect()->route('unit.index')->with('success', 'Unit created successfully.');
     }
 
@@ -104,7 +100,6 @@ class UnitController extends Controller
         ]);
 
         $this->unitService->updateUnit($unit, $validatedData);
-
         return redirect()->route('unit.index')->with('success', 'Unit updated successfully.');
     }
 
@@ -114,7 +109,6 @@ class UnitController extends Controller
     public function destroy(Unit $unit)
     {
         $this->unitService->deleteUnit($unit);
-
         return redirect()->route('unit.index')->with('success', 'Unit deleted successfully.');
     }
 }

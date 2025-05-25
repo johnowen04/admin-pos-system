@@ -32,7 +32,7 @@ class ProductSalesReportExport implements FromCollection, WithHeadings, WithMapp
         $this->report = $report;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
-        $this->selectedOutletName = session('selected_outlet_name', 'All Outlets');
+        $this->selectedOutletName = session('selected_outlet', 'All Outlets');
         $this->createdBy = app(AccessControlService::class)->getUser()->name;
     }
 

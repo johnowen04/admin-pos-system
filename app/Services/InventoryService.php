@@ -9,12 +9,12 @@ class InventoryService
     public function getStocksByProduct(int $productId): array
     {
         return Inventory::where('product_id', $productId)
-            ->with('outlet') // Eager load the related Outlet model
+            ->with('outlet')
             ->get()
             ->map(function ($item) {
                 return [
                     'outlet_id' => $item->outlet_id,
-                    'outlet_name' => $item->outlet->name ?? 'Unknown Outlet', // Get outlet name or fallback
+                    'outlet_name' => $item->outlet->name ?? 'Unknown Outlet',
                     'quantity' => $item->quantity,
                 ];
             })
@@ -24,16 +24,16 @@ class InventoryService
     public function getStocksByOutlet(int $outletId): array
     {
         return Inventory::where('outlet_id', $outletId)
-            ->with('product') // Eager load the related Product model
+            ->with('product')
             ->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->product_id,
-                    'sku' => $item->product->sku ?? 'XXXXXX', // Get SKU or fallback
-                    'name' => $item->product->name ?? 'Unknown Product', // Get product name or fallback
-                    'base_price' => $item->product->base_price ?? 0, // Get product sell price or fallback
-                    'sell_price' => $item->product->sell_price ?? 0, // Get product sell price or fallback
-                    'categories_id' => $item->product->categories_id ?? 0, // Get product category ID or fallback
+                    'sku' => $item->product->sku ?? 'XXXXXX',
+                    'name' => $item->product->name ?? 'Unknown Product',
+                    'base_price' => $item->product->base_price ?? 0,
+                    'sell_price' => $item->product->sell_price ?? 0,
+                    'categories_id' => $item->product->categories_id ?? 0,
                     'quantity' => $item->quantity,
                 ];
             })
@@ -46,11 +46,11 @@ class InventoryService
             ->map(function ($item) {
                 return [
                     'id' => $item->product_id,
-                    'sku' => $item->product->sku ?? 'XXXXXX', // Get SKU or fallback
-                    'name' => $item->product->name ?? 'Unknown Product', // Get product name or fallback
-                    'base_price' => $item->product->base_price ?? 0, // Get product base price or fallback
-                    'sell_price' => $item->product->sell_price ?? 0, // Get product sell price or fallback
-                    'categories_id' => $item->product->categories_id ?? 0, // Get product category ID or fallback
+                    'sku' => $item->product->sku ?? 'XXXXXX',
+                    'name' => $item->product->name ?? 'Unknown Product',
+                    'base_price' => $item->product->base_price ?? 0,
+                    'sell_price' => $item->product->sell_price ?? 0,
+                    'categories_id' => $item->product->categories_id ?? 0,
                     'quantity' => $item->quantity,
                 ];
             })

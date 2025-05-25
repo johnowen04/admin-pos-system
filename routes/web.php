@@ -18,6 +18,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\Reports\SalesReportController;
+use App\Http\Controllers\SelectOutletController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         return view('index');
     })->name('dashboard');
+
+    Route::post('/select-outlet', [SelectOutletController::class, 'select'])->name('select-outlet.select');
 
     // ACL routes
     Route::prefix('acl')->group(function () {
@@ -72,14 +75,17 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    Route::post('/select-outlet', [OutletController::class, 'select'])->name('outlets.select');
-    Route::resource('outlet', OutletController::class);
-
     Route::put('/purchase/{purchase}/void', [PurchaseController::class, 'void'])->name('purchase.void');
     Route::resource('purchase', PurchaseController::class);
 
     Route::put('/sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
     Route::resource('sales', SalesController::class);
+
+    Route::get('/reports/sales/department/export', [SalesReportController::class, 'exportDepartmentSalesReport'])->name('reports.sales.department.export');
+    Route::get('/reports/sales/department', [SalesReportController::class, 'departmentReport'])->name('reports.sales.department');
+
+    Route::get('/reports/sales/category/export', [SalesReportController::class, 'exportCategorySalesReport'])->name('reports.sales.category.export');
+    Route::get('/reports/sales/category', [SalesReportController::class, 'categoryReport'])->name('reports.sales.category');
 
     Route::get('/reports/sales/product/export', [SalesReportController::class, 'exportProductSalesReport'])->name('reports.sales.product.export');
     Route::get('/reports/sales/product', [SalesReportController::class, 'productReport'])->name('reports.sales.product');
@@ -88,6 +94,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('bu', BaseUnitController::class);
     Route::resource('category', CategoryController::class);
     Route::resource('department', DepartmentController::class);
+    Route::resource('outlet', OutletController::class);
     Route::resource('employee', EmployeeController::class);
     Route::resource('feature', FeatureController::class);
     Route::resource('inventory', InventoryController::class);

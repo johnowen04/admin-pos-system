@@ -6,19 +6,36 @@ use App\Models\Feature;
 
 class FeatureService
 {
+    /**
+     * Get all features.
+     *
+     * @param bool $withTrashed
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function getAllFeatures($withTrashed = false)
     {
         return $withTrashed ? Feature::withTrashed()->get() : Feature::all();
     }
 
+    /**
+     * Get feature by id.
+     *
+     * @param int $id
+     * @return \App\Models\Feature
+     */
     public function getFeatureById($id)
     {
         return Feature::findOrFail($id);
     }
 
+    /**
+     * Create a new feature or restore an existing one.
+     *
+     * @param array $data
+     * @return \App\Models\Feature
+     */
     public function createFeature(array $data)
     {
-        // Check if there's a soft-deleted feature with the same name and slug
         $existingFeature = Feature::withTrashed()
             ->where('name', $data['name'])
             ->where('slug', $data['slug'])
@@ -26,7 +43,6 @@ class FeatureService
 
         if ($existingFeature) {
             if ($existingFeature->trashed()) {
-                // If found and trashed, restore
                 $existingFeature->restore();
                 return $existingFeature;
             } else {
@@ -37,11 +53,24 @@ class FeatureService
         return Feature::create($data);
     }
 
+    /**
+     * Update an existing feature.
+     *
+     * @param \App\Models\Feature $feature
+     * @param array $data
+     * @return bool
+     */
     public function updateFeature(Feature $feature, array $data)
     {
         return $feature->update($data);
     }
 
+    /**
+     * Delete a feature.
+     *
+     * @param \App\Models\Feature $feature
+     * @return bool|null
+     */
     public function deleteFeature(Feature $feature)
     {
         return $feature->delete();

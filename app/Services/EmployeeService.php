@@ -3,18 +3,12 @@
 namespace App\Services;
 
 use App\Models\Employee;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
 class EmployeeService
 {
-    public $roleService;
-
-    public function __construct(RoleService $roleService)
-    {
-        $this->roleService = $roleService;
-    }
-
     /**
      * Get all employees.
      *
@@ -39,6 +33,14 @@ class EmployeeService
         return $query->get();
     }
 
+    /**
+     * Get all employees with a position level lower than or equal to the specified level.
+     * 
+     * @param int $positionLevel
+     * @param bool $withTrashed
+     * @param bool $withTrashedPosition
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function getAllEmployeesWithLowerOrEqualPosition($positionLevel, $withTrashed = false, $withTrashedPosition = false)
     {
         $query = $withTrashed ? Employee::withTrashed() : Employee::query();
@@ -67,7 +69,7 @@ class EmployeeService
     public function createEmployee(array $data)
     {
         $user = null;
-        $roleId = $this->roleService->getRoleByName('employee')->id;
+        $roleId = Role::where('name', 'employee')->id;
 
         if (isset($data['password'])) {
             $user = User::create([
@@ -88,7 +90,6 @@ class EmployeeService
             'user_id' => $user ? $user->id : null,
         ]);
 
-        // Sync outlets
         if (!empty($data['outlets'])) {
             $employee->outlets()->sync($data['outlets']);
         }
@@ -122,7 +123,6 @@ class EmployeeService
             ]);
         }
 
-        // Sync outlets
         if (!empty($data['outlets'])) {
             $employee->outlets()->sync($data['outlets']);
         }

@@ -10,23 +10,18 @@ use App\Services\OutletService;
 
 class CategoryController extends Controller
 {
-    protected $departmentService;
-    protected $outletService;
-    protected $categoryService;
-
     /**
      * Constructor to inject the CategoryService.
      */
-    public function __construct(DepartmentService $departmentService, OutletService $outletService, CategoryService $categoryService)
+    public function __construct(
+        protected DepartmentService $departmentService,
+        protected OutletService $outletService,
+        protected CategoryService $categoryService)
     {
         $this->middleware('permission:category.view|category.*')->only(['index', 'show']);
         $this->middleware('permission:category.create|category.*')->only(['create', 'store']);
         $this->middleware('permission:category.edit|category.*')->only(['edit', 'update']);
         $this->middleware('permission:category.delete|category.*')->only(['destroy']);
-
-        $this->departmentService = $departmentService;
-        $this->outletService = $outletService;
-        $this->categoryService = $categoryService;
     }
 
     /**
@@ -46,14 +41,14 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        $departments = $this->departmentService->getAllDepartments(); // Fetch all departments
-        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
+        $departments = $this->departmentService->getAllDepartments();
+        $outlets = $this->outletService->getAllOutlets();
         return view('category.create', [
             'action' => route('category.store'),
             'method' => 'POST',
             'category' => null,
             'outlets' => $outlets,
-            'selectedOutlets' => [], // No pre-selected outlets for create
+            'selectedOutlets' => [],
             'departments' => $departments,
             'cancelRoute' => route('category.index'),
         ]);
@@ -64,28 +59,15 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:45',
-            'departments_id' => 'required|exists:departments,id', // Ensure the department exists
+            'departments_id' => 'required|exists:departments,id',
             'is_shown' => 'required|boolean',
-            'outlets' => 'nullable|array', // Outlets can be null or an array
-            'outlets.*' => 'exists:outlets,id', // Ensure each outlet exists
+            'outlets' => 'nullable|array',
+            'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Create the category
-        $category = Category::create([
-            'name' => $validatedData['name'],
-            'departments_id' => $validatedData['departments_id'],
-            'is_shown' => $validatedData['is_shown'],
-        ]);
-
-        // Attach outlets to the category (if any)
-        if (!empty($validatedData['outlets'])) {
-            $category->outlets()->sync($validatedData['outlets']);
-        }
-
-        // Redirect back to the category index with a success message
+        $this->categoryService->createCategory($validatedData);
         return redirect()->route('category.index')->with('success', 'Category created successfully.');
     }
 
@@ -102,15 +84,15 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        $departments = $this->departmentService->getAllDepartments(); // Fetch all departments
-        $outlets = $this->outletService->getAllOutlets(); // Fetch all outlets
-        $selectedOutlets = $this->categoryService->getSelectedOutlets($category); // Get selected outlet IDs
+        $departments = $this->departmentService->getAllDepartments();
+        $outlets = $this->outletService->getAllOutlets();
+        $selectedOutlets = $this->categoryService->getSelectedOutlets($category);
         return view('category.edit', [
             'action' => route('category.update', $category->id),
             'method' => 'PUT',
             'category' => $category,
             'outlets' => $outlets,
-            'selectedOutlets' => $selectedOutlets, // Pre-selected outlets for the category
+            'selectedOutlets' => $selectedOutlets,
             'departments' => $departments,
             'cancelRoute' => route('category.index'),
         ]);
@@ -121,7 +103,6 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
             'departments_id' => 'required|exists:departments,id',
@@ -130,10 +111,7 @@ class CategoryController extends Controller
             'outlets.*' => 'exists:outlets,id',
         ]);
 
-        // Use the service to update the category
         $this->categoryService->updateCategory($category, $validatedData);
-
-        // Redirect back to the category index with a success message
         return redirect()->route('category.index')->with('success', 'Category updated successfully.');
     }
 
@@ -142,10 +120,7 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        // Use the service to delete the category
         $this->categoryService->deleteCategory($category);
-
-        // Redirect back to the category index with a success message
         return redirect()->route('category.index')->with('success', 'Category deleted successfully.');
     }
 }

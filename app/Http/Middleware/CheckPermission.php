@@ -29,25 +29,20 @@ class CheckPermission
             abort(401, 'Unauthorized');
         }
 
-        // Initialize the service with current user
         $this->accessControl->setUser($user);
 
-        // Support multiple permissions separated by '|'
         $permissions = explode('|', $permission);
 
-        // If user is superuser, allow all
         if ($this->accessControl->isSuperUser()) {
             return $next($request);
         }
 
-        // Check if any permission is superuser-only and deny non-superusers
         foreach ($permissions as $perm) {
             if ($this->accessControl->isSuperUserOnly($perm)) {
                 abort(403, 'This feature is restricted to Super Users only');
             }
         }
 
-        // Check if user has any of the permissions
         foreach ($permissions as $perm) {
             if ($this->accessControl->hasPermission($perm)) {
                 return $next($request);

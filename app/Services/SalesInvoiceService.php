@@ -41,7 +41,7 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($data) {
             $salesInvoice = SalesInvoice::create([
-                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'],
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],
@@ -49,7 +49,6 @@ class SalesInvoiceService
                 'created_by' => $data['created_by'],
             ]);
 
-            // Attach products to the purchase invoice
             if (!empty($data['products'])) {
                 $products = [];
                 foreach ($data['products'] as $product) {
@@ -63,10 +62,9 @@ class SalesInvoiceService
                 $salesInvoice->products()->attach($products);
             }
 
-            // Record stock movements for each product
             foreach ($data['products'] as $product) {
                 app(StockMovementService::class)->recordSale(
-                    $data['outlet_id'], // Assuming one outlet is selected
+                    $data['outlet_id'],
                     $product['id'],
                     $data['employee_id'],
                     $product['quantity']
@@ -89,7 +87,7 @@ class SalesInvoiceService
     {
         return DB::transaction(function () use ($salesInvoice, $data) {
             $salesInvoice->update([
-                'outlet_id' => $data['outlet_id'], // Assuming one outlet is selected
+                'outlet_id' => $data['outlet_id'],
                 'invoice_number' => $data['invoice_number'],
                 'description' => $data['description'] ?? null,
                 'grand_total' => $data['grand_total'],

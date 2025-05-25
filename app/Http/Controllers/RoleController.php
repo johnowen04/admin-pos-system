@@ -5,25 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
-    protected $roleService;
-
     /**
      * Constructor to inject the RoleService.
      */
-    public function __construct(RoleService $roleService)
+    public function __construct(protected RoleService $roleService)
     {
         $this->middleware('permission:role.view|role.*')->only(['index', 'show']);
         $this->middleware('permission:role.create|role.*')->only(['create', 'store']);
         $this->middleware('permission:role.edit|role.*')->only(['edit', 'update']);
         $this->middleware('permission:role.delete|role.*')->only(['destroy']);
-
-        $this->roleService = $roleService;
     }
 
     /**

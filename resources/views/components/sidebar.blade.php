@@ -142,7 +142,7 @@
             const outletId = selectElement.value;
             const outletName = selectElement.options[selectElement.selectedIndex].text;
 
-            fetch("{{ route('outlets.select') }}", {
+            fetch("{{ route('select-outlet.select') }}", {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json',
