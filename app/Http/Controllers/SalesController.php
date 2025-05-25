@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\SalesReportExport;
 use App\Models\SalesInvoice;
 use App\Services\AccessControlService;
 use App\Services\InventoryService;
@@ -11,7 +10,6 @@ use App\Services\OutletService;
 use App\Services\ProductService;
 use App\Services\StockMovementService;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
 class SalesController extends Controller
 {
@@ -196,21 +194,5 @@ class SalesController extends Controller
 
         // Redirect back with a success message
         return redirect()->route('sales.index')->with('success', 'Sales invoice deleted successfully.');
-    }
-
-    /**
-     * Export sales report to Excel.
-     */
-    public function exportProductSalesReport(Request $request)
-    {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date',
-        ]);
-
-        $start = $request->input('start_date');
-        $end   = $request->input('end_date');
-
-        return Excel::download(new SalesReportExport($start, $end), 'product-sales-report.xlsx');
     }
 }

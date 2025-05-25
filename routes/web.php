@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\Reports\SalesReportController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,7 +26,6 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::get('/export-product-sales', [SalesController::class, 'exportProductSalesReport'])->name('export.product-sales');
 Route::post('/import-products', [ProductController::class, 'importProducts'])->name('import.products');
 
 // Guest routes
@@ -80,6 +80,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::put('/sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
     Route::resource('sales', SalesController::class);
+
+    Route::get('/reports/sales/product/export', [SalesReportController::class, 'exportProductSalesReport'])->name('reports.sales.product.export');
+    Route::get('/reports/sales/product', [SalesReportController::class, 'productReport'])->name('reports.sales.product');
 
     // Standard resource controllers
     Route::resource('bu', BaseUnitController::class);
