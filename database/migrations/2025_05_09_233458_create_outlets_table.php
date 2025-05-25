@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOutletsTable extends Migration
+return new class extends Migration
 {
     public function up(): void
     {
@@ -26,4 +26,4 @@ class CreateOutletsTable extends Migration
     {
         Schema::dropIfExists('outlets');
     }
-}
+};

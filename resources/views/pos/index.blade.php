@@ -65,8 +65,7 @@
                             </div>
                         </div>
 
-                        <!-- filepath: /Users/johnowen/Documents/Code/Laravel/admin-pos-system/resources/views/pos/index.blade.php -->
-                        <div class="card-body">
+                       <div class="card-body">
                             <!-- Product Grid -->
                             <div id="productGrid" class="row g-4" style="max-height: 80vh; overflow-y: auto;">
                                 @if (!isset($products) || empty($products))
