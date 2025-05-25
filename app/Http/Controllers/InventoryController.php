@@ -2,24 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\InventoryService;
-use App\Services\OutletService;
-use App\Services\ProductService;
+use App\Services\StockMovementService;
+use App\ViewModels\InventoryViewModel;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
-    public $productService;
-    public $outletService;
-    public $inventoryService;
-
-    public function __construct(ProductService $productService, OutletService $outletService, InventoryService $inventoryService)
-    {
+    public function __construct(
+        protected StockMovementService $stockMovementService
+    ) {
         $this->middleware('permission:inventory.view|inventory.*')->only(['index', 'show']);
-
-        $this->productService = $productService;
-        $this->outletService = $outletService;
-        $this->inventoryService = $inventoryService;
     }
 
     /**
@@ -27,41 +19,23 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $products = $this->productService->getProductsWithMovements();
-        $groupedGlobal = [];
-        $groupedDetail = [];
-        $hasInventoryData = false;
+        $data = $this->getProductWithMovementsData();
+        $viewModel = new InventoryViewModel($data);
+        return view('inventory.index', ['inventory' => $viewModel]);
+    }
 
-        $selectedOutletId = session('selected_outlet_id');
+    /**
+     * Get product with stock movements data with outlet filter.
+     */
+    private function getProductWithMovementsData()
+    {
+        $selectedOutletId = session('selected_outlet_id', null);
 
-        foreach ($products as $product) {
-            $productId = $product->id; // Or $product->sku
-
-            foreach ($product->movements as $movement) {
-                $outletId = $movement->outlet_id ?? 'unknown';
-                if ($outletId !== $selectedOutletId) {
-                    continue;
-                }
-                $movementType = $movement->movement_type->value ?? 'unknown';
-
-                // Grouped Global
-                $groupedGlobal[$productId][$movementType][$outletId][] = $movement;
-
-                // Grouped Detail
-                $groupedDetail[$productId][$outletId]['name'] = $movement->outlet->name ?? 'Unknown Outlet';
-                $groupedDetail[$productId][$outletId][$movementType][] = $movement;
-
-                $hasInventoryData = true;
-            }
+        if (!$selectedOutletId || $selectedOutletId === 'all') {
+            return $this->stockMovementService->getProductsWithMovements();
         }
 
-        return view('inventory.index', [
-            'products' => $products,
-            'groupedGlobal' => $groupedGlobal,
-            'groupedDetail' => $groupedDetail,
-            'hasInventoryData' => $hasInventoryData,
-            'createRoute' => route('inventory.create'),
-        ]);
+        return $this->stockMovementService->getProductsWithMovements($selectedOutletId);
     }
 
     /**

@@ -12,6 +12,17 @@ class StockMovementService
 {
     public function __construct(protected InventoryService $inventoryService) {}
 
+    public function getProductsWithMovements(?int $outletId = null)
+    {
+        $products = app(ProductService::class)->getAllProducts();
+
+        foreach ($products as $product) {
+            $product->movements = $this->getAllMovements($product->id, $outletId);
+        }
+
+        return $products;
+    }
+
     public function getMovementsByProduct(int $productId)
     {
         return $this->getAllMovements(productId: $productId);

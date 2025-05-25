@@ -19,7 +19,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        @if (!$hasInventoryData)
+                        @if ($inventory->rows()->isEmpty())
                             <div class="empty-state text-center py-5">
                                 <div class="empty-state-icon">
                                     <i class="fa fa-boxes fa-3x text-muted"></i>
@@ -48,7 +48,7 @@
                                         <tr>
                                             <th>SKU</th>
                                             <th>Name</th>
-                                            <th hidden>Category</th>
+                                            <th>Category</th>
                                             <th>Initial</th>
                                             <th>Purchased</th>
                                             <th>Sold</th>
@@ -59,57 +59,30 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($products as $product)
+                                        @foreach ($inventory->rows() as $product)
                                             <tr>
-                                                <td>{{ $product->sku }}</td>
-                                                <td>{{ $product->name }}</td>
-                                                <td hidden>{{ $product->category->name }}</td>
-                                                <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? [])) }}
-                                                </td>
-                                                <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['purchase'] ?? [])) }}
-                                                </td>
-                                                <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['sale'] ?? [])) }}
-                                                </td>
-                                                <td>{{ array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['adjustment'] ?? [])) }}
-                                                </td>
-                                                <td>{{ array_sum(
-                                                    array_map(fn($items) => array_sum(array_column($items, 'quantity')), $groupedGlobal[$product->id]['initial'] ?? []),
-                                                ) +
-                                                    array_sum(
-                                                        array_map(
-                                                            fn($items) => array_sum(array_column($items, 'quantity')),
-                                                            $groupedGlobal[$product->id]['purchase'] ?? [],
-                                                        ),
-                                                    ) -
-                                                    array_sum(
-                                                        array_map(
-                                                            fn($items) => array_sum(array_column($items, 'quantity')),
-                                                            $groupedGlobal[$product->id]['sale'] ?? [],
-                                                        ),
-                                                    ) +
-                                                    array_sum(
-                                                        array_map(
-                                                            fn($items) => array_sum(array_column($items, 'quantity')),
-                                                            $groupedGlobal[$product->id]['adjustment'] ?? [],
-                                                        ),
-                                                    ) }}
-
-                                                </td>
-                                                <td>{{ $product->unit->name }}</td>
-
+                                                <td>{{ $product['sku'] }}</td>
+                                                <td>{{ $product['name'] }}</td>
+                                                <td>{{ $product['category'] }}</td>
+                                                <td>{{ $product['initial'] }}</td>
+                                                <td>{{ $product['purchase'] }}</td>
+                                                <td>{{ $product['sale'] }}</td>
+                                                <td>{{ $product['adjustment'] }}</td>
+                                                <td>{{ $product['balance'] }}</td>
+                                                <td>{{ $product['unit'] }}</td>
                                                 <td>
                                                     <div class="form-button-action">
                                                         <button class="btn btn-link btn-lg view-details-btn"
-                                                            data-product="{{ json_encode($product) }}"
-                                                            data-stock="{{ json_encode($groupedDetail[$product->id]) }}">
+                                                            data-product='@json($product)'
+                                                            data-stock='@json($product['stock'])'>
                                                             <i class="fas fa-boxes"></i>
                                                         </button>
-                                                        <a href="{{ route('inventory.edit', $product->id) }}"
+                                                        <a href="{{ route('inventory.edit', $product['id']) }}"
                                                             class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
                                                             title="Edit">
                                                             <i class="fa fa-edit"></i>
                                                         </a>
-                                                        <form action="{{ route('inventory.destroy', $product->id) }}"
+                                                        <form action="{{ route('inventory.destroy', $product['id']) }}"
                                                             method="POST" style="display: inline-block;">
                                                             @csrf
                                                             @method('DELETE')
@@ -204,86 +177,37 @@
                 ]
             });
 
-            // Use event delegation to handle dynamically loaded buttons
-            $(document).on('click', '.view-details-btn', function() {
-                const button = $(this);
-                const product = JSON.parse(button.attr('data-product'));
-                const stockDetails = JSON.parse(button.attr('data-stock'));
+            $('.view-details-btn').on('click', function() {
+                const product = $(this).data('product');
+                const stock = $(this).data('stock');
 
-                // Populate product details
+                // Fill in product details
                 $('#modalProductSKU').text(product.sku);
-                $('#modalProductName').text(product.name);
-                $('#modalProductCategory').text(product.category.name);
+                $('#modalProductName').text(product.product_name);
+                $('#modalProductCategory').text(product.category);
 
-                // Populate stock table
-                const stockTableBody = $('#modalStockTableBody');
+                // Clear stock table body
+                const $tbody = $('#modalStockTableBody');
+                $tbody.empty();
 
-                function getInitialQuantity(movementsArray) {
-                    if (movementsArray.length > 0) {
-                        return parseFloat(movementsArray[0].quantity);
-                    }
-                    return 0;
-                }
+                // Fill in stock details
+                $.each(stock, function(_, outlet) {
+                    const end = outlet.initial + outlet.purchase - outlet.sale + (outlet
+                        .adjustment ?? 0);
 
-                function getPurchasedOrSoldQuantity(movementsArray) {
-                    if (movementsArray.length > 0) {
-                        return movementsArray.reduce((total, item) => total + parseFloat(item.quantity), 0);
-                    }
-                    return 0;
-                }
+                    const $row = $('<tr>').append(
+                        $('<td>').text(outlet.name),
+                        $('<td>').text(outlet.initial),
+                        $('<td>').text(outlet.purchase),
+                        $('<td>').text(outlet.sale),
+                        $('<td>').text(outlet.return ?? 0),
+                        $('<td>').text(outlet.refund ?? 0),
+                        $('<td>').text(end),
+                        $('<td>').text(outlet.unit)
+                    );
 
-                function getReturnedQuantity(movementsArray) {
-                    if (movementsArray.length === 0) return 0;
-
-                    // Convert negative values to positive for display purposes
-                    return Math.abs(movementsArray
-                        .filter(item => parseFloat(item.quantity) < 0)
-                        .reduce((total, item) => total + parseFloat(item.quantity), 0));
-                }
-
-                function getRefundedQuantity(movementsArray) {
-                    if (movementsArray.length === 0) return 0;
-
-                    return movementsArray
-                        .filter(item => parseFloat(item.quantity) > 0)
-                        .reduce((total, item) => total + parseFloat(item.quantity), 0);
-                }
-
-                function getEndQuantity(initialArray, purchasedArray, soldArray, adjustmentArray) {
-                    return getInitialQuantity(initialArray) +
-                        getPurchasedOrSoldQuantity(purchasedArray) -
-                        getPurchasedOrSoldQuantity(soldArray) -
-                        getReturnedQuantity(adjustmentArray) +
-                        getRefundedQuantity(adjustmentArray);
-                }
-
-                stockTableBody.empty(); // Clear previous rows
-                if (Object.keys(stockDetails).length === 0) {
-                    // Show "No inventories available" message if stockDetails is empty
-                    stockTableBody.append(`
-                <tr>
-                    <td colspan="6" class="text-center">No inventories available</td>
-                </tr>
-            `);
-                } else {
-                    // Populate stock rows
-                    Object.entries(stockDetails).forEach(([outletId, outletData]) => {
-                        stockTableBody.append(`
-                    <tr>
-                        <td>${outletData.name}</td>
-                        <td>${getInitialQuantity(outletData.initial)}</td>
-                        <td>${getPurchasedOrSoldQuantity(outletData.purchase || [])}</td>
-                        <td>${getPurchasedOrSoldQuantity(outletData.sale || [])}</td>
-                        <td>${getReturnedQuantity(outletData.adjustment || [])}</td>
-                        <td>${getRefundedQuantity(outletData.adjustment || [])}</td>
-                        <td>${getEndQuantity(outletData.initial, outletData.purchase || [], outletData.sale || [], outletData.adjustment || [])}</td>
-                        <td>${product.unit.name}</td>
-                    </tr>
-                `);
-                    });
-                }
-
-                // Show the modal
+                    $tbody.append($row);
+                });
                 $('#productDetailsModal').modal('show');
             });
         });

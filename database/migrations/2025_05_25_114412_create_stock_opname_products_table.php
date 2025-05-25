@@ -10,12 +10,16 @@ return new class extends Migration
     {
         Schema::create('stock_opname_products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stock_opname_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('stock_opname_id');
+            $table->unsignedBigInteger('product_id');
             $table->integer('system_stock');
             $table->integer('counted_stock');
             $table->integer('difference')->computed('counted_stock - system_stock');
             $table->timestamps();
+
+            // Foreign key constraints
+            $table->foreign('stock_opname_id')->references('id')->on('stock_opnames')->onDelete('cascade');
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 

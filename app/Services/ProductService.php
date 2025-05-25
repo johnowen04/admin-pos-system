@@ -78,12 +78,12 @@ class ProductService
         return $products;
     }
 
-    public function getProductsWithMovements()
+    public function getProductsWithMovements(?int $outletId = null)
     {
         $products = $this->getAllProducts(); // Fetch all products
 
         foreach ($products as $product) {
-            $product->movements = $this->stockMovementService->getMovementsByProduct($product->id);
+            $product->movements = $this->stockMovementService->getAllMovements($product->id, $outletId);
         }
 
         return $products;

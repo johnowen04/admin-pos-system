@@ -11,11 +11,15 @@ return new class extends Migration
         Schema::create('stock_opnames', function (Blueprint $table) {
             $table->id();
             $table->string('reference')->unique();
-            $table->foreignId('outlet_id')->constrained('outlets')->nullOnDelete();
+            $table->unsignedBigInteger('outlet_id');
             $table->text('note')->nullable();
             $table->enum('status', ['draft', 'confirmed', 'adjusted'])->default('draft');
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by');
             $table->timestamps();
+
+            // Foreign key constraints
+            $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('cascade');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
