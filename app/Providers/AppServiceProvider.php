@@ -3,11 +3,12 @@
 namespace App\Providers;
 
 use App\Services\AccessControlService;
-use App\Services\InventoryService;
 use App\Services\OutletService;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::defaultView('pagination::bootstrap-5');
+
         View::composer('*', function ($view) {
             if (Auth::check()) {
                 $accessControl = app(AccessControlService::class);

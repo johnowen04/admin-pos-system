@@ -39,6 +39,7 @@
 
     <!-- CSS Just for demo purpose, don't include it in your project -->
     <link rel="stylesheet" href="{{ asset('assets/css/demo.css') }}" />
+    @livewireStyles
 </head>
 
 <body>
@@ -56,7 +57,7 @@
             <div class="wrapper sidebar_minimize sidebar_minimize_hover">
                 <!-- Sidebar -->
                 <x-sidebar />
-                
+
                 <!-- End Sidebar -->
 
                 <div class="main-panel">
@@ -149,6 +150,7 @@
         });
     </script>
     @stack('scripts')
+    @livewireScripts
 </body>
 
 </html>
