@@ -38,14 +38,9 @@ class PurchaseController extends Controller
     public function index()
     {
         $selectedOutletId = session('selected_outlet_id');
-        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
-            $purchaseInvoices = $this->purchaseInvoiceService->getAllPurchaseInvoices();
-        } else {
-            $purchaseInvoices = $this->purchaseInvoiceService->getPurchaseInvoicesByOutletId($selectedOutletId);
-        }
         return view('invoice.index', [
             'invoiceType' => 'Purchase',
-            'invoices' => $purchaseInvoices,
+            'selectedOutletId' => $selectedOutletId,
         ]);
     }
 

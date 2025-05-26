@@ -2,41 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\StockMovementService;
-use App\ViewModels\InventoryViewModel;
 use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
-    public function __construct(
-        protected StockMovementService $stockMovementService
-    ) {
+    public function __construct()
+    {
         $this->middleware('permission:inventory.view|inventory.*')->only(['index', 'show']);
     }
 
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-    {
-        $filter = $request->query('filter', 'non-zero'); // default to non-zero
-        $data = $this->getProductWithMovementsData();
-        $viewModel = new InventoryViewModel($data, $filter);
-        return view('inventory.index', ['inventory' => $viewModel]);
-    }
-
-    /**
-     * Get product with stock movements data with outlet filter.
-     */
-    private function getProductWithMovementsData()
+    public function index()
     {
         $selectedOutletId = session('selected_outlet_id', null);
-
-        if (!$selectedOutletId || $selectedOutletId === 'all') {
-            return $this->stockMovementService->getProductsWithMovements();
-        }
-
-        return $this->stockMovementService->getProductsWithMovements($selectedOutletId);
+        return view('inventory.index', [
+            'selectedOutletId' => $selectedOutletId,
+        ]);
     }
 
     /**

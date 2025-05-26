@@ -53,8 +53,7 @@
                 @yield('content')
             </div>
         @else
-            {{-- <div class="wrapper {{ Route::is('pos.*') || Route::is('inventory.*') ? 'sidebar_minimize sidebar_minimize_hover' : '' }}"> --}}
-            <div class="wrapper sidebar_minimize sidebar_minimize_hover">
+            <div class="wrapper {{ Route::is('pos.*') ? 'sidebar_minimize' : '' }}">
                 <!-- Sidebar -->
                 <x-sidebar />
 
@@ -126,7 +125,6 @@
             height: "70",
             width: "100%",
             lineWidth: "2",
-            Í
             lineColor: "#177dff",
             fillColor: "rgba(23, 125, 255, 0.14)",
         });

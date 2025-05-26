@@ -17,19 +17,16 @@
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Product Sales List</h4>
                             <div class="d-flex gap-1 ms-auto">
-                                <!-- Button to trigger modal -->
                                 <button type="button" class="btn btn-secondary btn-round" data-bs-toggle="modal"
                                     data-bs-target="#exportModal">
                                     <i class="fas fa-file-export me-1"></i>
                                     Export Product Sales Report
                                 </button>
 
-                                <!-- Modal -->
                                 <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel"
                                     aria-hidden="true">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
-                                            <!-- Modal Header -->
                                             <div class="modal-header">
                                                 <h5 class="modal-title fw-bold" id="exportModalLabel">Export Product
                                                     Sales Report</h5>
@@ -37,9 +34,7 @@
                                                     aria-label="Close"></button>
                                             </div>
 
-                                            <!-- Modal Body -->
                                             <div class="modal-body">
-                                                <!-- Export Form -->
                                                 <form action="{{ route('reports.sales.product.export') }}" method="GET">
                                                     <div class="mb-3">
                                                         <label for="start_date" class="form-label fw-semibold">Start

@@ -28,106 +28,14 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        @if ($invoices->isEmpty())
-                            <div class="empty-state text-center py-5">
-                                <div class="empty-state-icon">
-                                    <i
-                                        class="fa {{ $invoiceType === 'Purchase' ? 'fa-file-invoice-dollar' : 'fa-receipt' }} fa-3x text-muted"></i>
-                                </div>
-                                <h4 class="mt-4">No {{ $invoiceType }} Invoices Available</h4>
-                                <p class="text-muted">
-                                    There are no {{ strtolower($invoiceType) }} invoices in the system yet.
-                                    <br>Click the button below to create your first {{ strtolower($invoiceType) }} invoice.
-                                </p>
-                                <div class="mt-3">
-                                    <a href="{{ $invoiceType === 'Purchase' ? route('purchase.create') : route('pos.index') }}"
-                                        class="btn btn-primary">
-                                        <i class="fa fa-plus me-1"></i>
-                                        @if ($invoiceType === 'Purchase')
-                                            Create Purchase Invoice
-                                        @else
-                                            Start Selling Products in POS
-                                        @endif
-                                    </a>
-                                </div>
-                            </div>
-                        @else
-                            <div class="table-responsive">
-                                <table id="invoice-table" class="display table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Date</th>
-                                            <th>Invoice Number</th>
-                                            <th>Grand Total</th>
-                                            <th>Outlet</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($invoices as $invoice)
-                                            <tr>
-                                                <td>{{ $invoice->id }}</td>
-                                                <td>{{ $invoice->created_at }}</td>
-                                                <td>{{ $invoice->invoice_number }}</td>
-                                                <td>{{ $invoice->grand_total }}</td>
-                                                <td>{{ $invoice->outlet->name }}</td>
-                                                <td>
-                                                    <div class="form-button-action">
-                                                        @if ($invoiceType === 'Sales')
-                                                            <a href="{{ route('pos.receipt', $invoice->id) }}"
-                                                                class="btn btn-link btn-primary btn-lg"
-                                                                data-toggle="tooltip" title="Receipt">
-                                                                <i class="fas fa-receipt"></i>
-                                                            </a>
-                                                        @endif
-                                                        <a href="@if ($invoiceType === 'Purchase') {{ route('purchase.edit', $invoice->id) }} @else {{ route('sales.edit', $invoice->id) }} @endif"
-                                                            class="btn btn-link btn-primary btn-lg" data-toggle="tooltip"
-                                                            title="Edit">
-                                                            <i class="fa fa-edit"></i>
-                                                        </a>
-                                                        <form
-                                                            action="@if ($invoiceType === 'Purchase') {{ route('purchase.destroy', $invoice->id) }} @else {{ route('sales.destroy', $invoice->id) }} @endif"
-                                                            method="POST" style="display: inline-block;">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-link btn-danger"
-                                                                data-toggle="tooltip" title="Delete"
-                                                                onclick="return confirm('Are you sure you want to delete this invoice?')">
-                                                                <i class="fa fa-times"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
+                        <div id="invoice-table" wire:key="invoice-table">
+                            @livewire('invoice-table', ['selectedOutletId' => $selectedOutletId, 'invoiceType' => $invoiceType])
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#invoice-table').DataTable({
-                "pageLength": 10,
-                "order": [
-                    [0, "asc"]
-                ],
-                "columnDefs": [{
-                        "orderable": false,
-                        "targets": -1
-                    } // Disable sorting on the Action column
-                ]
-            });
-        });
-    </script>
-@endpush
 
 </html>

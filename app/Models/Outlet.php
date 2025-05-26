@@ -54,6 +54,16 @@ class Outlet extends Model
         );
     }
 
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'outlet_id', 'id');
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'outlet_id', 'id');
+    }
+
     public function purchaseInvoices()
     {
         return $this->hasMany(PurchaseInvoice::class, 'outlet_id');

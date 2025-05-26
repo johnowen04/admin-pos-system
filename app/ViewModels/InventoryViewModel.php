@@ -23,7 +23,7 @@ class InventoryViewModel
             $movementGroups = [];
             $detailStock = [];
 
-            foreach ($product->movements as $movement) {
+            foreach ($product->stockMovements as $movement) {
                 $outletId = $movement->outlet_id ?? 'unknown';
 
                 $movementType = $movement->movement_type->value ?? 'unknown';

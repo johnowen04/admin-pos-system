@@ -36,14 +36,9 @@ class ProductController extends Controller
     public function index()
     {
         $selectedOutletId = session('selected_outlet_id');
-        if ($selectedOutletId == 'all' || !$selectedOutletId) {
-            $products = $this->productService->getAllProducts();
-        } else {
-            $products = $this->outletService->getProductsByOutletId($selectedOutletId);
-        }
-        
+
         return view('product.index', [
-            'products' => $products,
+            'selectedOutletId' => $selectedOutletId,
             'createRoute' => route('product.create'),
         ]);
     }
@@ -95,7 +90,7 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Product $product)
     {
         //
     }

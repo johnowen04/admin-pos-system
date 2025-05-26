@@ -39,7 +39,8 @@
                     </div>
                 @elseif (
                     !Auth::user()->employee ||
-                        (Auth::user()->employee && Auth::user()->employee->position->level->value > \App\Enums\PositionLevel::MANAGER->value))
+                        (Auth::user()->employee &&
+                            Auth::user()->employee->position->level->value > \App\Enums\PositionLevel::MANAGER->value))
                     <div class="nav-item outlet-selector">
                         <div class="card p-3">
                             <div class="card-header">
@@ -133,6 +134,13 @@
 
     .wrapper.sidebar_minimize .outlet-selector {
         display: none !important;
+    }
+
+    /* Show it as block on small screens (e.g., below 768px) */
+    @media (max-width: 991px) {
+        .wrapper.sidebar_minimize .outlet-selector {
+            display: block !important;
+        }
     }
 </style>
 

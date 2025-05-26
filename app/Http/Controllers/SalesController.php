@@ -38,14 +38,9 @@ class SalesController extends Controller
     public function index()
     {
         $selectedOutletId = session('selected_outlet_id');
-        if ($selectedOutletId == 'all' || $selectedOutletId == null) {
-            $salesInvoices = $this->salesInvoiceService->getAllSalesInvoices();
-        } else {
-            $salesInvoices = $this->salesInvoiceService->getSalesInvoicesByOutletId($selectedOutletId);
-        }
         return view('invoice.index', [
             'invoiceType' => 'Sales',
-            'invoices' => $salesInvoices,
+            'selectedOutletId' => $selectedOutletId,
         ]);
     }
 

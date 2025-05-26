@@ -5,11 +5,12 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Product;
+use App\ViewModels\InventoryViewModel;
 
-class ProductTable extends Component
+class InventoryTable extends Component
 {
     use WithPagination;
-    
+
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
@@ -43,10 +44,18 @@ class ProductTable extends Component
 
     public function render()
     {
-        $query = Product::with('category');
+        $query = Product::with([
+            'category',
+            'unit',
+            'stockMovements' => function ($q) {
+                if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
+                    $q->where('outlet_id', $this->selectedOutletId);
+                }
+            }
+        ]);
 
         if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
-            $query->whereHas('inventories', function ($q) {
+            $query->whereHas('stockMovements', function ($q) {
                 $q->where('outlet_id', $this->selectedOutletId);
             });
         }
@@ -58,9 +67,16 @@ class ProductTable extends Component
             });
         }
 
-        $products = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
+        $productsPaginator = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
             ->paginate($this->perPage);
 
-        return view('livewire.product-table', ['products' => $products]);
+        $productsCollection = $productsPaginator->getCollection();
+
+        $viewModel = new InventoryViewModel($productsCollection, 'all');
+
+        return view('livewire.inventory-table', [
+            'inventory' => $viewModel,
+            'productsPaginator' => $productsPaginator,
+        ]);
     }
 }

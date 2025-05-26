@@ -50,11 +50,21 @@ class Product extends Model
         return $this->hasManyThrough(
             Outlet::class,
             Inventory::class,
-            'product_id', // Foreign key on the inventories table
-            'id', // Foreign key on the outlets table
-            'id', // Local key on the products table
-            'outlet_id' // Local key on the inventories table
+            'product_id',
+            'id',
+            'id',
+            'outlet_id'
         );
+    }
+
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class, 'product_id', 'id');
+    }
+
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'product_id', 'id');
     }
 
     public function purchaseInvoices()
@@ -63,7 +73,7 @@ class Product extends Model
             ->withPivot('quantity', 'unit_price', 'total_price')
             ->withTimestamps();
     }
-    
+
     public function salesInvoices()
     {
         return $this->belongsToMany(SalesInvoice::class, 'sales_invoice_product', 'product_id', 'sales_invoice_id')
