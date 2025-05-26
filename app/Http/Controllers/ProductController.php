@@ -7,11 +7,9 @@ use App\Services\ProductService;
 use App\Services\OutletService;
 use App\Services\CategoryService;
 use App\Services\UnitService;
-use Illuminate\Http\Request;
-
-use App\Services\Imports\ProductImportService;
 use App\Imports\ProductImport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -152,13 +150,13 @@ class ProductController extends Controller
     /**
      * Show the form for importing products.
      */
-    public function importProducts(Request $request, ProductImportService $importService)
+    public function importProducts(Request $request)
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls',
         ]);
 
-        Excel::import(new ProductImport($importService), $request->file('file'));
+        Excel::queueImport(new ProductImport(), $request->file('file'));
 
         return back()->with('success', 'Products imported successfully.');
     }

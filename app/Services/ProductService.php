@@ -165,7 +165,6 @@ class ProductService
         return $product->delete();
     }
 
-
     /**
      * Get the selected outlets for a product.
      *

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Outlet;
 use App\Services\OutletService;
+use Illuminate\Http\Request;
 
 class OutletController extends Controller
 {

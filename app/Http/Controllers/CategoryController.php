@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use Illuminate\Http\Request;
 use App\Services\CategoryService;
 use App\Services\DepartmentService;
 use App\Services\OutletService;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {

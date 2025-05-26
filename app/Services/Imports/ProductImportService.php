@@ -21,7 +21,7 @@ class ProductImportService
 
         try {
             foreach ($rows as $row) {
-                $row['outlets'] = [1, 2]; // Hardcoded outlet IDs
+                $row['outlets'] = [1, 2]; // Assuming outlets are hardcoded for the import
                 $this->productService->createProduct($row);
             }
 

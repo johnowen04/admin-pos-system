@@ -3,22 +3,21 @@
 namespace App\Imports;
 
 use App\Services\Imports\ProductImportService;
-use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\ToArray;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 
-class ProductImport implements ToCollection, WithHeadingRow
+class ProductImport implements ToArray, WithHeadingRow, WithChunkReading, ShouldQueue
 {
-    protected ProductImportService $importService;
-
-    public function __construct(ProductImportService $importService)
+    public function array(array $rows)
     {
-        $this->importService = $importService;
+        $importService = app(ProductImportService::class);
+        $importService->import($rows);
     }
 
-    public function collection(Collection $rows)
+    public function chunkSize(): int
     {
-        // Use ->toArray() to pass a simple array of rows to your import service
-        $this->importService->import($rows->toArray());
+        return 1000;
     }
 }
