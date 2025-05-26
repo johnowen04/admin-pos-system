@@ -101,7 +101,19 @@ class SalesController extends Controller
      */
     public function edit(SalesInvoice $sale)
     {
-        //
+        $outlets = $this->outletService->getAllOutlets();
+        $products = $this->inventoryService->getStocksByOutlet($outlets->first()->id);
+        $nextInvoiceNumber = $sale->invoice_number;
+        return view('invoice.edit', [
+            'action' => route('sales.void', $sale->id),
+            'method' => 'PUT',
+            'invoiceType' => 'Sales',
+            'invoice' => $sale,
+            'outlets' => $outlets,
+            'products' => $products,
+            'nextInvoiceNumber' => $nextInvoiceNumber,
+            'cancelRoute' => route('sales.index'),
+        ]);
     }
 
     /**

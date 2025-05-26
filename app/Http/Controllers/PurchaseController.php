@@ -101,7 +101,19 @@ class PurchaseController extends Controller
      */
     public function edit(PurchaseInvoice $purchase)
     {
-        //
+        $outlets = $this->outletService->getAllOutlets();
+        $products = $this->inventoryService->getStocksByOutlet($outlets->first()->id);
+        $nextInvoiceNumber = $purchase->invoice_number;
+        return view('invoice.edit', [
+            'action' => route('purchase.void', $purchase->id),
+            'method' => 'PUT',
+            'invoiceType' => 'Purchase',
+            'invoice' => $purchase,
+            'outlets' => $outlets,
+            'products' => $products,
+            'nextInvoiceNumber' => $nextInvoiceNumber,
+            'cancelRoute' => route('purchase.index'),
+        ]);
     }
 
     /**

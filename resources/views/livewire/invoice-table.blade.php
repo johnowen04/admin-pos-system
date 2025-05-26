@@ -90,7 +90,7 @@
                             <td>{{ $invoice->id }}</td>
                             <td>{{ $invoice->created_at }}</td>
                             <td>{{ $invoice->invoice_number }}</td>
-                            <td>{{ $invoice->grand_total }}</td>
+                            <td>Rp{{ $invoice->grand_total }}</td>
                             <td>{{ $invoice->outlet->name }}</td>
                             <td>
                                 <div class="form-button-action">
