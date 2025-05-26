@@ -38,10 +38,13 @@ class InventoryViewModel
                 $outletName = $movement->outlet->name ?? 'Unknown Outlet';
                 $unit = $product->unit->name ?? 'pcs';
 
+                $initialPerOutlet = $product->initialStockPerOutlet
+                    ->pluck('quantity', 'outlet_id');
+
                 if (!isset($detailStock[$outletId])) {
                     $detailStock[$outletId] = [
                         'name' => $outletName,
-                        'initial' => 0,
+                        'initial' => $initialPerOutlet[$outletId] ?? 0,
                         'purchase' => 0,
                         'sale' => 0,
                         'return' => 0,

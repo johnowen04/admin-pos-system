@@ -5,8 +5,10 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Product;
+use App\Models\StockMovement;
 use App\ViewModels\InventoryViewModel;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InventoryTable extends Component
 {
@@ -75,13 +77,36 @@ class InventoryTable extends Component
                     $q->where('outlet_id', $this->selectedOutletId);
                 }
                 $q->whereBetween('created_at', [$startDate, $endDate]);
+            },
+            'initialStockPerOutlet' => function ($q) use ($startDate) {
+                $q->select('product_id', 'outlet_id', DB::raw("
+                    SUM(
+                        CASE 
+                            WHEN movement_type = 'purchase' THEN quantity
+                            WHEN movement_type = 'sale' THEN -quantity
+                            ELSE quantity
+                        END
+                    ) AS quantity
+                "))
+                    ->where('created_at', '<', $startDate)
+                    ->groupBy('product_id', 'outlet_id');
             }
-        ])->withSum(['stockMovements as initial_quantity' => function ($q) use ($startDate) {
-            if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
-                $q->where('outlet_id', $this->selectedOutletId);
-            }
-            $q->where('created_at', '<', $startDate);
-        }], 'quantity');
+        ])->addSelect([
+            'initial_quantity' => StockMovement::select(DB::raw("
+                SUM(
+                    CASE 
+                        WHEN movement_type = 'purchase' THEN quantity
+                        WHEN movement_type = 'sale' THEN -quantity
+                        ELSE quantity
+                    END
+                )
+            "))
+                ->whereColumn('product_id', 'products.id')
+                ->where('created_at', '<', $startDate)
+                ->when($this->selectedOutletId && $this->selectedOutletId !== 'all', function ($q) {
+                    $q->where('outlet_id', $this->selectedOutletId);
+                }),
+        ]);
 
         if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
             $query->whereHas('stockMovements', function ($q) {

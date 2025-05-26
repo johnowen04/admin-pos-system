@@ -7,36 +7,44 @@ use Carbon\Carbon;
 
 class SalesReportService
 {
-    private function getTotalSoldAndRevenue($startDate, $endDate)
+    private function getTotalSoldAndRevenue($startDate = null, $endDate = null)
     {
-        $totalSoldQuantity = DB::table('sales_invoice_product as sip')
+        $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
-            ->whereBetween('si.created_at', [$startDate, $endDate])
-            ->where('si.is_voided', 0)
-            ->sum('sip.quantity');
+            ->where('si.is_voided', 0);
 
-        $totalRevenue = DB::table('sales_invoice_product as sip')
-            ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
-            ->whereBetween('si.created_at', [$startDate, $endDate])
-            ->where('si.is_voided', 0)
-            ->sum(DB::raw('sip.unit_price * sip.quantity'));
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('si.created_at', [$startDate, $endDate]);
+        }
+
+        $totalSoldQuantity = (clone $query)->sum('sip.quantity');
+
+        $totalRevenue = (clone $query)->sum(DB::raw('sip.unit_price * sip.quantity'));
 
         return [$totalSoldQuantity, $totalRevenue];
     }
 
-    public function getProductSalesReportQuery($startDate, $endDate, $outletId = null)
+    public function getProductSalesReportQuery($startDate = null, $endDate = null, $outletId = null)
     {
-        $startDate = Carbon::parse($startDate)->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
-
-        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        if ($startDate !== null && $endDate !== null) {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        } else {
+            $startDate = null;
+            $endDate = null;
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
+        }
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.categories_id', '=', 'c.id')
-            ->join('outlets as o', 'si.outlet_id', '=', 'o.id')
-            ->whereBetween('si.created_at', [$startDate, $endDate]);
+            ->join('outlets as o', 'si.outlet_id', '=', 'o.id');
+
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('si.created_at', [$startDate, $endDate]);
+        }
 
         if ($outletId !== null) {
             $query->where('si.outlet_id', $outletId);
@@ -66,19 +74,27 @@ class SalesReportService
             );
     }
 
-    public function getCategorySalesReportQuery($startDate, $endDate, $outletId = null)
+    public function getCategorySalesReportQuery($startDate = null, $endDate = null, $outletId = null)
     {
-        $startDate = Carbon::parse($startDate)->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
-
-        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        if ($startDate !== null && $endDate !== null) {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        } else {
+            $startDate = null;
+            $endDate = null;
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
+        }
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.categories_id', '=', 'c.id')
-            ->join('outlets as o', 'si.outlet_id', '=', 'o.id')
-            ->whereBetween('si.created_at', [$startDate, $endDate]);
+            ->join('outlets as o', 'si.outlet_id', '=', 'o.id');
+
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('si.created_at', [$startDate, $endDate]);
+        }
 
         if ($outletId !== null) {
             $query->where('si.outlet_id', $outletId);
@@ -98,20 +114,28 @@ class SalesReportService
             );
     }
 
-    public function getDepartmentSalesReportQuery($startDate, $endDate, $outletId = null)
+    public function getDepartmentSalesReportQuery($startDate = null, $endDate = null, $outletId = null)
     {
-        $startDate = Carbon::parse($startDate)->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
-
-        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        if ($startDate !== null && $endDate !== null) {
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
+        } else {
+            $startDate = null;
+            $endDate = null;
+            [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
+        }
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.categories_id', '=', 'c.id')
             ->join('departments as d', 'c.department_id', '=', 'd.id')
-            ->join('outlets as o', 'si.outlet_id', '=', 'o.id')
-            ->whereBetween('si.created_at', [$startDate, $endDate]);
+            ->join('outlets as o', 'si.outlet_id', '=', 'o.id');
+
+        if ($startDate !== null && $endDate !== null) {
+            $query->whereBetween('si.created_at', [$startDate, $endDate]);
+        }
 
         if ($outletId !== null) {
             $query->where('si.outlet_id', $outletId);

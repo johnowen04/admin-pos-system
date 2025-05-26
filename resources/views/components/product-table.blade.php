@@ -20,45 +20,49 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($invoice->products as $product)
-                    <tr>
-                        <td>
-                            <button @if ($method === 'PUT') disabled @endif type="button"
-                                class="btn btn-danger btn-sm remove-product-row">Remove</button>
-                        </td>
-                        <td>
-                            <input type="hidden" name="products[{{ $loop->index }}][id]" value="{{ $product->id }}">
-                            {{ $product->name }}
-                        </td>
-                        <td>
-                            <input readonly type="number" name="products[{{ $loop->index }}][base_price]"
-                                class="form-control product-base-price" value="{{ $product->pivot->base_price }}"
-                                min="0" step="0.01">
-                        </td>
-                        <td>
-                            <input @if ($method === 'PUT') disabled @endif type="number"
-                                name="products[{{ $loop->index }}][quantity]" class="form-control product-quantity"
-                                value="{{ $product->pivot->quantity }}" min="1">
-                        </td>
-                        <td>
-                            <input @if ($method === 'PUT') disabled @endif type="number"
-                                name="products[{{ $loop->index }}][unit_price]" class="form-control product-unit-price"
-                                value="{{ $product->pivot->unit_price }}" min="0" step="0.01">
-                        </td>
-                        <td>
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Rp</span>
-                                <input type="number" class="form-control product-total-price"
-                                    name="products[{{ $loop->index }}][total_price]"
-                                    value="{{ $product->pivot->quantity * $product->pivot->unit_price }}" readonly>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
+                @if ($invoice)
+                    @foreach ($invoice->products as $product)
+                        <tr>
+                            <td>
+                                <button @if ($method === 'PUT') disabled @endif type="button"
+                                    class="btn btn-danger btn-sm remove-product-row">Remove</button>
+                            </td>
+                            <td>
+                                <input type="hidden" name="products[{{ $loop->index }}][id]"
+                                    value="{{ $product->id }}">
+                                {{ $product->name }}
+                            </td>
+                            <td>
+                                <input readonly type="number" name="products[{{ $loop->index }}][base_price]"
+                                    class="form-control product-base-price" value="{{ $product->pivot->base_price }}"
+                                    min="0" step="0.01">
+                            </td>
+                            <td>
+                                <input @if ($method === 'PUT') disabled @endif type="number"
+                                    name="products[{{ $loop->index }}][quantity]" class="form-control product-quantity"
+                                    value="{{ $product->pivot->quantity }}" min="1">
+                            </td>
+                            <td>
+                                <input @if ($method === 'PUT') disabled @endif type="number"
+                                    name="products[{{ $loop->index }}][unit_price]"
+                                    class="form-control product-unit-price" value="{{ $product->pivot->unit_price }}"
+                                    min="0" step="0.01">
+                            </td>
+                            <td>
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control product-total-price"
+                                        name="products[{{ $loop->index }}][total_price]"
+                                        value="{{ $product->pivot->quantity * $product->pivot->unit_price }}" readonly>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                @else
                     <tr id="noProductRow">
-                        <td colspan="5" class="text-center">No products added yet.</td>
+                        <td colspan="6" class="text-center">No products added yet.</td>
                     </tr>
-                @endforelse
+                @endif
             </tbody>
             <tfoot>
                 <tr>

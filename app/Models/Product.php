@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -65,6 +66,21 @@ class Product extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class, 'product_id', 'id');
+    }
+
+    public function initialStockPerOutlet()
+    {
+        return $this->hasMany(StockMovement::class, 'product_id')
+            ->select('product_id', 'outlet_id', DB::raw("
+            SUM(
+                CASE 
+                    WHEN movement_type = 'purchase' THEN quantity
+                    WHEN movement_type = 'sale' THEN -quantity
+                    ELSE quantity
+                END
+            ) AS quantity
+        "))
+            ->groupBy('product_id', 'outlet_id');
     }
 
     public function purchaseInvoices()

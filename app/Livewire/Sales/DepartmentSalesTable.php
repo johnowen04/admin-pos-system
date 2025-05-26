@@ -28,8 +28,8 @@ class DepartmentSalesTable extends Component
     public function mount($selectedOutletId)
     {
         $this->selectedOutletId = $selectedOutletId;
-        $this->startDate = now()->startOfDay()->toDateString();
-        $this->endDate = now()->endOfDay()->toDateString();
+        $this->startDate = '';
+        $this->endDate = '';
     }
 
     public function updatedSearch()
@@ -58,21 +58,28 @@ class DepartmentSalesTable extends Component
             'page',
         ]);
 
-        $this->startDate = now()->toDateString();
-        $this->endDate = now()->toDateString();
+        $this->startDate = '';
+        $this->endDate = '';
     }
 
     public function render()
     {
-        $startDate = Carbon::parse($this->startDate)->startOfDay();
-        $endDate = Carbon::parse($this->endDate)->endOfDay();
-
         $salesReportService = app(SalesReportService::class);
 
-        $query = $salesReportService->getDepartmentSalesReportQuery($startDate, $endDate);
+        if (!empty($this->startDate) && !empty($this->endDate)) {
+            $startDate = Carbon::parse($this->startDate)->startOfDay();
+            $endDate = Carbon::parse($this->endDate)->endOfDay();
+            $query = $salesReportService->getDepartmentSalesReportQuery($startDate, $endDate);
+        } else {
+            $query = $salesReportService->getDepartmentSalesReportQuery();
+        }
 
         if (!$this->selectedOutletId || $this->selectedOutletId === 'all') {
-            $query = $salesReportService->getDepartmentSalesReportQuery($startDate, $endDate, $this->selectedOutletId);
+            $query = $salesReportService->getDepartmentSalesReportQuery(
+                !empty($this->startDate) && !empty($this->endDate) ? $startDate : null,
+                !empty($this->startDate) && !empty($this->endDate) ? $endDate : null,
+                $this->selectedOutletId
+            );
         }
 
         $reportPaginator = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
