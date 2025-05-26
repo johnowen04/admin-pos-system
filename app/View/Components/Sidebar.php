@@ -131,9 +131,9 @@ class Sidebar extends Component
                         'route' => '#',
                         'active' => $this->isActive(['reports.*']),
                         'children' => [
-                            ['name' => 'Department Sales Report', 'route' => 'reports.sales.department', 'active' => $this->isActive('reports.sales.department')],
-                            ['name' => 'Category Sales Report', 'route' => 'reports.sales.category', 'active' => $this->isActive('reports.sales.category')],
-                            ['name' => 'Product Sales Report', 'route' => 'reports.sales.product', 'active' => $this->isActive('reports.sales.product')],
+                            ['name' => 'Department Sales Report', 'route' => 'reports.sales.departments', 'active' => $this->isActive('reports.sales.department')],
+                            ['name' => 'Category Sales Report', 'route' => 'reports.sales.categories', 'active' => $this->isActive('reports.sales.category')],
+                            ['name' => 'Product Sales Report', 'route' => 'reports.sales.products', 'active' => $this->isActive('reports.sales.product')],
                         ],
                     ],
                 ],

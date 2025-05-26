@@ -81,14 +81,16 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
     Route::resource('sales', SalesController::class);
 
-    Route::get('/reports/sales/department/export', [SalesReportController::class, 'exportDepartmentSalesReport'])->name('reports.sales.department.export');
-    Route::get('/reports/sales/department', [SalesReportController::class, 'departmentReport'])->name('reports.sales.department');
+    Route::prefix('reports/sales')->name('reports.sales.')->group(function () {
+        Route::get('/products', [SalesReportController::class, 'products'])->name('products');
+        Route::get('/products/export', [SalesReportController::class, 'productsExport'])->name('products.export');
 
-    Route::get('/reports/sales/category/export', [SalesReportController::class, 'exportCategorySalesReport'])->name('reports.sales.category.export');
-    Route::get('/reports/sales/category', [SalesReportController::class, 'categoryReport'])->name('reports.sales.category');
+        Route::get('/categories', [SalesReportController::class, 'categories'])->name('categories');
+        Route::get('/categories/export', [SalesReportController::class, 'categoriesExport'])->name('categories.export');
 
-    Route::get('/reports/sales/product/export', [SalesReportController::class, 'exportProductSalesReport'])->name('reports.sales.product.export');
-    Route::get('/reports/sales/product', [SalesReportController::class, 'productReport'])->name('reports.sales.product');
+        Route::get('/departments', [SalesReportController::class, 'departments'])->name('departments');
+        Route::get('/departments/export', [SalesReportController::class, 'departmentsExport'])->name('departments.export');
+    });
 
     // Standard resource controllers
     Route::resource('bu', BaseUnitController::class);

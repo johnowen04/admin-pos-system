@@ -2,129 +2,136 @@
 
 namespace App\Http\Controllers\Reports;
 
+use App\Exports\CategorySalesReportExport;
+use App\Exports\DepartmentSalesReportExport;
 use App\Exports\ProductSalesReportExport;
 use App\Http\Controllers\Controller;
 use App\Services\Reports\SalesReportService;
-use App\ViewModels\CategorySalesReportViewModel;
-use App\ViewModels\DepartmentSalesReportViewModel;
-use App\ViewModels\ProductSalesReportViewModel;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SalesReportController extends Controller
 {
-    public function productReport(Request $request)
+    public function products()
     {
-        $data = $this->getProductSalesReportData($request);
-        $viewModel = new ProductSalesReportViewModel($data);
-
-        return view('reports.sales.product', ['report' => $viewModel]);
+        $selectedOutletId = session('selected_outlet_id', null);
+        return view('reports.sales.index', [
+            'reportType' => 'Product',
+            'selectedOutletId' => $selectedOutletId,
+            'exportRoute' => route('reports.sales.products.export'),
+        ]);
     }
 
     /**
      * Export sales report to Excel.
      */
-    public function exportProductSalesReport(Request $request)
+    public function productsExport(Request $request)
     {
-        $request->validate([
-            'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date',
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        $start = $request->input('start_date') ?: now();
-        $end = $request->input('end_date') ?: now();
+        $start = $validated['start_date'];
+        $end = $validated['end_date'];
 
-        $data = $this->getProductSalesReportData($request);
+        $data = $this->getProductSalesReportData($start, $end);
 
-        return Excel::download(new ProductSalesReportExport($data, $start, $end), 'product_sales_report_' . $start . '.xlsx');
+        return Excel::download(
+            new ProductSalesReportExport($data, $start, $end),
+            "product_sales_report_{$start}.xlsx"
+        );
     }
 
     /**
-     * Get product sales report data with outlet filter and date range.
+     * Get product sales report data based on outlet filter and date range.
      */
-    private function getProductSalesReportData(Request $request)
+    private function getProductSalesReportData(string $start, string $end)
     {
-        $start = $request->input('start_date') ?: now();
-        $end = $request->input('end_date') ?: now();
-
-        $selectedOutletId = session('selected_outlet_id', null);
-
-        $salesReportService = app(SalesReportService::class);
-
-        if (!$selectedOutletId || $selectedOutletId === 'all') {
-            return $salesReportService->getProductSalesReportData($start, $end);
-        }
-
-        return $salesReportService->getProductSalesReportData($start, $end, $selectedOutletId);
+        $selectedOutletId = session('selected_outlet_id');
+        $query = app(SalesReportService::class)->getProductSalesReportQuery($start, $end, $selectedOutletId);
+        return $query->orderBy('sip.created_at', 'asc')->get();
     }
 
-    public function categoryReport(Request $request)
+    public function categories()
     {
-        $data = $this->getCategorySalesReportData($request);
-        $viewModel = new CategorySalesReportViewModel($data);
-
-        return view('reports.sales.category', ['report' => $viewModel]);
+        $selectedOutletId = session('selected_outlet_id', null);
+        return view('reports.sales.index', [
+            'reportType' => 'Category',
+            'selectedOutletId' => $selectedOutletId,
+            'exportRoute' => route('reports.sales.categories.export'),
+        ]);
     }
 
     /**
      * Export sales report to Excel.
      */
-    public function exportCategorySalesReport(Request $request)
+    public function categoriesExport(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $start = $validated['start_date'];
+        $end = $validated['end_date'];
+
+        $data = $this->getCategorySalesReportData($start, $end);
+
+        return Excel::download(
+            new CategorySalesReportExport($data, $start, $end),
+            "category_sales_report_{$start}.xlsx"
+        );
     }
 
     /**
-     * Get product sales report data with outlet filter and date range.
+     * Get category sales report data with outlet filter and date range.
      */
-    private function getCategorySalesReportData(Request $request)
+    private function getCategorySalesReportData(string $start, string $end)
     {
-        $start = $request->input('start_date') ?: now();
-        $end = $request->input('end_date') ?: now();
-
-        $selectedOutletId = session('selected_outlet_id', null);
-
-        $salesReportService = app(SalesReportService::class);
-
-        if (!$selectedOutletId || $selectedOutletId === 'all') {
-            return $salesReportService->getCategorySalesReportData($start, $end);
-        }
-
-        return $salesReportService->getCategorySalesReportData($start, $end, $selectedOutletId);
+        $selectedOutletId = session('selected_outlet_id');
+        $query = app(SalesReportService::class)->getCategorySalesReportQuery($start, $end, $selectedOutletId);
+        return $query->orderBy('sip.created_at', 'asc')->get();
     }
 
-    public function departmentReport(Request $request)
+    public function departments()
     {
-        $data = $this->getDepartmentSalesReportData($request);
-        $viewModel = new DepartmentSalesReportViewModel($data);
-
-        return view('reports.sales.department', ['report' => $viewModel]);
+        $selectedOutletId = session('selected_outlet_id', null);
+        return view('reports.sales.index', [
+            'reportType' => 'Department',
+            'selectedOutletId' => $selectedOutletId,
+            'exportRoute' => route('reports.sales.departments.export'),
+        ]);
     }
 
     /**
      * Export sales report to Excel.
      */
-    public function exportDepartmentSalesReport(Request $request)
+    public function departmentsExport(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $start = $validated['start_date'];
+        $end = $validated['end_date'];
+
+        $data = $this->getDepartmentSalesReportData($start, $end);
+
+        return Excel::download(
+            new DepartmentSalesReportExport($data, $start, $end),
+            "department_sales_report_{$start}.xlsx"
+        );
     }
 
     /**
-     * Get product sales report data with outlet filter and date range.
+     * Get department sales report data with outlet filter and date range.
      */
-    private function getDepartmentSalesReportData(Request $request)
+    private function getDepartmentSalesReportData(string $start, string $end)
     {
-        $start = $request->input('start_date') ?: now();
-        $end = $request->input('end_date') ?: now();
-
-        $selectedOutletId = session('selected_outlet_id', null);
-
-        $salesReportService = app(SalesReportService::class);
-
-        if (!$selectedOutletId || $selectedOutletId === 'all') {
-            return $salesReportService->getDepartmentSalesReportData($start, $end);
-        }
-
-        return $salesReportService->getDepartmentSalesReportData($start, $end, $selectedOutletId);
+        $selectedOutletId = session('selected_outlet_id');
+        $query = app(SalesReportService::class)->getDepartmentSalesReportQuery($start, $end, $selectedOutletId);
+        return $query->orderBy('sip.created_at', 'asc')->get();
     }
 }

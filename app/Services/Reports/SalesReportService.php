@@ -7,10 +7,29 @@ use Carbon\Carbon;
 
 class SalesReportService
 {
-    public function getProductSalesReportData($startDate, $endDate, ?int $outletId = null)
+    private function getTotalSoldAndRevenue($startDate, $endDate)
+    {
+        $totalSoldQuantity = DB::table('sales_invoice_product as sip')
+            ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
+            ->whereBetween('si.created_at', [$startDate, $endDate])
+            ->where('si.is_voided', 0)
+            ->sum('sip.quantity');
+
+        $totalRevenue = DB::table('sales_invoice_product as sip')
+            ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
+            ->whereBetween('si.created_at', [$startDate, $endDate])
+            ->where('si.is_voided', 0)
+            ->sum(DB::raw('sip.unit_price * sip.quantity'));
+
+        return [$totalSoldQuantity, $totalRevenue];
+    }
+
+    public function getProductSalesReportQuery($startDate, $endDate, $outletId = null)
     {
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
+
+        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
@@ -28,28 +47,31 @@ class SalesReportService
                 'p.name as product_name',
                 'p.sku as product_sku',
                 'o.name as outlet_name',
-                'c.name as product_category',
-                'sip.base_price',
-                'sip.unit_price',
+                'c.name as category_name',
                 DB::raw('SUM(sip.quantity) as sold_quantity'),
+                DB::raw('SUM(sip.quantity * sip.unit_price) as total_sold'),
                 DB::raw('SUM(CASE WHEN si.is_voided = 1 THEN sip.quantity ELSE 0 END) as refund_quantity'),
+                DB::raw('SUM(CASE WHEN si.is_voided = 1 THEN sip.quantity ELSE 0 END * sip.unit_price) as total_refund'),
+                DB::raw('SUM(sip.quantity) / ' . ($totalSoldQuantity ?: 1) . ' * 100 as percentage_qty'),
+                DB::raw('SUM(sip.quantity * sip.unit_price) / ' . ($totalRevenue ?: 1) . ' * 100 as percentage_revenue'),
+                DB::raw('SUM(sip.quantity * sip.base_price) as total_sold_cogs'),
+                DB::raw('SUM(CASE WHEN si.is_voided = 1 THEN sip.quantity ELSE 0 END * sip.base_price) as total_refund_cogs'),
+                DB::raw('(SUM(sip.quantity * sip.unit_price) - SUM(sip.quantity * sip.base_price)) - SUM(CASE WHEN si.is_voided = 1 THEN sip.quantity ELSE 0 END * sip.base_price) as gross_profit'),
             ])
             ->groupBy(
-                'product_name',
-                'product_sku',
-                'outlet_name',
-                'product_category',
-                'sip.base_price',
-                'sip.unit_price'
-            )
-            ->orderBy('si.created_at')
-            ->get();
+                'p.name',
+                'p.sku',
+                'o.name',
+                'c.name',
+            );
     }
 
-    public function getCategorySalesReportData($startDate, $endDate, ?int $outletId = null)
+    public function getCategorySalesReportQuery($startDate, $endDate, $outletId = null)
     {
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
+
+        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
@@ -64,20 +86,24 @@ class SalesReportService
 
         return $query
             ->select([
-                'c.name as product_category',
+                'c.name as category_name',
                 DB::raw('SUM(sip.quantity) as sold_quantity'),
-                DB::raw('SUM(sip.unit_price * sip.quantity) as total_sold'),
-                DB::raw('SUM(sip.base_price * sip.quantity) as total_sold_cogs'),
+                DB::raw('SUM(sip.quantity * sip.unit_price) as total_sold'),
+                DB::raw('SUM(sip.quantity) / ' . ($totalSoldQuantity ?: 1) . ' * 100 as percentage_qty'),
+                DB::raw('SUM(sip.quantity * sip.unit_price) / ' . ($totalRevenue ?: 1) . ' * 100 as percentage_revenue'),
+                DB::raw('SUM(sip.quantity * sip.base_price) as total_sold_cogs'),
             ])
-            ->groupBy('product_category')
-            ->orderBy('si.created_at')
-            ->get();
+            ->groupBy(
+                'c.name',
+            );
     }
 
-    public function getDepartmentSalesReportData($startDate, $endDate, ?int $outletId = null)
+    public function getDepartmentSalesReportQuery($startDate, $endDate, $outletId = null)
     {
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
+
+        [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue($startDate, $endDate);
 
         $query = DB::table('sales_invoice_product as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
@@ -93,12 +119,14 @@ class SalesReportService
 
         return $query
             ->select([
-                'd.name as product_department',
-                DB::raw('SUM(sip.unit_price * sip.quantity) as total_sold'),
+                'd.name as department_name',
                 DB::raw('SUM(sip.quantity) as sold_quantity'),
+                DB::raw('SUM(sip.unit_price * sip.quantity) as total_sold'),
+                DB::raw('SUM(sip.quantity) / ' . ($totalSoldQuantity ?: 1) . ' * 100 as percentage_qty'),
+                DB::raw('SUM(sip.quantity * sip.unit_price) / ' . ($totalRevenue ?: 1) . ' * 100 as percentage_revenue'),
             ])
-            ->groupBy('product_department')
-            ->orderBy('si.created_at')
-            ->get();
+            ->groupBy(
+                'd.name',
+            );
     }
 }

@@ -18,32 +18,24 @@ class DepartmentSalesReportViewModel
             return $this->mappedRows;
         }
 
-        $this->totalQuantity = $this->report->sum('sold_quantity');
-        $this->totalRevenue = $this->report->sum('total_sold');
-
         return $this->mappedRows = $this->report->map(function ($row) {
-
             return [
-                'name' => $row->product_department,
+                'name' => $row->department_name,
                 'sold_quantity' => $row->sold_quantity,
                 'total_sold' => $row->total_sold,
-                'percentage_qty' => $this->totalQuantity > 0
-                    ? round(($row->sold_quantity / $this->totalQuantity) * 100, 2)
-                    : 0,
-                'percentage_revenue' => $this->totalRevenue > 0
-                    ? round(($row->total_sold / $this->totalRevenue) * 100, 2)
-                    : 0,
+                'percentage_qty' => round($row->percentage_qty, 2),
+                'percentage_revenue' => round($row->percentage_revenue, 2),
             ];
         });
     }
 
     public function totalRevenue(): float
     {
-        return $this->totalRevenue ??= $this->rows()->sum('total_sold');
+        return $this->rows()->sum('total_sold');
     }
 
     public function totalQuantity(): float
     {
-        return $this->totalQuantity ??= $this->rows()->sum('sold_quantity');
+        return $this->rows()->sum('sold_quantity');
     }
 }
