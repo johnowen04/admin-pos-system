@@ -19,24 +19,46 @@
                 <a href="{{ route('pos.index') }}" class="btn btn-outline-primary">
                     <i class="fas fa-shopping-cart me-1"></i> Go To POS
                 </a>
+                <button type="button" class="btn btn-secondary" wire:click="resetFilters">
+                    <i class="fa fa-filter me-1"></i> Reset Filters
+                </button>
             </div>
         </div>
     @else
-        <div class="d-flex flex-row mb-3 gap-2 align-items-center">
-            <div class="flex-grow-1">
-                <label for="productSearch" class="form-label fw-bold">Search Products</label>
-                <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
-                    placeholder="Search products..." class="form-control" />
-            </div>
-
-            <div class="d-flex flex-column" style="min-width: 150px;">
-                <label for="productPerPage" class="form-label fw-bold">Items per page</label>
-                <select id="productPerPage" wire:model="perPage" wire:change="resetPage" class="form-select">
+        <div class="row mb-3 g-0">
+            <div class="col-12 col-sm-4 col-md-auto" style="width: 150px;">
+                <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
+                <select id="productPerPage" wire:model="perPage" wire:change="resetPage"
+                    class="form-control form-select">
                     <option value="5">5</option>
                     <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
                 </select>
+            </div>
+
+            <div class="col-12 col-sm-8 col-md">
+                <label for="productSearch" class="form-label mb-1 fw-bold">Search Products</label>
+                <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
+                    placeholder="Search products..." class="form-control" />
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-auto" style="min-width: 180px;">
+                <label for="startDate" class="form-label mb-1 fw-bold">Start Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="date" id="startDate" wire:model="startDate" wire:change="resetPage"
+                        class="form-control" placeholder="Start date">
+                </div>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-auto" style="min-width: 180px;">
+                <label for="endDate" class="form-label mb-1 fw-bold">End Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                    <input type="date" id="endDate" wire:model="endDate" wire:change="resetPage"
+                        class="form-control" placeholder="End date">
+                </div>
             </div>
         </div>
 

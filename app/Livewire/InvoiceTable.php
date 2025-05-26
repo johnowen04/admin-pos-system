@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\PurchaseInvoice;
 use App\Models\SalesInvoice;
+use Carbon\Carbon;
 
 class InvoiceTable extends Component
 {
@@ -20,6 +21,8 @@ class InvoiceTable extends Component
     public $perPage = 10;
     public $selectedOutletId;
     public $invoiceType;
+    public $startDate = '';
+    public $endDate = '';
 
     protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page'];
 
@@ -27,6 +30,8 @@ class InvoiceTable extends Component
     {
         $this->selectedOutletId = $selectedOutletId;
         $this->invoiceType = $invoiceType;
+        $this->startDate = now()->startOfDay()->toDateString();
+        $this->endDate = now()->endOfDay()->toDateString();
     }
 
     public function updatedSearch()
@@ -44,16 +49,34 @@ class InvoiceTable extends Component
         }
     }
 
+    public function resetFilters()
+    {
+        $this->reset([
+            'search',
+            'startDate',
+            'endDate',
+            'sortField',
+            'sortDirection',
+            'page',
+        ]);
+
+        $this->startDate = now()->toDateString();
+        $this->endDate = now()->toDateString();
+    }
+
     public function render()
     {
+        $startDate = Carbon::parse($this->startDate)->startOfDay();
+        $endDate = Carbon::parse($this->endDate)->endOfDay();
+
         if ($this->invoiceType === 'Purchase') {
-            return $this->renderPurchaseInvoices();
+            return $this->renderPurchaseInvoices($startDate, $endDate);
         } elseif ($this->invoiceType === 'Sales') {
-            return $this->renderSalesInvoices();
+            return $this->renderSalesInvoices($startDate, $endDate);
         }
     }
 
-    protected function renderPurchaseInvoices()
+    protected function renderPurchaseInvoices($startDate, $endDate)
     {
         $query = PurchaseInvoice::with([
             'employee',
@@ -64,6 +87,8 @@ class InvoiceTable extends Component
                 }
             }
         ]);
+
+        $query->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
             $query->where('outlet_id', $this->selectedOutletId);
@@ -82,7 +107,7 @@ class InvoiceTable extends Component
         return view('livewire.invoice-table', ['invoices' => $invoices]);
     }
 
-    protected function renderSalesInvoices()
+    protected function renderSalesInvoices($startDate, $endDate)
     {
         $query = SalesInvoice::with([
             'employee',
@@ -93,6 +118,8 @@ class InvoiceTable extends Component
                 }
             }
         ]);
+        
+        $query->whereBetween('created_at', [$startDate, $endDate]);
 
         if ($this->search) {
             $query->where(function ($q) {

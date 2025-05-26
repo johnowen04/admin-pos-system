@@ -66,7 +66,7 @@ class InventoryViewModel
             $sumQuantity = fn(?array $group) =>
             array_sum(array_map(fn($items) => array_sum(array_column($items, 'quantity')), $group ?? []));
 
-            $initial = $sumQuantity($movementGroups['initial'] ?? []);
+            $initial = $product->initial_quantity ?? 0;
             $purchase = $sumQuantity($movementGroups['purchase'] ?? []);
             $sale = $sumQuantity($movementGroups['sale'] ?? []);
             $adjustment = $sumQuantity($movementGroups['adjustment'] ?? []);
@@ -95,7 +95,7 @@ class InventoryViewModel
                 || $this->isNonZero($row['sale'])
                 || $this->isNonZero($row['adjustment']);
         })->values();
-        
+
         return $this->mappedRows;
     }
 

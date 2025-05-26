@@ -71,7 +71,6 @@
                                 </tr>
                             </thead>
                             <tbody id="modalStockTableBody">
-                                <!-- Stock rows will be dynamically added here -->
                             </tbody>
                         </table>
                     </div>
@@ -91,16 +90,13 @@
                 const product = $(this).data('product');
                 const stock = $(this).data('stock');
 
-                // Fill in product details
                 $('#modalProductSKU').text(product.sku);
-                $('#modalProductName').text(product.product_name);
+                $('#modalProductName').text(product.name);
                 $('#modalProductCategory').text(product.category);
 
-                // Clear stock table body
                 const $tbody = $('#modalStockTableBody');
                 $tbody.empty();
 
-                // Fill in stock details
                 $.each(stock, function(_, outlet) {
                     const end = outlet.initial + outlet.purchase - outlet.sale + (outlet
                         .adjustment ?? 0);

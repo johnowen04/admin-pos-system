@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Product;
 use App\ViewModels\InventoryViewModel;
+use Carbon\Carbon;
 
 class InventoryTable extends Component
 {
@@ -19,12 +20,16 @@ class InventoryTable extends Component
     public $page = 1;
     public $perPage = 10;
     public $selectedOutletId;
+    public $startDate = '';
+    public $endDate = '';
 
     protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page'];
 
     public function mount($selectedOutletId)
     {
         $this->selectedOutletId = $selectedOutletId;
+        $this->startDate = now()->startOfDay()->toDateString();
+        $this->endDate = now()->endOfDay()->toDateString();
     }
 
     public function updatedSearch()
@@ -42,17 +47,41 @@ class InventoryTable extends Component
         }
     }
 
+    public function resetFilters()
+    {
+        $this->reset([
+            'search',
+            'startDate',
+            'endDate',
+            'sortField',
+            'sortDirection',
+            'page',
+        ]);
+
+        $this->startDate = now()->toDateString();
+        $this->endDate = now()->toDateString();
+    }
+
     public function render()
     {
+        $startDate = Carbon::parse($this->startDate)->startOfDay();
+        $endDate = Carbon::parse($this->endDate)->endOfDay();
+
         $query = Product::with([
             'category',
             'unit',
-            'stockMovements' => function ($q) {
+            'stockMovements' => function ($q) use ($startDate, $endDate) {
                 if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
                     $q->where('outlet_id', $this->selectedOutletId);
                 }
+                $q->whereBetween('created_at', [$startDate, $endDate]);
             }
-        ]);
+        ])->withSum(['stockMovements as initial_quantity' => function ($q) use ($startDate) {
+            if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
+                $q->where('outlet_id', $this->selectedOutletId);
+            }
+            $q->where('created_at', '<', $startDate);
+        }], 'quantity');
 
         if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
             $query->whereHas('stockMovements', function ($q) {

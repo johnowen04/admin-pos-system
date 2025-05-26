@@ -19,14 +19,24 @@
             </div>
         </div>
     @else
-        <div class="d-flex flex-column flex-xl-row mb-3 gap-3 align-items-end">
-            <div class="flex-grow-1 me-md-2">
+        <div class="row mb-3 g-0">
+            <div class="col-12 col-sm-4 col-md-auto" style="width: 150px;">
+                <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
+                <select id="productPerPage" wire:model="perPage" wire:change="resetPage" class="form-control form-select">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-8 col-md">
                 <label for="productSearch" class="form-label mb-1 fw-bold">Search Products</label>
                 <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
                     placeholder="Search products..." class="form-control" />
             </div>
-
-            <div class="me-md-2" style="min-width: 180px;">
+            
+            <div class="col-12 col-sm-6 col-md-auto" style="min-width: 180px;">
                 <label for="startDate" class="form-label mb-1 fw-bold">Start Date</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
@@ -35,23 +45,13 @@
                 </div>
             </div>
 
-            <div class="me-md-2" style="min-width: 180px;">
+            <div class="col-12 col-sm-6 col-md-auto" style="min-width: 180px;">
                 <label for="endDate" class="form-label mb-1 fw-bold">End Date</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
                     <input type="date" id="endDate" wire:model="endDate" wire:change="resetPage"
                         class="form-control" placeholder="End date">
                 </div>
-            </div>
-
-            <div style="width: 150px;">
-                <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
-                <select id="productPerPage" wire:model="perPage" wire:change="resetPage" class="form-select">
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
             </div>
         </div>
 
