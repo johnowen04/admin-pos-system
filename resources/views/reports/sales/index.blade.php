@@ -66,11 +66,11 @@
                     <div class="card-body">
                         <div>
                             @if ($reportType === 'Product')
-                                @livewire('product-sales-table', ['selectedOutletId' => $selectedOutletId])
+                                @livewire('sales.product-sales-table', ['selectedOutletId' => $selectedOutletId])
                             @elseif ($reportType === 'Category')
-                                @livewire('category-sales-table', ['selectedOutletId' => $selectedOutletId])
+                                @livewire('sales.category-sales-table', ['selectedOutletId' => $selectedOutletId])
                             @elseif ($reportType === 'Department')
-                                @livewire('department-sales-table', ['selectedOutletId' => $selectedOutletId])
+                                @livewire('sales.department-sales-table', ['selectedOutletId' => $selectedOutletId])
                             @endif
                         </div>
                     </div>

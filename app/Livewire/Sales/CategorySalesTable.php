@@ -1,21 +1,21 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Sales;
 
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Services\Reports\SalesReportService;
-use App\ViewModels\ProductSalesReportViewModel;
+use App\ViewModels\CategorySalesReportViewModel;
 use Carbon\Carbon;
 
-class ProductSalesTable extends Component
+class CategorySalesTable extends Component
 {
     use WithPagination;
 
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
-    public $sortField = 'p.sku';
+    public $sortField = 'c.name';
     public $sortDirection = 'up';
     public $page = 1;
     public $perPage = 10;
@@ -69,10 +69,10 @@ class ProductSalesTable extends Component
 
         $salesReportService = app(SalesReportService::class);
 
-        $query = $salesReportService->getProductSalesReportQuery($startDate, $endDate);
+        $query = $salesReportService->getCategorySalesReportQuery($startDate, $endDate);
 
         if (!$this->selectedOutletId || $this->selectedOutletId === 'all') {
-            $query = $salesReportService->getProductSalesReportQuery($startDate, $endDate, $this->selectedOutletId);
+            $query = $salesReportService->getCategorySalesReportQuery($startDate, $endDate, $this->selectedOutletId);
         }
 
         $reportPaginator = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
@@ -80,9 +80,9 @@ class ProductSalesTable extends Component
 
         $reportCollection = $reportPaginator->getCollection();
 
-        $viewModel = new ProductSalesReportViewModel($reportCollection);
+        $viewModel = new CategorySalesReportViewModel($reportCollection);
 
-        return view('livewire.product-sales-table', [
+        return view('livewire.sales.category-sales-table', [
             'report' => $viewModel,
             'reportPaginator' => $reportPaginator,
         ]);

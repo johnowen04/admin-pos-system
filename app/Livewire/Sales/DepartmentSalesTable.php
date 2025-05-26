@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Livewire;
+namespace App\Livewire\Sales;
 
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Services\Reports\SalesReportService;
-use App\ViewModels\CategorySalesReportViewModel;
 use App\ViewModels\DepartmentSalesReportViewModel;
 use Carbon\Carbon;
 
@@ -83,7 +82,7 @@ class DepartmentSalesTable extends Component
 
         $viewModel = new DepartmentSalesReportViewModel($reportCollection);
 
-        return view('livewire.department-sales-table', [
+        return view('livewire.sales.department-sales-table', [
             'report' => $viewModel,
             'reportPaginator' => $reportPaginator,
         ]);
