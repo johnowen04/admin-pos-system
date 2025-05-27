@@ -68,7 +68,7 @@ class ProductTable extends Component
         }
 
         if ($this->categoryFilter) {
-            $query->where('categories_id', $this->categoryFilter);
+            $query->where('category_id', $this->categoryFilter);
         }
 
         $this->applyFilters($query);

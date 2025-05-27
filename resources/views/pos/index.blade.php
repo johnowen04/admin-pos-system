@@ -135,7 +135,7 @@
                                     @foreach ($products as $product)
                                         <div class="col-6 col-md-4 col-lg-3 product-item" data-id="{{ $product['id'] }}"
                                             data-name="{{ $product['name'] }}" data-sku="{{ $product['sku'] }}"
-                                            data-category="{{ $product['categories_id'] }}"
+                                            data-category="{{ $product['category_id'] }}"
                                             data-initial-stock="{{ $product['quantity'] }}">
                                             <div class="border p-3 text-center rounded bg-light position-relative">
                                                 <div class="fw-bold">{{ $product['sku'] }}</div>

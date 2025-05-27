@@ -34,11 +34,11 @@ class Category extends Model
 
     public function outlets()
     {
-        return $this->belongsToMany(Outlet::class, 'outlet_category', 'categories_id', 'outlet_id');
+        return $this->belongsToMany(Outlet::class, 'outlet_category', 'category_id', 'outlet_id');
     }
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'categories_id');
+        return $this->hasMany(Product::class, 'category_id');
     }
 }

@@ -23,8 +23,8 @@ class Product extends Model
         'buy_price',
         'sell_price',
         'min_qty',
-        'units_id',
-        'categories_id',
+        'unit_id',
+        'category_id',
         'is_shown',
     ];
 
@@ -38,12 +38,12 @@ class Product extends Model
     // Relationships
     public function unit()
     {
-        return $this->belongsTo(Unit::class, 'units_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 
     public function category()
     {
-        return $this->belongsTo(Category::class, 'categories_id');
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     public function outlets()

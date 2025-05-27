@@ -99,8 +99,8 @@ class ProductService
             'sell_price' => $data['sell_price'],
             'min_qty' => $data['min_qty'],
             'is_shown' => $data['is_shown'],
-            'categories_id' => $data['categories_id'],
-            'units_id' => $data['units_id'],
+            'category_id' => $data['category_id'],
+            'unit_id' => $data['unit_id'],
         ];
     }
 

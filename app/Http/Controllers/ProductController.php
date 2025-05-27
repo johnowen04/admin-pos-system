@@ -75,8 +75,8 @@ class ProductController extends Controller
             'sell_price' => 'required|numeric|min:0',
             'min_qty' => 'required|numeric|min:0',
             'is_shown' => 'required|boolean',
-            'categories_id' => 'required|exists:categories,id',
-            'units_id' => 'required|exists:units,id',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
             'outlets' => 'nullable|array',
             'outlets.*' => 'exists:outlets,id',
         ]);
@@ -128,8 +128,8 @@ class ProductController extends Controller
             'sell_price' => 'required|numeric|min:0',
             'min_qty' => 'required|numeric|min:0',
             'is_shown' => 'required|boolean',
-            'categories_id' => 'required|exists:categories,id',
-            'units_id' => 'required|exists:units,id',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
             'outlets' => 'nullable|array',
             'outlets.*' => 'exists:outlets,id',
         ]);

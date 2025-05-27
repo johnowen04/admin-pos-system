@@ -8,7 +8,7 @@ class InventoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:inventory.view|inventory.*')->only(['index', 'show']);
+        $this->middleware('permission:inventory.view|inventory.*')->only(['index']);
     }
 
     /**

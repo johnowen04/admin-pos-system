@@ -33,7 +33,7 @@ class InventoryService
                     'name' => $item->product->name ?? 'Unknown Product',
                     'base_price' => $item->product->base_price ?? 0,
                     'sell_price' => $item->product->sell_price ?? 0,
-                    'categories_id' => $item->product->categories_id ?? 0,
+                    'category_id' => $item->product->category_id ?? 0,
                     'quantity' => $item->quantity,
                 ];
             })
@@ -50,7 +50,7 @@ class InventoryService
                     'name' => $item->product->name ?? 'Unknown Product',
                     'base_price' => $item->product->base_price ?? 0,
                     'sell_price' => $item->product->sell_price ?? 0,
-                    'categories_id' => $item->product->categories_id ?? 0,
+                    'category_id' => $item->product->category_id ?? 0,
                     'quantity' => $item->quantity,
                 ];
             })

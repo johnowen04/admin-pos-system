@@ -21,8 +21,8 @@ class ProductSeeder extends Seeder
                 'buy_price' => 80.00,
                 'sell_price' => 120.00,
                 'min_qty' => 10,
-                'units_id' => 1, // Assuming Unit ID 1 (e.g., Pieces) exists
-                'categories_id' => 1, // Assuming Category ID 1 exists
+                'unit_id' => 1, // Assuming Unit ID 1 (e.g., Pieces) exists
+                'category_id' => 1, // Assuming Category ID 1 exists
                 'is_shown' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -35,8 +35,8 @@ class ProductSeeder extends Seeder
                 'buy_price' => 150.00,
                 'sell_price' => 250.00,
                 'min_qty' => 5,
-                'units_id' => 2, // Assuming Unit ID 2 (e.g., Dozen) exists
-                'categories_id' => 2, // Assuming Category ID 2 exists
+                'unit_id' => 2, // Assuming Unit ID 2 (e.g., Dozen) exists
+                'category_id' => 2, // Assuming Category ID 2 exists
                 'is_shown' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -49,8 +49,8 @@ class ProductSeeder extends Seeder
                 'buy_price' => 250.00,
                 'sell_price' => 350.00,
                 'min_qty' => 20,
-                'units_id' => 3, // Assuming Unit ID 3 (e.g., Box) exists
-                'categories_id' => 3, // Assuming Category ID 3 exists
+                'unit_id' => 3, // Assuming Unit ID 3 (e.g., Box) exists
+                'category_id' => 3, // Assuming Category ID 3 exists
                 'is_shown' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -63,8 +63,8 @@ class ProductSeeder extends Seeder
                 'buy_price' => 40.00,
                 'sell_price' => 60.00,
                 'min_qty' => 50,
-                'units_id' => 4, // Assuming Unit ID 4 (e.g., Kilogram) exists
-                'categories_id' => 4, // Assuming Category ID 4 exists
+                'unit_id' => 4, // Assuming Unit ID 4 (e.g., Kilogram) exists
+                'category_id' => 4, // Assuming Category ID 4 exists
                 'is_shown' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -77,8 +77,8 @@ class ProductSeeder extends Seeder
                 'buy_price' => 8.00,
                 'sell_price' => 12.00,
                 'min_qty' => 100,
-                'units_id' => 5, // Assuming Unit ID 5 (e.g., Gram) exists
-                'categories_id' => 5, // Assuming Category ID 5 exists
+                'unit_id' => 5, // Assuming Unit ID 5 (e.g., Gram) exists
+                'category_id' => 5, // Assuming Category ID 5 exists
                 'is_shown' => true,
                 'created_at' => now(),
                 'updated_at' => now(),

@@ -101,8 +101,8 @@ class InventoryTable extends Component
         $query = DB::table('products as p')
             ->leftJoinSub($initialStock, 'i', 'p.id', '=', 'i.product_id')
             ->leftJoinSub($movementTotals, 'm', 'p.id', '=', 'm.product_id')
-            ->leftJoin('categories as c', 'p.categories_id', '=', 'c.id')
-            ->leftJoin('units as u', 'p.units_id', '=', 'u.id')
+            ->leftJoin('categories as c', 'p.category_id', '=', 'c.id')
+            ->leftJoin('units as u', 'p.unit_id', '=', 'u.id')
             ->select([
                 'p.id',
                 'p.name',

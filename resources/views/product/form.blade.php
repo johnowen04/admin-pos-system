@@ -50,11 +50,11 @@
 
                 <div class="form-group">
                     <label for="productCategory">Product Category</label>
-                    <select class="form-select form-control" id="productCategory" name="categories_id" tabindex="3">
+                    <select class="form-select form-control" id="productCategory" name="category_id" tabindex="3">
                         <option value="" disabled selected>Select category</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}"
-                                {{ old('categories_id', $product->categories_id ?? '') == $category->id ? 'selected' : '' }}>
+                                {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
@@ -97,11 +97,11 @@
 
                     <div class="form-group">
                         <label for="productUnit">Product Unit</label>
-                        <select class="form-select form-control" id="productUnit" name="units_id" tabindex="6">
+                        <select class="form-select form-control" id="productUnit" name="unit_id" tabindex="6">
                             <option value="" disabled selected>Select unit</option>
                             @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}" data-conversion="{{ $unit->conversion_unit }}"
-                                    {{ old('units_id', $product->units_id ?? '') == $unit->id ? 'selected' : '' }}>
+                                    {{ old('unit_id', $product->unit_id ?? '') == $unit->id ? 'selected' : '' }}>
                                     {{ $unit->name }}
                                 </option>
                             @endforeach
