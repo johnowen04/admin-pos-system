@@ -12,17 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('employee_outlet', function (Blueprint $table) {
-            $table->unsignedBigInteger('outlet_id'); // Foreign key for outlets
-            $table->unsignedBigInteger('employee_id'); // Foreign key for employees
+            $table->unsignedBigInteger('outlet_id');
+            $table->unsignedBigInteger('employee_id');
             
-            // Composite primary key
             $table->primary(['outlet_id', 'employee_id']);
 
-            // Indexes
             $table->index('employee_id', 'fk_outlets_has_employees_employees1_idx');
             $table->index('outlet_id', 'fk_outlets_has_employees_outlets1_idx');
 
-            // Foreign key constraints
             $table->foreign('outlet_id', 'fk_outlets_has_employees_outlets1')
                 ->references('id')
                 ->on('outlets')

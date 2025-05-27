@@ -12,16 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales_invoice_product', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->unsignedBigInteger('sales_invoice_id'); // Foreign key to sales_invoices
-            $table->unsignedBigInteger('product_id'); // Foreign key to products
-            $table->integer('quantity'); // Quantity of the product
-            $table->decimal('base_price', 15, 2); // Unit price of the product
-            $table->decimal('unit_price', 15, 2); // Unit price of the product
-            $table->decimal('total_price', 15, 2); // Total price (quantity * unit_price)
-            $table->timestamps(); // Created and updated timestamps
+            $table->id();
+            $table->unsignedBigInteger('sales_invoice_id');
+            $table->unsignedBigInteger('product_id');
+            $table->integer('quantity');
+            $table->decimal('base_price', 15, 2);
+            $table->decimal('unit_price', 15, 2);
+            $table->decimal('total_price', 15, 2);
+            $table->timestamps();
 
-            // Foreign key constraints
             $table->foreign('sales_invoice_id')->references('id')->on('sales_invoices')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });

@@ -19,11 +19,9 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Index for position_id
             $table->index('position_id', 'fk_employees_positions1_idx');
             $table->index('user_id', 'fk_employees_users1_idx');
 
-            // Foreign key constraint
             $table->foreign('position_id', 'fk_employees_positions1_idx')
                 ->references('id')
                 ->on('positions')

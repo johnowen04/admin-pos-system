@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
 
-            // Foreign key constraints
             $table->foreign('outlet_id')->references('id')->on('outlets')->onDelete('cascade');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
         });

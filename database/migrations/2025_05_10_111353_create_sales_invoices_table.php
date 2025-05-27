@@ -12,17 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales_invoices', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->string('invoice_number')->unique()->nullable(); // Unique invoice number
-            $table->decimal('grand_total', 15, 2); // Grand total amount
-            $table->string('description', 255)->nullable(); // Description of the invoice
-            $table->unsignedBigInteger('outlet_id'); // Foreign key to outlets table
-            $table->unsignedBigInteger('employee_id')->nullable(); // Foreign key to employees table
-            $table->unsignedBigInteger('created_by'); // Foreign key to users table
-            $table->timestamps(); // Created and updated timestamps
-            $table->softDeletes(); // Soft delete column
+            $table->id();
+            $table->string('invoice_number')->unique()->nullable();
+            $table->decimal('grand_total', 15, 2);
+            $table->string('description', 255)->nullable();
+            $table->unsignedBigInteger('outlet_id');
+            $table->unsignedBigInteger('employee_id')->nullable();
+            $table->unsignedBigInteger('created_by');
+            $table->timestamps();
+            $table->softDeletes();
 
-            // Foreign key constraint
             $table->foreign('outlet_id')->references('id')->on('outlets');
             $table->foreign('employee_id')->references('id')->on('employees');
             $table->foreign('created_by')->references('id')->on('users');

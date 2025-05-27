@@ -11,23 +11,21 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('sku', 50)->unique();
-            $table->string('name', 100); // Product name
-            $table->text('description')->nullable(); // Product description
-            $table->decimal('base_price', 10, 2)->nullable()->default(0); // Base price
-            $table->decimal('buy_price', 10, 2)->default(0); // Buy price
-            $table->decimal('sell_price', 10, 2)->default(0); // Sell price
-            $table->smallInteger('min_qty')->default(1); // Minimum quantity with default value 1
-            $table->unsignedBigInteger('unit_id'); // Foreign key for units
-            $table->unsignedBigInteger('category_id'); // Foreign key for categories
-            $table->boolean('is_shown')->default(true); // Boolean column with default value true
-            $table->timestamps(); // Created at and updated at columns
-            $table->softDeletes(); // Soft delete column
+            $table->string('name', 100);
+            $table->text('description')->nullable();
+            $table->decimal('base_price', 10, 2)->nullable()->default(0);
+            $table->decimal('buy_price', 10, 2)->default(0);
+            $table->decimal('sell_price', 10, 2)->default(0);
+            $table->smallInteger('min_qty')->default(1);
+            $table->unsignedBigInteger('unit_id');
+            $table->unsignedBigInteger('category_id');
+            $table->boolean('is_shown')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
 
-            // Indexes
             $table->index('unit_id', 'fk_products_units_idx');
             $table->index('category_id', 'fk_products_categories1_idx');
 
-            // Foreign key constraints
             $table->foreign('unit_id', 'fk_products_units')
                 ->references('id')
                 ->on('units')

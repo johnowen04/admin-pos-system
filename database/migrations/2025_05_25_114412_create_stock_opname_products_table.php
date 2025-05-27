@@ -17,7 +17,6 @@ return new class extends Migration
             $table->integer('difference')->computed('counted_stock - system_stock');
             $table->timestamps();
 
-            // Foreign key constraints
             $table->foreign('stock_opname_id')->references('id')->on('stock_opnames')->onDelete('cascade');
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });

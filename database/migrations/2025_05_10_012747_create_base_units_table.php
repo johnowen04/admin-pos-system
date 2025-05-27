@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('base_units', function (Blueprint $table) {
-            $table->id(); // Primary key
-            $table->string('name', 45); // Name column with max length 45
-            $table->timestamps(); // Created at and updated at columns
-            $table->softDeletes(); // Soft delete column
+            $table->id();
+            $table->string('name', 45);
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

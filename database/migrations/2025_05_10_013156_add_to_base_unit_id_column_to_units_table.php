@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('units', function (Blueprint $table) {
-            $table->unsignedBigInteger('to_base_unit_id'); // or remove nullable() if required
+            $table->unsignedBigInteger('to_base_unit_id');
             $table->foreign('to_base_unit_id')->references('id')->on('base_units')->onDelete('cascade');
         });
         
@@ -24,8 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('units', function (Blueprint $table) {
-            $table->dropForeign(['to_base_unit_id']); // Drop the foreign key constraint
-            $table->dropColumn('to_base_unit_id'); // Drop the column
+            $table->dropForeign(['to_base_unit_id']);
+            $table->dropColumn('to_base_unit_id');
         });
     }
 };
