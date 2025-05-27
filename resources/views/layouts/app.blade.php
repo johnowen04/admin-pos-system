@@ -80,7 +80,7 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
     <!--   Core JS Files   -->
-    <script defer src="{{ asset('assets/js/alpine.min.js') }}"></script>
+    <script defer src="{{ asset('assets/js/core/alpine.min.js') }}"></script>
     <script src="{{ asset('assets/js/core/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
     <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
