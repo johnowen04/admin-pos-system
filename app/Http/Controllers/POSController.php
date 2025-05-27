@@ -55,7 +55,6 @@ class POSController extends Controller
             $accessibleOutlets = $this->accessControlService->getUser()->employee->outlets;
         }
 
-        // Check if employee has any outlets assigned
         if ($accessibleOutlets->isEmpty()) {
             return view('pos.index')->with('error', 'You do not have any outlets assigned. Please contact an administrator.');
         }
@@ -193,19 +192,15 @@ class POSController extends Controller
         $created_by = $this->accessControlService->getUser()->id;
         $outletId = session('selected_outlet_id');
 
-        // Get all product IDs from cart
         $productIds = array_keys($cart);
 
-        // Fetch all products in a single query
         $dbProducts = $this->productService->getProductsByIds($productIds);
 
-        // Create a lookup array for easier access
         $productLookup = [];
         foreach ($dbProducts as $product) {
             $productLookup[$product->id] = $product;
         }
 
-        // Process cart items with the fetched products
         $products = [];
         foreach ($cart as $id => $product) {
             $product['id'] = $id;
@@ -255,17 +250,14 @@ class POSController extends Controller
     {
         try {
             $previousRoute = $this->getPreviousRoute();
+            $outletName = session('selected_outlet');
+            $receiptCreator = $this->accessControlService->getUser()->employee ?? $this->accessControlService->getUser();
             $cart = [];
             $grandTotal = 0;
             $invoiceNumber = '';
             $date = now()->format('d/m/Y H:i');
             $amountPaid = null;
             $paymentMethod = null;
-
-            $employee = $this->accessControlService->getUser()->employee ?? null;
-            $creator = $this->accessControlService->getUser();
-            $outletId = session('selected_outlet_id');
-            $outlet = $this->outletService->getOutletById($outletId);
 
             if ($previousRoute === 'pos.payment') {
                 $receiptData = $this->getReceiptDataFromSession();
@@ -292,17 +284,15 @@ class POSController extends Controller
             }
 
             return view('pos.receipt', [
+                'outletName' => $outletName,
+                'receiptCreator' => $receiptCreator,
+                'date' => $date,
+                'invoiceNumber' => $invoiceNumber,
                 'cart' => $cart,
                 'grandTotal' => $grandTotal,
-                'date' => $date,
-                'employee' => $employee,
-                'creator' => $creator,
-                'outlet' => $outlet,
-                'invoiceNumber' => $invoiceNumber,
-                'previousRoute' => $previousRoute,
-                'creator' => $creator,
                 'amountPaid' => $amountPaid,
                 'isVoided' => $isVoided ?? false,
+                'previousRoute' => $previousRoute,
             ]);
         } catch (\Exception $e) {
             Log::error('Error generating receipt: ' . $e->getMessage());
@@ -379,16 +369,15 @@ class POSController extends Controller
             }
 
             return [
+                'outletName' => $sales->outlet->name,
+                'receiptCreator' => $sales->employee->name ?? $sales->creator->name,
+                'date' => $sales->created_at->format('d/m/Y H:i'),
+                'invoiceNumber' => $sales->invoice_number,
                 'cart' => $cart,
                 'grandTotal' => $sales->grand_total,
-                'invoiceNumber' => $sales->invoice_number,
-                'date' => $sales->created_at->format('d/m/Y H:i'),
-                'employee' => $sales->employee,
-                'creator' => $sales->creator,
-                'outlet' => $sales->outlet,
                 'amountPaid' => $sales->amount_paid ?? $sales->grand_total,
-                'paymentMethod' => $sales->payment_method ?? 'Cash',
                 'isVoided' => $sales->is_voided ?? false,
+                'paymentMethod' => $sales->payment_method ?? 'Cash',
             ];
         } catch (\Exception $e) {
             Log::error('Error fetching sales invoice: ' . $e->getMessage());

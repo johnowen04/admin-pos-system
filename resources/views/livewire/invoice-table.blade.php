@@ -110,7 +110,7 @@
                                         method="POST" style="display: inline-block;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-link btn-danger" data-toggle="tooltip"
+                                        <button hidden type="submit" class="btn btn-link btn-danger" data-toggle="tooltip"
                                             title="Delete"
                                             onclick="return confirm('Are you sure you want to delete this invoice?')">
                                             <i class="fa fa-times"></i>

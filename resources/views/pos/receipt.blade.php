@@ -11,7 +11,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="card-title mb-0">Payment Receipt</h4>
                             @if (route($previousRoute) !== route('pos.index'))
-                                <span class="badge @if ($isVoided) bg-danger @else bg-success @endif">{{ $isVoided ? "Void" : "Completed" }}</span>
+                                <span
+                                    class="badge @if ($isVoided) bg-danger @else bg-success @endif">{{ $isVoided ? 'Void' : 'Completed' }}</span>
                             @else
                                 <span class="badge bg-success">Completed</span>
                             @endif
@@ -19,11 +20,10 @@
                     </div>
 
                     <div class="card-body">
-                        <!-- Header Information -->
                         <div class="text-center mb-4">
-                            <h5 class="mb-1 fw-bold">{{ $outlet->name }}</h5>
+                            <h5 class="mb-1 fw-bold">{{ $outletName }}</h5>
                             <small class="text-muted d-block">Cashier:
-                                {{ $employee ? $employee->name : $creator->name }}</small>
+                                {{ $receiptCreator }}</small>
                             <small class="text-muted d-block">{{ $date }}</small>
                             <div class="mt-2">
                                 <span class="fw-bold">Invoice:</span> {{ $invoiceNumber }}
@@ -32,9 +32,8 @@
 
                         <hr class="my-3">
 
-                        <!-- Products List -->
                         <div class="table-responsive">
-                            <table class="table table-sm">
+                            <table class="table table-borderless table-sm">
                                 <thead>
                                     <tr>
                                         <th>Item</th>
@@ -61,7 +60,6 @@
 
                         <hr class="my-3">
 
-                        <!-- Summary Section -->
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-1">
@@ -97,14 +95,12 @@
 
                         <hr class="my-3">
 
-                        <!-- Thank You Message -->
                         <div class="text-center mb-3">
                             <p class="mb-1">Thank you for your purchase!</p>
                             <small class="text-muted">Please keep this receipt for your records.</small>
                         </div>
                     </div>
 
-                    <!-- Actions Footer (No Print) -->
                     <div class="card-footer bg-white no-print mb-2">
                         <div class="d-flex justify-content-between">
                             @if ($previousRoute === 'pos.payment')
@@ -132,7 +128,6 @@
                 background-color: white;
                 font-size: 12pt;
             }
-
             .no-print {
                 display: none;
             }
