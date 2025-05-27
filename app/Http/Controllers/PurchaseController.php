@@ -26,7 +26,7 @@ class PurchaseController extends Controller
     ) {
         $this->middleware('permission:purchase.view|purchase.*')->only(['index', 'show']);
         $this->middleware('permission:purchase.create|purchase.*')->only(['create', 'store']);
-        $this->middleware('permission:purchase.edit|purchase.*')->only(['edit', 'update']);
+        $this->middleware('permission:purchase.edit|purchase.*')->only(['edit', 'void']);
         $this->middleware('permission:purchase.delete|purchase.*')->only(['void', 'destroy']);
 
         $this->accessControlService = app(AccessControlService::class);

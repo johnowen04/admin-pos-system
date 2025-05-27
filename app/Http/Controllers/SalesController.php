@@ -26,7 +26,7 @@ class SalesController extends Controller
     ) {
         $this->middleware('permission:sales.view|sales.*')->only(['index', 'show']);
         $this->middleware('permission:sales.create|sales.*')->only(['create', 'store']);
-        $this->middleware('permission:sales.edit|sales.*')->only(['edit', 'update']);
+        $this->middleware('permission:sales.edit|sales.*')->only(['edit', 'void']);
         $this->middleware('permission:sales.delete|sales.*')->only(['destroy']);
 
         $this->accessControlService = app(AccessControlService::class);
