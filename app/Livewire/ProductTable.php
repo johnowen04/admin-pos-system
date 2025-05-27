@@ -84,7 +84,6 @@ class ProductTable extends Component
 
     protected function applyFilters($query)
     {
-        // Apply shown status filter
         if ($this->filter === 'shown') {
             $query->where('is_shown', true);
         } elseif ($this->filter === 'not_shown') {
