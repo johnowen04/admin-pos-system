@@ -36,6 +36,36 @@
                 <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
                     placeholder="Search products..." class="form-control" />
             </div>
+
+            <div class="col-12 col-sm-6 col-md-auto mb-3 mb-md-0 me-md-2">
+                <label for="categoryFilter" class="form-label mb-1 fw-bold">Filter by Category</label>
+                <select id="categoryFilter" wire:model="categoryFilter" wire:change="resetPage"
+                    class="form-control form-select">
+                    <option value="">All Categories</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-auto mt-3 mt-md-0">
+                <label class="form-label mb-1 fw-bold">Filter by Shwn In Menu?</label>
+                <div class="btn-group w-100">
+                    <button type="button" class="btn {{ $filter === 'all' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        style="width: 33.33%" wire:click="setFilter('all')">
+                        All
+                    </button>
+                    <button type="button" class="btn {{ $filter === 'shown' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        style="width: 33.33%" wire:click="setFilter('shown')">
+                        Shown
+                    </button>
+                    <button type="button"
+                        class="btn {{ $filter === 'not_shown' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        style="width: 33.34%" wire:click="setFilter('not_shown')">
+                        Not Shown
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="table-responsive">

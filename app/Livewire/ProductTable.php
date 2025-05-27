@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Category;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Product;
@@ -9,7 +10,7 @@ use App\Models\Product;
 class ProductTable extends Component
 {
     use WithPagination;
-    
+
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
@@ -18,6 +19,8 @@ class ProductTable extends Component
     public $page = 1;
     public $perPage = 10;
     public $selectedOutletId;
+    public $filter = 'all';
+    public $categoryFilter = '';
 
     protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page'];
 
@@ -41,6 +44,12 @@ class ProductTable extends Component
         }
     }
 
+    public function setFilter($filter)
+    {
+        $this->filter = $filter;
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Product::with('category');
@@ -58,9 +67,30 @@ class ProductTable extends Component
             });
         }
 
+        if ($this->categoryFilter) {
+            $query->where('categories_id', $this->categoryFilter);
+        }
+
+        $this->applyFilters($query);
+
         $products = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
             ->paginate($this->perPage);
 
-        return view('livewire.product-table', ['products' => $products]);
+        return view('livewire.product-table', [
+            'products' => $products,
+            'categories' => Category::orderBy('name')->get()
+        ]);
+    }
+
+    protected function applyFilters($query)
+    {
+        // Apply shown status filter
+        if ($this->filter === 'shown') {
+            $query->where('is_shown', true);
+        } elseif ($this->filter === 'not_shown') {
+            $query->where('is_shown', false);
+        }
+
+        return $query;
     }
 }
