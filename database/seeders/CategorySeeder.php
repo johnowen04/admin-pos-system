@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Services\CategoryService;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
@@ -12,91 +12,85 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('categories')->insert([
+        $categoryService = new CategoryService();
+
+        $categories = [
             [
                 'name' => 'Ice Cream Aice',
-                'department_id' => 1, // Assuming department ID 1 exists
+                'department_id' => 1,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Ice Cream Walls',
-                'department_id' => 1, // Assuming department ID 1 exists
+                'department_id' => 1,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Ice Cream Glico',
-                'department_id' => 1, // Assuming department ID 1 exists
+                'department_id' => 1,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Lapangan Futsal',
-                'department_id' => 2, // Assuming department ID 2 exists
+                'department_id' => 2,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1],
             ],
             [
                 'name' => 'Voucher Futsal',
-                'department_id' => 2, // Assuming department ID 2 exists
+                'department_id' => 2,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1],
             ],
             [
                 'name' => 'Lain lain',
-                'department_id' => 2, // Assuming department ID 2 exists
+                'department_id' => 2,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Minuman',
-                'department_id' => 3, // Assuming department ID 2 exists
+                'department_id' => 3,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Perlengkapan Futsal',
-                'department_id' => 3, // Assuming department ID 2 exists
+                'department_id' => 3,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1],
             ],
             [
                 'name' => 'Perlengkapan Kolam',
-                'department_id' => 3, // Assuming department ID 2 exists
+                'department_id' => 3,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [2],
             ],
             [
                 'name' => 'Rokok',
-                'department_id' => 2, // Assuming department ID 2 exists
+                'department_id' => 2,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Snack',
-                'department_id' => 3, // Assuming department ID 2 exists
+                'department_id' => 3,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
             [
                 'name' => 'Toiletries',
-                'department_id' => 3, // Assuming department ID 2 exists
+                'department_id' => 3,
                 'is_shown' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'outlets' => [1, 2],
             ],
-        ]);
+        ];
+
+        foreach ($categories as $categoryData) {
+            $categoryService->createCategory($categoryData);
+        }
     }
 }
