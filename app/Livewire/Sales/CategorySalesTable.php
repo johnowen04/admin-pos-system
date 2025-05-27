@@ -74,7 +74,7 @@ class CategorySalesTable extends Component
             $query = $salesReportService->getCategorySalesReportQuery();
         }
 
-        if (!$this->selectedOutletId || $this->selectedOutletId === 'all') {
+        if ($this->selectedOutletId && $this->selectedOutletId != 'all') {
             $query = $salesReportService->getCategorySalesReportQuery(
                 !empty($this->startDate) && !empty($this->endDate) ? $startDate : null,
                 !empty($this->startDate) && !empty($this->endDate) ? $endDate : null,

@@ -74,7 +74,7 @@ class DepartmentSalesTable extends Component
             $query = $salesReportService->getDepartmentSalesReportQuery();
         }
 
-        if (!$this->selectedOutletId || $this->selectedOutletId === 'all') {
+        if ($this->selectedOutletId && $this->selectedOutletId != 'all') {
             $query = $salesReportService->getDepartmentSalesReportQuery(
                 !empty($this->startDate) && !empty($this->endDate) ? $startDate : null,
                 !empty($this->startDate) && !empty($this->endDate) ? $endDate : null,

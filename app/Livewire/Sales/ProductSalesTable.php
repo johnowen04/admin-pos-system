@@ -74,7 +74,7 @@ class ProductSalesTable extends Component
             $query = $salesReportService->getProductSalesReportQuery();
         }
 
-        if (!$this->selectedOutletId || $this->selectedOutletId === 'all') {
+        if ($this->selectedOutletId && $this->selectedOutletId != 'all') {
             $query = $salesReportService->getProductSalesReportQuery(
                 !empty($this->startDate) && !empty($this->endDate) ? $startDate : null,
                 !empty($this->startDate) && !empty($this->endDate) ? $endDate : null,

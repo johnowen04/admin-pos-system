@@ -4,8 +4,6 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Product;
-use App\Models\StockMovement;
 use App\ViewModels\InventoryViewModel;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +15,7 @@ class InventoryTable extends Component
     protected $paginationTheme = 'bootstrap';
 
     public $search = '';
-    public $sortField = 'id';
+    public $sortField = 'p.id';
     public $sortDirection = 'up';
     public $page = 1;
     public $perPage = 10;
@@ -25,7 +23,7 @@ class InventoryTable extends Component
     public $startDate = '';
     public $endDate = '';
 
-    protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page'];
+    protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page', 'startDate', 'endDate'];
 
     public function mount($selectedOutletId)
     {
@@ -51,17 +49,9 @@ class InventoryTable extends Component
 
     public function resetFilters()
     {
-        $this->reset([
-            'search',
-            'startDate',
-            'endDate',
-            'sortField',
-            'sortDirection',
-            'page',
-        ]);
-
-        $this->startDate = now()->toDateString();
-        $this->endDate = now()->toDateString();
+        $this->reset(['search', 'sortField', 'sortDirection', 'page']);
+        $this->startDate = now()->startOfDay()->toDateString();
+        $this->endDate = now()->endOfDay()->toDateString();
     }
 
     public function render()
@@ -69,68 +59,84 @@ class InventoryTable extends Component
         $startDate = Carbon::parse($this->startDate)->startOfDay();
         $endDate = Carbon::parse($this->endDate)->endOfDay();
 
-        $query = Product::with([
-            'category',
-            'unit',
-            'stockMovements' => function ($q) use ($startDate, $endDate) {
-                if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
-                    $q->where('outlet_id', $this->selectedOutletId);
-                }
-                $q->whereBetween('created_at', [$startDate, $endDate]);
-            },
-            'initialStockPerOutlet' => function ($q) use ($startDate) {
-                $q->select('product_id', 'outlet_id', DB::raw("
-                    SUM(
-                        CASE 
-                            WHEN movement_type = 'purchase' THEN quantity
-                            WHEN movement_type = 'sale' THEN -quantity
-                            ELSE quantity
-                        END
-                    ) AS quantity
-                "))
-                    ->where('created_at', '<', $startDate)
-                    ->groupBy('product_id', 'outlet_id');
-            }
-        ])->addSelect([
-            'initial_quantity' => StockMovement::select(DB::raw("
-                SUM(
-                    CASE 
-                        WHEN movement_type = 'purchase' THEN quantity
-                        WHEN movement_type = 'sale' THEN -quantity
-                        ELSE quantity
-                    END
-                )
-            "))
-                ->whereColumn('product_id', 'products.id')
-                ->where('created_at', '<', $startDate)
-                ->when($this->selectedOutletId && $this->selectedOutletId !== 'all', function ($q) {
-                    $q->where('outlet_id', $this->selectedOutletId);
-                }),
-        ]);
+        $initialStock = DB::table('stock_movements')
+            ->selectRaw(
+                'product_id,SUM(CASE
+                    WHEN movement_type = "purchase" THEN quantity 
+                    WHEN movement_type = "sale" THEN -quantity 
+                    ELSE quantity END) AS initial_quantity'
+            );
 
-        if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
-            $query->whereHas('stockMovements', function ($q) {
-                $q->where('outlet_id', $this->selectedOutletId);
-            });
+        if ($startDate) {
+            $initialStock->where('created_at', '<', $startDate);
         }
+        if ($this->selectedOutletId && $this->selectedOutletId != 'all') {
+            $initialStock->where('outlet_id', $this->selectedOutletId);
+        }
+
+        $initialStock->groupBy('product_id');
+
+        $movementTotals = DB::table('stock_movements')
+            ->selectRaw(
+                'product_id,
+                SUM(CASE WHEN movement_type = "purchase" THEN quantity ELSE 0 END) AS purchase,
+                SUM(CASE WHEN movement_type = "sale" THEN quantity ELSE 0 END) AS sale,
+                SUM(CASE WHEN movement_type = "adjustment" THEN quantity ELSE 0 END) AS adjustment'
+            );
+
+        if ($startDate && $endDate) {
+            $movementTotals->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $movementTotals->where('created_at', '>=', $startDate);
+        } elseif ($endDate) {
+            $movementTotals->where('created_at', '<=', $endDate);
+        }
+
+        if ($this->selectedOutletId && $this->selectedOutletId != 'all') {
+            $movementTotals->where('outlet_id', $this->selectedOutletId);
+        }
+
+        $movementTotals->groupBy('product_id');
+
+        $query = DB::table('products as p')
+            ->leftJoinSub($initialStock, 'i', 'p.id', '=', 'i.product_id')
+            ->leftJoinSub($movementTotals, 'm', 'p.id', '=', 'm.product_id')
+            ->leftJoin('categories as c', 'p.categories_id', '=', 'c.id')
+            ->leftJoin('units as u', 'p.units_id', '=', 'u.id')
+            ->select([
+                'p.id',
+                'p.name',
+                'p.sku',
+                'c.name as category',
+                'u.name as unit',
+                DB::raw('COALESCE(i.initial_quantity, 0) AS initial_quantity'),
+                DB::raw('COALESCE(m.purchase, 0) AS purchase'),
+                DB::raw('COALESCE(m.sale, 0) AS sale'),
+                DB::raw('COALESCE(m.adjustment, 0) AS adjustment'),
+                DB::raw('(COALESCE(i.initial_quantity, 0) + COALESCE(m.purchase, 0) - COALESCE(m.sale, 0) + COALESCE(m.adjustment, 0)) AS balance'),
+            ]);
 
         if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('sku', 'like', '%' . $this->search . '%');
+            $search = trim($this->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('p.id', 'like', "%{$search}%")
+                    ->orWhere('p.name', 'like', "%{$search}%")
+                    ->orWhere('p.sku', 'like', "%{$search}%");
             });
         }
 
-        $productsPaginator = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
+        $productPaginator = $query
+            ->orderBy(
+                $this->sortField,
+                $this->sortDirection === 'up' ? 'asc' : 'desc'
+            )
             ->paginate($this->perPage);
 
-        $productsCollection = $productsPaginator->getCollection();
-
-        $viewModel = new InventoryViewModel($productsCollection, 'all');
+        $viewModel = new InventoryViewModel($productPaginator->getCollection() ?? collect([]));
 
         return view('livewire.inventory-table', [
             'inventory' => $viewModel,
-            'productsPaginator' => $productsPaginator,
+            'productsPaginator' => $productPaginator,
         ]);
     }
 }
