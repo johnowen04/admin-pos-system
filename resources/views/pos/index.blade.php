@@ -39,15 +39,53 @@
                     </div>
                 </div>
             </div>
+        @elseif (session('selected_outlet_id') === 'all')
+            <!-- Outlet selection message when "All Outlets" is selected -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fa fa-store fa-3x text-primary"></i>
+                        </div>
+                        <h4>Please Select an Outlet</h4>
+                        <p class="text-muted mb-4">
+                            You currently have "All Outlets" selected. For POS operations,
+                            please select a specific outlet to proceed.
+                        </p>
+
+                        <form action="{{ route('select-outlet.select') }}" method="POST" class="d-inline">
+                            @csrf
+                            <div class="row justify-content-center">
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="input-group mb-3 gap-3">
+                                        <select name="id" class="form-select" required>
+                                            <option value="" selected disabled>-- Select an Outlet --</option>
+                                            @foreach ($outlets ?? [] as $outlet)
+                                                <option value="{{ $outlet->id }}">{{ $outlet->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fa fa-check-circle me-1"></i> Select
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="mt-2">
+                            <a href="{{ route('dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="fa fa-arrow-left me-1"></i> Return to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @else
-            <!-- Search and Product Grid -->
             <div class="row">
-                <!-- Left Column: Products -->
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
                             <div class="d-flex gap-2">
-                                <!-- Category Dropdown -->
                                 <select id="categoryFilter" class="form-select" style="width: 200px;">
                                     <option value="">All Categories</option>
                                     @if (!isset($categories) || $categories->isEmpty())
@@ -59,14 +97,12 @@
                                     @endif
                                 </select>
 
-                                <!-- Search Box -->
                                 <input type="text" id="productSearch" class="form-control"
                                     placeholder="Search Products...">
                             </div>
                         </div>
 
-                       <div class="card-body">
-                            <!-- Product Grid -->
+                        <div class="card-body">
                             <div id="productGrid" class="row g-4" style="max-height: 80vh; overflow-y: auto;">
                                 @if (!isset($products) || empty($products))
                                     <div class="col-12">
@@ -126,7 +162,6 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Cart -->
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
@@ -145,7 +180,6 @@
                         </div>
 
                         <div class="card-body">
-                            <!-- Cart Items List -->
                             <ul id="cartItems" class="list-group list-group-flush">
                                 @if (!empty($cart) && count($cart) > 0)
                                     @foreach ($cart as $id => $item)
@@ -213,9 +247,7 @@
 
 @push('scripts')
     @if (session()->get('selected_outlet_id'))
-        {{-- Define global variables for the external JavaScript --}}
         <script>
-            // Pass data to the JS file
             window.initialCart = @json($cart);
             window.csrfToken = '{{ csrf_token() }}';
             window.routes = {
@@ -224,7 +256,6 @@
                 clearCart: '{{ route('pos.clearCart') }}'
             };
         </script>
-        {{-- Include the external JS file --}}
         <script src="{{ asset('assets/js/app/pos.js') }}"></script>
     @endif
 @endpush

@@ -10,8 +10,8 @@ class SelectOutletController extends Controller
 {
     public function __construct(
         protected OutletService $outletService,
-        protected AccessControlService $accessControlService)
-    {
+        protected AccessControlService $accessControlService
+    ) {
         //
     }
 
@@ -27,18 +27,36 @@ class SelectOutletController extends Controller
 
         if ($id === 'all') {
             $this->setSelectedOutletSession('All Outlet', 'all');
-            return response()->json(['status' => 'ok']);
+
+            // Check if it's an AJAX request
+            if ($request->ajax()) {
+                return response()->json(['status' => 'ok']);
+            }
+
+            // For regular form submit, redirect to POS
+            return redirect()->route('pos.index');
         }
 
         $outlet = $this->outletService->getOutletById($id);
 
         if (!$this->canAccessOutlet($outlet)) {
-            return response()->json(['error' => 'Invalid outlet'], 403);
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Invalid outlet'], 403);
+            }
+
+            return redirect()->route('pos.index')
+                ->with('error', 'You do not have access to the selected outlet.');
         }
 
         $this->setSelectedOutletSession($outlet->name, $outlet->id);
 
-        return response()->json(['status' => 'ok']);
+        // Check if it's an AJAX request
+        if ($request->ajax()) {
+            return response()->json(['status' => 'ok']);
+        }
+
+        // For regular form submit, redirect to POS
+        return redirect()->route('pos.index');
     }
 
     /**
