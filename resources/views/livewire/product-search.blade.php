@@ -12,7 +12,6 @@
             </div>
         </form>
 
-        <!-- Dropdown will be positioned below the search input with same width -->
         @if ($showResults)
             <div class="dropdown-menu w-100 show" style="margin-top: 2px; max-height: 350px; overflow-y: auto;">
                 <div class="px-3 py-2 border-bottom">

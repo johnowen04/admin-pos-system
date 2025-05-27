@@ -51,6 +51,8 @@ class DepartmentController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         $this->departmentService->createDepartment($validatedData);
@@ -85,6 +87,8 @@ class DepartmentController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         $this->departmentService->updateDepartment($department, $validatedData);

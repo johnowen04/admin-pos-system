@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
 @extends('layouts.app')
 
 @section('title', 'Department')
@@ -104,5 +101,3 @@
         });
     </script>
 @endpush
-
-</html>

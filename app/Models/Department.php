@@ -22,4 +22,10 @@ class Department extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    // Relationships
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'department_id');
+    }
 }

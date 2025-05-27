@@ -61,7 +61,7 @@ class CategoryController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:45',
-            'departments_id' => 'required|exists:departments,id',
+            'department_id' => 'nullable|exists:departments,id',
             'is_shown' => 'required|boolean',
             'outlets' => 'nullable|array',
             'outlets.*' => 'exists:outlets,id',
@@ -105,7 +105,7 @@ class CategoryController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:100',
-            'departments_id' => 'required|exists:departments,id',
+            'department_id' => 'nullable|exists:departments,id',
             'is_shown' => 'required|boolean',
             'outlets' => 'nullable|array',
             'outlets.*' => 'exists:outlets,id',

@@ -19,9 +19,16 @@
             <div class="row-md-4">
                 <div class="form-group">
                     <label for="departmentName">Department Name</label>
-                    <input type="text" class="form-control" id="departmentName" name="name" placeholder="Ex: Toko, Futsal, etc"
-                        value="{{ old('name', $department->name ?? '') }}" placeholder="Enter department name"
-                        required />
+                    <input type="text" class="form-control" id="departmentName" name="name"
+                        placeholder="Ex: Toko, Futsal, etc" value="{{ old('name', $department->name ?? '') }}"
+                        placeholder="Enter department name" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryList">Category List</label>
+                    <div id="categoryList">
+                        @livewire('category-search', ['departmentId' => $department->id ?? null])
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,6 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-
 @extends('layouts.app')
 
 @section('title', 'Add Department')
@@ -22,5 +19,3 @@
         </div>
     </div>
 @endsection
-
-</html>

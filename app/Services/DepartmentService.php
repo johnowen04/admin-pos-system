@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Category;
 use App\Models\Department;
 
 class DepartmentService
@@ -36,7 +37,23 @@ class DepartmentService
      */
     public function updateDepartment(Department $department, array $data)
     {
-        return $department->update($data);
+        $categories = isset($data['categories']) ? $data['categories'] : [];
+
+        if (isset($data['categories'])) {
+            unset($data['categories']);
+        }
+
+        $department->update($data);
+
+        if (method_exists($department, 'categories')) {
+            $department->categories()
+                ->whereNotIn('id', $categories)
+                ->update(['department_id' => null]);
+
+            Category::whereIn('id', $categories)
+                ->update(['department_id' => $department->id]);
+        }
+        return true;
     }
 
     /**
