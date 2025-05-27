@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class ProductTable extends Component
+class DetailInvoiceProductTable extends Component
 {
     public $method;
     public $products;
@@ -29,6 +29,6 @@ class ProductTable extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.product-table');
+        return view('components.detail-invoice-product-table');
     }
 }

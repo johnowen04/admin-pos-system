@@ -24,7 +24,22 @@
 
     <div class="card">
         <div class="card-header">
-            <div class="card-title">{{ $invoiceType }} Invoice Information</div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="card-title">{{ $invoiceType }} Invoice Information</div>
+                @if (str_contains($action, 'void'))
+                    <div>
+                        <a href="{{ $cancelRoute }}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                        @if (str_contains($action, 'void') && isset($invoice) && !$invoice->is_voided)
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                data-bs-target="#voidConfirmModal">
+                                <i class="fas fa-ban me-1"></i> Void Invoice
+                            </button>
+                        @endif
+                    </div>
+                @endif
+            </div>
         </div>
         <div class="card-body">
             <div class="row-md-4">
@@ -79,72 +94,77 @@
             <div class="card-title">Products {{ $invoiceType === 'Purchase' ? 'Purchased' : 'Sold' }}</div>
         </div>
         <div class="card-body">
-            <div class="row-md-4">
-                <div class="form-group d-flex justify-content-end gap-2">
+            @if ($method !== 'PUT')
+                @livewire('product-search', ['outletId' => old('outlet_id', $invoice->outlet_id ?? null)])
+            @endif
 
+            @livewire('invoice-product-table', [
+                'method' => $method,
+                'invoiceType' => $invoiceType,
+                'invoice' => $invoice ?? null,
+                'outletId' => old('outlet_id', $invoice->outlet_id ?? null),
+            ])
+            @if (!str_contains($action, 'void'))
+                <x-action-buttons :cancelRoute="$cancelRoute" :submitRoute="$action" />
+            @endif
+        </div>
+    </div>
+</form>
+
+<!-- Void Confirmation Modal -->
+@if (str_contains($action, 'void'))
+    <div class="modal fade" id="voidConfirmModal" tabindex="-1" aria-labelledby="voidConfirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="voidConfirmModalLabel">Confirm Void</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div id="productTableContainer">
-                    <x-product-table :method="$method" :invoiceType="$invoiceType" :invoice="$invoice" :products="$products">
-                        <button @if ($method === 'PUT') disabled @endif type="button" class="btn btn-primary"
-                            id="addProductRow" data-bs-toggle="modal" data-bs-target="#productModal">Add
-                            Product</button>
-                        <button @if ($method === 'PUT') disabled @endif type="button" class="btn btn-danger"
-                            id="removeAllProducts">Remove All
-                            Products</button>
-                    </x-product-table>
+                <div class="modal-body">
+                    @if (isset($invoice) && $invoice->is_voided)
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            This invoice has already been voided and cannot be voided again.
+                        </div>
+                    @else
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            This action cannot be undone. Are you sure you want to void this invoice?
+                        </div>
+                        <div class="mb-3">
+                            <label for="void_reason" class="form-label">Reason for Voiding <span
+                                    class="text-danger">*</span></label>
+                            <textarea name="void_reason" id="void_reason" class="form-control" rows="3" required></textarea>
+                            <div class="invalid-feedback">Please provide a reason for voiding.</div>
+                        </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    @if (!(isset($invoice) && $invoice->is_voided))
+                        <button type="submit" class="btn btn-danger">Confirm Void</button>
+                    @endif
                 </div>
             </div>
         </div>
-
-        <!-- Void Confirmation Modal -->
-        @if (str_contains($action, 'void'))
-            <div class="modal fade" id="voidConfirmModal" tabindex="-1" aria-labelledby="voidConfirmModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title" id="voidConfirmModalLabel">Confirm Void</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            @if (isset($invoice) && $invoice->is_voided)
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    This invoice has already been voided and cannot be voided again.
-                                </div>
-                            @else
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    This action cannot be undone. Are you sure you want to void this invoice?
-                                </div>
-                                <div class="mb-3">
-                                    <label for="void_reason" class="form-label">Reason for Voiding <span
-                                            class="text-danger">*</span></label>
-                                    <textarea name="void_reason" id="void_reason" class="form-control" rows="3" required></textarea>
-                                    <div class="invalid-feedback">Please provide a reason for voiding.</div>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            @if (!(isset($invoice) && $invoice->is_voided))
-                                <button type="submit" class="btn btn-danger">Confirm Void</button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        <x-action-buttons cancelRoute="{{ $cancelRoute }}" submitRoute="{{ $action }}" />
     </div>
-</form>
+@endif
 
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const productsTable = document.querySelector('#invoiceProductsTable tbody');
+            const outletSelect = document.getElementById('outlet');
+
+            if (outletSelect) {
+                outletSelect.addEventListener('change', function() {
+                    // Dispatch event to Livewire when outlet changes
+                    Livewire.dispatch('outletChanged', {
+                        outletId: this.value
+                    });
+                });
+            }
         });
     </script>
 @endpush
