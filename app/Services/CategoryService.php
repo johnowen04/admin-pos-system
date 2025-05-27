@@ -51,10 +51,8 @@ class CategoryService
             'department_id' => $data['department_id'],
             'is_shown' => $data['is_shown'],
         ]);
-
-        if (!empty($data['outlets'])) {
-            $category->outlets()->sync($data['outlets']);
-        }
+        
+        $category->outlets()->sync($data['outlets'] ?? []);
 
         return true;
     }

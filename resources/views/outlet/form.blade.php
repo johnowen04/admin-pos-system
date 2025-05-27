@@ -27,43 +27,56 @@
 
                 <div class="form-group">
                     <label>Outlet Type</label><br />
-                    <div class="d-flex">
-                        <div class="form-check">
-                            <input checked class="form-check-input" type="radio" name="type" id="radioTypePOS"
-                                value="pos" {{ old('type', $outlet->type ?? '') == 'pos' ? 'checked' : '' }} />
-                            <label class="form-check-label" for="radioTypePOS">
-                                Point of Sales
-                            </label>
+                    <div class="d-flex gap-4 justify-content-between">
+                        <div class="col">
+                            <div class="form-check border p-2 rounded clickable d-flex align-items-center"
+                                onclick="document.getElementById('radioTypePOS').click()">
+                                <input checked class="form-check-input me-2" type="radio" name="type"
+                                    id="radioTypePOS" value="pos"
+                                    {{ old('type', $outlet->type ?? '') == 'pos' ? 'checked' : '' }} />
+                                <label class="form-check-label mb-0" for="radioTypePOS">
+                                    Point of Sales
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="type" id="radioTypeWarehouse"
-                                value="warehouse"
-                                {{ old('type', $outlet->type ?? '') == 'warehouse' ? 'checked' : '' }} />
-                            <label class="form-check-label" for="radioTypeWarehouse">
-                                Warehouse
-                            </label>
+                        <div class="col">
+                            <div class="form-check border p-2 rounded clickable d-flex align-items-center"
+                                onclick="document.getElementById('radioTypeWarehouse').click()">
+                                <input class="form-check-input me-2" type="radio" name="type"
+                                    id="radioTypeWarehouse" value="warehouse"
+                                    {{ old('type', $outlet->type ?? '') == 'warehouse' ? 'checked' : '' }} />
+                                <label class="form-check-label mb-0" for="radioTypeWarehouse">
+                                    Warehouse
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Outlet Status</label><br />
-                    <div class="d-flex">
-                        <div class="form-check">
-                            <input checked class="form-check-input" type="radio" name="status" id="radioStatusOpen"
-                                value="open"
-                                {{ old('status', $outlet->status ?? '') == 'open' ? 'checked' : '' }} />
-                            <label class="form-check-label" for="radioStatusOpen">
-                                Open
-                            </label>
+                    <div class="d-flex gap-4 justify-content-between">
+                        <div class="col">
+                            <div class="form-check border p-2 rounded clickable d-flex align-items-center"
+                                onclick="document.getElementById('radioStatusOpen').click()">
+                                <input checked class="form-check-input me-2" type="radio" name="status"
+                                    id="radioStatusOpen" value="open"
+                                    {{ old('status', $outlet->status ?? '') == 'open' ? 'checked' : '' }} />
+                                <label class="form-check-label mb-0" for="radioStatusOpen">
+                                    Open
+                                </label>
+                            </div>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="status" id="radioStatusClosed"
-                                value="closed"
-                                {{ old('status', $outlet->status ?? '') == 'closed' ? 'checked' : '' }} />
-                            <label class="form-check-label" for="radioStatusClosed">
-                                Closed
-                            </label>
+                        <div class="col"> <!-- Fixed width for the right column -->
+                            <div class="form-check border p-2 rounded clickable d-flex align-items-center"
+                                onclick="document.getElementById('radioStatusClosed').click()">
+                                <input class="form-check-input me-2" type="radio" name="status"
+                                    id="radioStatusClosed" value="closed"
+                                    {{ old('status', $outlet->status ?? '') == 'closed' ? 'checked' : '' }} />
+                                <label class="form-check-label mb-0" for="radioStatusClosed">
+                                    Closed
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

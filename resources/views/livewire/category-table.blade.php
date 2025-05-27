@@ -1,17 +1,17 @@
 <div>
-    @if ($products->isEmpty())
+    @if ($categories->isEmpty())
         <div class="empty-state text-center py-5">
             <div class="empty-state-icon">
                 <i class="fa fa-box-open fa-3x text-muted"></i>
             </div>
-            <h4 class="mt-4">No Products Available</h4>
+            <h4 class="mt-4">No Categories Available</h4>
             <p class="text-muted">
-                There are no products in the system yet.
-                <br>Add your first product or import products from Excel.
+                There are no categories in the system yet.
+                <br>Add your first category or import categories from Excel.
             </p>
             <div class="mt-3">
                 <a href="{{ route('product.create') }}" class="btn btn-primary me-2">
-                    <i class="fa fa-plus me-1"></i> Add Product
+                    <i class="fa fa-plus me-1"></i> Add Category
                 </a>
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
                     <i class="fa fa-file-import me-1"></i> Import from Excel
@@ -24,8 +24,8 @@
     @else
         <div class="row mb-3 g-0">
             <div class="col-12 col-sm-4 col-md-auto" style="width: 150px;">
-                <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
-                <select id="productPerPage" wire:model="perPage" wire:change="resetPage"
+                <label for="categoryPerPage" class="form-label mb-1 fw-bold">Items per page</label>
+                <select id="categoryPerPage" wire:model="perPage" wire:change="resetPage"
                     class="form-control form-select">
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -35,18 +35,18 @@
             </div>
 
             <div class="col-12 col-sm-8 col-md">
-                <label for="productSearch" class="form-label mb-1 fw-bold">Search Products</label>
-                <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
-                    placeholder="Search products..." class="form-control" />
+                <label for="categorySearch" class="form-label mb-1 fw-bold">Search Category</label>
+                <input type="text" id="categorySearch" wire:model="search" wire:keyup='resetPage'
+                    placeholder="Search categories..." class="form-control" />
             </div>
 
-            <div class="col-12 col-sm-6 col-md-auto mb-3 mb-md-0 me-md-2">
-                <label for="categoryFilter" class="form-label mb-1 fw-bold">Filter by Category</label>
-                <select id="categoryFilter" wire:model="categoryFilter" wire:change="resetPage"
+            <div class="col-12 col-sm-6 col-md-2 mb-3 mb-md-0 me-md-2">
+                <label for="departmentFilter" class="form-label mb-1 fw-bold">Filter by Department</label>
+                <select id="departmentFilter" wire:model="departmentFilter" wire:change="resetPage"
                     class="form-control form-select">
-                    <option value="">All Categories</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                    <option value="">All Departments</option>
+                    @foreach ($departments as $department)
+                        <option value="{{ $department->id }}">{{ $department->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -90,36 +90,28 @@
                                 <i class="fa fa-sort-{{ $sortDirection }}"></i>
                             @endif
                         </th>
-                        <th wire:click="sortBy('sku')" style="cursor: pointer">
-                            SKU @if ($sortField === 'sku')
-                                <i class="fa fa-sort-{{ $sortDirection }}"></i>
-                            @endif
-                        </th>
                         <th wire:click="sortBy('name')" style="cursor: pointer">
                             Name @if ($sortField === 'name')
                                 <i class="fa fa-sort-{{ $sortDirection }}"></i>
                             @endif
                         </th>
-                        <th>Category</th>
-                        <th>Base Price</th>
-                        <th>Buy Price</th>
-                        <th>Sell Price</th>
+                        <th wire:click="sortBy('department_id')" style="cursor: pointer">
+                            Department @if ($sortField === 'department_id')
+                                <i class="fa fa-sort-{{ $sortDirection }}"></i>
+                            @endif
+                        </th>
                         <th>Shown</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($products as $product)
+                    @forelse ($categories as $category)
                         <tr>
-                            <td>{{ $product->id }}</td>
-                            <td>{{ $product->sku }}</td>
-                            <td>{{ $product->name }}</td>
-                            <td>{{ $product->category->name ?? '-' }}</td>
-                            <td>Rp{{ number_format($product->base_price, 0, ',', '.') }}</td>
-                            <td>Rp{{ number_format($product->buy_price, 0, ',', '.') }}</td>
-                            <td>Rp{{ number_format($product->sell_price, 0, ',', '.') }}</td>
+                            <td>{{ $category->id }}</td>
+                            <td>{{ $category->name }}</td>
+                            <td>{{ $category->department->name ?? '-' }}</td>
                             <td>
-                                @if ($product->is_shown)
+                                @if ($category->is_shown)
                                     <span class="badge bg-success">Active</span>
                                 @else
                                     <span class="badge bg-danger">Inactive</span>
@@ -127,11 +119,11 @@
                             </td>
                             <td>
                                 <div class="d-flex">
-                                    <a hidden href="{{ route('product.show', $product->id) }}"
+                                    <a hidden href="{{ route('category.show', $category->id) }}"
                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip" title="View">
                                         <i class="fa fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('product.edit', $product->id) }}"
+                                    <a href="{{ route('category.edit', $category->id) }}"
                                         class="btn btn-link btn-primary btn-lg" data-toggle="tooltip" title="Edit">
                                         <i class="fa fa-edit"></i>
                                     </a>
@@ -147,7 +139,7 @@
             </table>
 
             <div class="mt-3">
-                {{ $products->links() }}
+                {{ $categories->links() }}
             </div>
         </div>
     @endif

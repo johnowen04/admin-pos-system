@@ -3,11 +3,11 @@
 namespace App\Livewire;
 
 use App\Models\Category;
+use App\Models\Department;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Product;
 
-class ProductTable extends Component
+class CategoryTable extends Component
 {
     use WithPagination;
 
@@ -20,7 +20,7 @@ class ProductTable extends Component
     public $perPage = 10;
     public $selectedOutletId;
     public $filter = 'all';
-    public $categoryFilter = '';
+    public $departmentFilter = '';
 
     protected $updatesQueryString = ['search', 'sortField', 'sortDirection', 'page'];
 
@@ -54,15 +54,15 @@ class ProductTable extends Component
     {
         $this->reset(['search', 'sortField', 'sortDirection', 'page']);
         $this->filter = 'all';
-        $this->categoryFilter = '';
+        $this->departmentFilter = '';
     }
 
     public function render()
     {
-        $query = Product::with('category');
+        $query = Category::query();
 
         if ($this->selectedOutletId && $this->selectedOutletId !== 'all') {
-            $query->whereHas('inventories', function ($q) {
+            $query->whereHas('outlets', function ($q) {
                 $q->where('outlet_id', $this->selectedOutletId);
             });
         }
@@ -74,18 +74,18 @@ class ProductTable extends Component
             });
         }
 
-        if ($this->categoryFilter) {
-            $query->where('category_id', $this->categoryFilter);
+        if ($this->departmentFilter) {
+            $query->where('department_id', $this->departmentFilter);
         }
 
         $this->applyFilters($query);
 
-        $products = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
+        $categories = $query->orderBy($this->sortField, $this->sortDirection == "up" ? 'asc' : 'desc')
             ->paginate($this->perPage);
 
-        return view('livewire.product-table', [
-            'products' => $products,
-            'categories' => Category::orderBy('name')->get()
+        return view('livewire.category-table', [
+            'categories' => $categories,
+            'departments' => Department::orderBy('name')->get(),
         ]);
     }
 

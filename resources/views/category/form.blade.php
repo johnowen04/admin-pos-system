@@ -19,15 +19,10 @@
             <div class="row-md-4">
 
                 <div class="form-group">
-                    <label for="defaultSelect">Set Outlet</label>
-                    <select class="form-select form-control" id="defaultSelect" name="outlets[]" multiple>
-                        @foreach ($outlets as $outlet)
-                            <option value="{{ $outlet->id }}"
-                                {{ in_array($outlet->id, old('outlets', $selectedOutlets ?? [])) ? 'selected' : '' }}>
-                                {{ $outlet->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label for="outlet-select">Set Outlet</label>
+                    <div id="outlet-select" wire:key="outlet-select">
+                        @livewire('outlet-select', ['selectedOutletIds' => old('outlets', $selectedOutlets ?? [])])
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -55,24 +50,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Show in menu?</label><br />
-                    <div class="d-flex">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="is_shown" value="1"
-                                id="flexRadioDefault1"
-                                {{ old('is_shown', $category->is_shown ?? 1) == 1 ? 'checked' : '' }} />
-                            <label class="form-check-label" for="flexRadioDefault1">
-                                Show in menu
-                            </label>
+                    <label>Show in menu?</label>
+                    <div class="d-flex align-items-center" x-data="{ isShown: {{ old('is_shown', $category->is_shown ?? 1) }} }">
+                        <div class="form-check form-switch mb-1 d-flex align-items-center">
+                            <input class="form-check-input" type="checkbox" role="switch" id="showInMenuToggle"
+                                name="is_shown" value="1" x-model="isShown"
+                                {{ old('is_shown', $category->is_shown ?? 1) == 1 ? 'checked' : '' }}>
                         </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="is_shown" value="0"
-                                id="flexRadioDefault2"
-                                {{ old('is_shown', $category->is_shown ?? 1) == 0 ? 'checked' : '' }} />
-                            <label class="form-check-label" for="flexRadioDefault2">
-                                Hide from menu
-                            </label>
-                        </div>
+                        <label class="form-check-label m-0 d-flex align-items-center" for="showInMenuToggle">
+                            <span x-text="isShown == 1 ? 'Yes' : 'No'">
+                            </span>
+                        </label>
                     </div>
                 </div>
             </div>
