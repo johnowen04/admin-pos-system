@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('reference')->unique();
             $table->unsignedBigInteger('outlet_id');
             $table->text('note')->nullable();
-            $table->enum('status', ['draft', 'confirmed', 'adjusted'])->default('draft');
+            $table->string('status')->default('draft');
             $table->unsignedBigInteger('created_by');
             $table->timestamps();
 

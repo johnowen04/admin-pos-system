@@ -9,7 +9,7 @@ class SalesReportService
 {
     private function getTotalSoldAndRevenue($startDate = null, $endDate = null)
     {
-        $query = DB::table('sales_invoice_product as sip')
+        $query = DB::table('sales_invoice_products as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->where('si.is_voided', 0);
 
@@ -36,7 +36,7 @@ class SalesReportService
             [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
         }
 
-        $query = DB::table('sales_invoice_product as sip')
+        $query = DB::table('sales_invoice_products as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')
@@ -86,7 +86,7 @@ class SalesReportService
             [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
         }
 
-        $query = DB::table('sales_invoice_product as sip')
+        $query = DB::table('sales_invoice_products as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')
@@ -126,7 +126,7 @@ class SalesReportService
             [$totalSoldQuantity, $totalRevenue] = $this->getTotalSoldAndRevenue();
         }
 
-        $query = DB::table('sales_invoice_product as sip')
+        $query = DB::table('sales_invoice_products as sip')
             ->join('sales_invoices as si', 'si.id', '=', 'sip.sales_invoice_id')
             ->join('products as p', 'p.id', '=', 'sip.product_id')
             ->join('categories as c', 'p.category_id', '=', 'c.id')

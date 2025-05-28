@@ -34,12 +34,12 @@ class Outlet extends Model
     //Relationships
     public function employees()
     {
-        return $this->belongsToMany(Employee::class, 'employee_outlet', 'outlet_id', 'employee_id');
+        return $this->belongsToMany(Employee::class, 'employee_outlets', 'outlet_id', 'employee_id');
     }
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'outlet_category', 'outlet_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'category_outlets', 'outlet_id', 'category_id');
     }
 
     public function products()
@@ -56,12 +56,12 @@ class Outlet extends Model
 
     public function inventories()
     {
-        return $this->hasMany(Inventory::class, 'outlet_id', 'id');
+        return $this->hasMany(Inventory::class, 'outlet_id');
     }
 
     public function stockMovements()
     {
-        return $this->hasMany(StockMovement::class, 'outlet_id', 'id');
+        return $this->hasMany(StockMovement::class, 'outlet_id');
     }
 
     public function purchaseInvoices()

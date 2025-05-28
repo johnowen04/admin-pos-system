@@ -58,7 +58,7 @@ class SalesInvoice extends Model implements ReversibleInvoice
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'sales_invoice_product', 'sales_invoice_id', 'product_id')
+        return $this->belongsToMany(Product::class, 'sales_invoice_products', 'sales_invoice_id', 'product_id')
             ->withPivot('quantity', 'base_price', 'unit_price', 'total_price')
             ->withTimestamps();
     }

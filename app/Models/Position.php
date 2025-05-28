@@ -34,7 +34,7 @@ class Position extends Model
     
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'permission_position')
+        return $this->belongsToMany(Permission::class, 'permission_positions')
             ->withTimestamps();
     }
 

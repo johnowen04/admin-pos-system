@@ -11,24 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('outlet_category', function (Blueprint $table) {
-            $table->unsignedBigInteger('outlet_id');
+        Schema::create('category_outlets', function (Blueprint $table) {
             $table->unsignedBigInteger('category_id');
+            $table->unsignedBigInteger('outlet_id');
 
             $table->primary(['outlet_id', 'category_id']);
 
             $table->index('category_id', 'fk_outlets_has_categories_categories1_idx');
             $table->index('outlet_id', 'fk_outlets_has_categories_outlets1_idx');
 
-            $table->foreign('outlet_id', 'fk_outlets_has_categories_outlets1')
-                ->references('id')
-                ->on('outlets')
-                ->onDelete('no action')
-                ->onUpdate('no action');
-
             $table->foreign('category_id', 'fk_outlets_has_categories_categories1')
                 ->references('id')
                 ->on('categories')
+                ->onDelete('no action')
+                ->onUpdate('no action');
+
+            $table->foreign('outlet_id', 'fk_outlets_has_categories_outlets1')
+                ->references('id')
+                ->on('outlets')
                 ->onDelete('no action')
                 ->onUpdate('no action');
         });
@@ -39,6 +39,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('outlet_category');
+        Schema::dropIfExists('category_outlets');
     }
 };
