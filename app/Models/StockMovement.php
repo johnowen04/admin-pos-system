@@ -25,9 +25,9 @@ class StockMovement extends Model
     ];
 
     protected $casts = [
+        'movement_type' => StockMovementType::class,
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'movement_type' => StockMovementType::class,
     ];
 
     public function product()
