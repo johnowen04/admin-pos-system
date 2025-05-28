@@ -13,12 +13,14 @@
                 <a href="{{ route('product.create') }}" class="btn btn-primary me-2">
                     <i class="fa fa-plus me-1"></i> Add Category
                 </a>
-                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#exportModal">
                     <i class="fa fa-file-import me-1"></i> Import from Excel
                 </button>
-                <button type="button" class="btn btn-secondary" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i> Reset Filters
-                </button>
+                @if ($filter !== 'all' || $search || $departmentFilter)
+                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
+                        <i class="fa fa-filter me-1"></i> Reset Filters
+                    </button>
+                @endif
             </div>
         </div>
     @else

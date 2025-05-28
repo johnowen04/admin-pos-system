@@ -12,7 +12,7 @@
             </p>
             <div class="mt-3">
                 <a href="{{ $invoiceType === 'Purchase' ? route('purchase.create') : route('pos.index') }}"
-                    class="btn btn-primary">
+                    class="btn btn-primary me-2">
                     <i class="fa fa-plus me-1"></i>
                     @if ($invoiceType === 'Purchase')
                         Create Purchase Invoice
@@ -21,9 +21,11 @@
                     @endif
                 </a>
 
-                <button type="button" class="btn btn-secondary" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i> Reset Filters
-                </button>
+                @if ($search || $startDate || $endDate)
+                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
+                        <i class="fa fa-filter me-1"></i> Reset Filters
+                    </button>
+                @endif
             </div>
         </div>
     @else
@@ -110,8 +112,8 @@
                                         method="POST" style="display: inline-block;">
                                         @csrf
                                         @method('DELETE')
-                                        <button hidden type="submit" class="btn btn-link btn-danger" data-toggle="tooltip"
-                                            title="Delete"
+                                        <button hidden type="submit" class="btn btn-link btn-danger"
+                                            data-toggle="tooltip" title="Delete"
                                             onclick="return confirm('Are you sure you want to delete this invoice?')">
                                             <i class="fa fa-times"></i>
                                         </button>

@@ -11,11 +11,13 @@
             </p>
             <div class="mt-3">
                 <a href="{{ route('pos.index') }}" class="btn btn-primary me-2">
-                    <i class="fa fa-cash-register me-1"></i> Create Sales
+                    <i class="fa fa-plus me-1"></i> Create Sales
                 </a>
-                <button type="button" class="btn btn-secondary" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i> Reset Filters
-                </button>
+                @if ($search || $startDate || $endDate)
+                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
+                        <i class="fa fa-filter me-1"></i> Reset Filters
+                    </button>
+                @endif
             </div>
         </div>
     @else

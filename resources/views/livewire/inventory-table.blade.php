@@ -16,12 +16,14 @@
                 <a href="{{ route('purchase.create') }}" class="btn btn-outline-primary me-2">
                     <i class="fa fa-tag me-1"></i> Create Purchase
                 </a>
-                <a href="{{ route('pos.index') }}" class="btn btn-outline-primary">
+                <a href="{{ route('pos.index') }}" class="btn btn-outline-primary me-2">
                     <i class="fas fa-shopping-cart me-1"></i> Go To POS
                 </a>
-                <button type="button" class="btn btn-secondary" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i> Reset Filters
-                </button>
+                @if ($search || $startDate || $endDate)
+                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
+                        <i class="fa fa-filter me-1"></i> Reset Filters
+                    </button>
+                @endif
             </div>
         </div>
     @else
@@ -95,8 +97,8 @@
                         <th title="Purchased" class="text-truncate" style="text-align: right;">Purchased</th>
                         <th title="Sold" class="text-truncate" style="text-align: right;">Sold</th>
                         <th title="Adjustment" class="text-truncate" style="text-align: right;">Adjustment</th>
-                        <th title="Balance" wire:click="sortBy('balance')" style="cursor: pointer; text-align: right;"
-                            class="text-truncate">
+                        <th title="Balance" wire:click="sortBy('balance')"
+                            style="cursor: pointer; text-align: right;" class="text-truncate">
                             Balance @if ($sortField === 'balance')
                                 <i class="fa fa-sort-{{ $sortDirection }}"></i>
                             @endif
