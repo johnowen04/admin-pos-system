@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\UserRoleType;
 use App\Models\Employee;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -69,7 +69,6 @@ class EmployeeService
     public function createEmployee(array $data)
     {
         $user = null;
-        $roleId = Role::where('name', 'employee')->id;
 
         if (isset($data['password'])) {
             $user = User::create([
@@ -77,7 +76,7 @@ class EmployeeService
                 'email' => $data['email'],
                 'username' => $data['username'],
                 'password' => Hash::make($data['password']),
-                'role_id' => $roleId,
+                'role' => UserRoleType::EMPLOYEE->value,
             ]);
         }
 

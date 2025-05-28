@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Enums\PositionLevel;
 use App\Models\Position;
 use App\Services\AccessControlService;
-use App\Services\PermissionService;
 use App\Services\PositionService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,7 +17,6 @@ class PositionController extends Controller
      * Constructor to inject the PositionService.
      */
     public function __construct(
-        protected PermissionService $permissionService,
         protected PositionService $positionService)
     {
         $this->middleware('permission:position.view|position.*')->only(['index', 'show']);
@@ -56,32 +54,11 @@ class PositionController extends Controller
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $level->value <= $currentUserLevel);
         }
 
-        $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
-
-        $groupedPermissions = $permissions->groupBy(function ($permission) {
-            return $permission->feature->id;
-        })->map(function ($featurePermissions) {
-            $firstPermission = $featurePermissions->first();
-            return [
-                'id' => $firstPermission->feature->id,
-                'name' => $firstPermission->feature->name,
-                'operations' => $featurePermissions->map(function ($permission) {
-                    return [
-                        'id' => $permission->operation->id,
-                        'name' => $permission->operation->name,
-                        'permission_id' => $permission->id,
-                        'slug' => $permission->slug
-                    ];
-                })->values()->all()
-            ];
-        })->values()->all();
-
         return view('position.create', [
             'action' => route('position.store'),
             'method' => 'POST',
             'position' => null,
             'positionLevels' => $positionLevels,
-            'permissions' => $groupedPermissions,
             'cancelRoute' => route('position.index'),
         ]);
     }
@@ -100,19 +77,10 @@ class PositionController extends Controller
             ],
             'level' => ['required', Rule::in(array_column(PositionLevel::cases(), 'value'))],
             'permissions' => 'nullable|array',
+            'permissions.*'=> 'exists:permissions,id',
         ]);
 
-        $positionData = [
-            'name' => $validatedData['name'],
-            'level' => $validatedData['level'],
-        ];
-
-        $permissionIds = [];
-        if (isset($request->permissions)) {
-            $permissionIds = array_keys($request->permissions);
-        }
-
-        $this->positionService->createPosition($positionData, $permissionIds);
+        $this->positionService->createPosition($validatedData);
         return redirect()->route('position.index')->with('success', 'Position created successfully.');
     }
 
@@ -136,46 +104,12 @@ class PositionController extends Controller
         } else {
             $positionLevels = array_filter(PositionLevel::cases(), fn($level) => $level->value <= $currentUserLevel);
         }
-        
-        $permissions = $this->permissionService->getAllPermissions(onlyNonSuperUser: true);
-
-        $groupedPermissions = $permissions->groupBy(function ($permission) {
-            return $permission->feature->id;
-        })->map(function ($featurePermissions) {
-            $firstPermission = $featurePermissions->first();
-            return [
-                'id' => $firstPermission->feature->id,
-                'name' => $firstPermission->feature->name,
-                'operations' => $featurePermissions->map(function ($permission) {
-                    return [
-                        'id' => $permission->operation->id,
-                        'name' => $permission->operation->name,
-                        'permission_id' => $permission->id,
-                        'slug' => $permission->slug
-                    ];
-                })->values()->all()
-            ];
-        })->values()->all();
-
-        $currentPermissions = [];
-        $positionPermissionIds = $position->permissions->pluck('id')->toArray();
-
-        foreach ($permissions as $permission) {
-            if (in_array($permission->id, $positionPermissionIds)) {
-                if (!isset($currentPermissions[$permission->feature->id])) {
-                    $currentPermissions[$permission->feature->id] = [];
-                }
-                $currentPermissions[$permission->feature->id][$permission->operation->id] = true;
-            }
-        }
 
         return view('position.edit', [
             'action' => route('position.update', $position->id),
             'method' => 'PUT',
             'position' => $position,
             'positionLevels' => $positionLevels,
-            'permissions' => $groupedPermissions,
-            'currentPermissions' => $currentPermissions,
             'cancelRoute' => route('position.index'),
         ]);
     }
@@ -198,6 +132,7 @@ class PositionController extends Controller
             ],
             'level' => ['required', Rule::in(array_column(PositionLevel::cases(), 'value'))],
             'permissions' => 'nullable|array',
+            'permissions.*'=> 'exists:permissions,id',
         ]);
 
         $currentUserLevel = $this->accessControlService->getCurrentUserLevel();
@@ -208,17 +143,7 @@ class PositionController extends Controller
             ])->withInput();
         }
 
-        $positionData = [
-            'name' => $validatedData['name'],
-            'level' => $validatedData['level'],
-        ];
-
-        $permissionIds = [];
-        if (isset($request->permissions)) {
-            $permissionIds = array_keys($request->permissions);
-        }
-
-        $this->positionService->updatePosition($position, $positionData, $permissionIds);
+        $this->positionService->updatePosition($position, $validatedData);
         return redirect()->route('position.index')->with('success', 'Position updated successfully.');
     }
 

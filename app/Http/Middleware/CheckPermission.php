@@ -23,13 +23,11 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        $user = $request->user();
+        $user = $this->accessControl->getUser();
 
         if (!$user) {
             abort(401, 'Unauthorized');
         }
-
-        $this->accessControl->setUser($user);
 
         $permissions = explode('|', $permission);
 

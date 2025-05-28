@@ -15,7 +15,6 @@ use App\Http\Controllers\POSController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\Reports\SalesReportController;
 use App\Http\Controllers\SelectOutletController;
@@ -94,7 +93,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('operation', OperationController::class);
     Route::resource('product', ProductController::class);
     Route::resource('position', PositionController::class);
-    Route::resource('role', RoleController::class);
     Route::resource('unit', UnitController::class);
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -29,7 +29,6 @@ class AuthController extends Controller
 
         if (Auth::attempt($this->credentials($request), $request->boolean('remember'))) {
             $request->session()->regenerate();
-            $this->accessControlService->setUser(Auth::user());
 
             return redirect()->intended('/dashboard');
         }
@@ -86,7 +85,6 @@ class AuthController extends Controller
         ]);
 
         Auth::login($user);
-        $this->accessControlService->setUser(Auth::user());
         return redirect('/dashboard');
     }
 }

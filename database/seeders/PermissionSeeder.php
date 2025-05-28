@@ -38,7 +38,7 @@ class PermissionSeeder extends Seeder
 
                 $isSuperUserOnly = false;
 
-                if (in_array($feature->name, ['Role', 'Feature', 'Operation', 'Permission', 'ACL'])) {
+                if (in_array($feature->name, ['Feature', 'Operation', 'Permission', 'ACL'])) {
                     $isSuperUserOnly = true;
                 }
 

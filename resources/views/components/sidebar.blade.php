@@ -150,23 +150,22 @@
             const outletId = selectElement.value;
             const outletName = selectElement.options[selectElement.selectedIndex].text;
 
-            fetch("{{ route('select-outlet.select') }}", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        id: outletId,
-                    })
-                })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        alert('Failed to select outlet.');
-                    }
-                });
+            $.ajax({
+                url: "{{ route('select-outlet.select') }}",
+                method: "POST",
+                dataType: "json",
+                data: {
+                    id: outletId,
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    window.location.reload();
+                },
+                error: function(xhr, status, error) {
+                    alert('Failed to select outlet.');
+                    console.error("Error selecting outlet:", error);
+                }
+            });
         }
     </script>
 @endpush

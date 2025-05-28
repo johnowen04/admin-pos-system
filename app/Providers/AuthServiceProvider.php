@@ -37,7 +37,7 @@ class AuthServiceProvider extends ServiceProvider
                 return false;
             }
 
-            $accessControl = app(AccessControlService::class)->setUser($user);
+            $accessControl = app(AccessControlService::class);
             if ($accessControl->hasPermission($ability)) {
                 return true;
             }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\PositionLevel;
+use App\Enums\UserRoleType;
 use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,7 @@ class AccessControlService
         return $this->user;
     }
 
-    public function setUser(User $user)
+    private function setUser(User $user)
     {
         $this->user = $user;
         $this->loadPermissions();
@@ -60,7 +61,7 @@ class AccessControlService
             return false;
         }
 
-        return !$this->user->employee && ($this->user->role && $this->user->role->name === 'Super User');
+        return !$this->user->employee && ($this->user->role && $this->user->role === UserRoleType::SUPERUSER);
     }
 
     public function isSuperUserOnly(string $permissionSlug): bool

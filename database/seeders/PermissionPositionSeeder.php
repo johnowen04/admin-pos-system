@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Permission;
 use App\Models\Position;
-use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 class PermissionPositionSeeder extends Seeder
@@ -14,7 +13,7 @@ class PermissionPositionSeeder extends Seeder
      */
     public function run(): void
     {
-        // First, create super user role if it doesn't exist
+        // First, create admin position if it doesn't exist
         $adminPosition = Position::firstOrCreate(
             ['name' => 'Admin'],
         );

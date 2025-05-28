@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
+use App\Enums\UserRoleType;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -14,23 +14,15 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get role IDs
-        $superuserRole = Role::where('name', 'Super User')->first();
-
-        if (!$superuserRole) {
-            $this->command->error('Roles are not seeded yet! Please run RoleSeeder first.');
-            return;
-        }
-
         // Create superuser
         User::create([
             'name' => 'Super User',
             'email' => 'superuser@example.com',
             'username' => 'superuser',
             'password' => Hash::make('password'),
-            'role_id' => $superuserRole->id,
+            'role' => UserRoleType::SUPERUSER->value,
         ]);
 
-        $this->command->info('Users seeded successfully: 1 superuser, 1 employee');
+        $this->command->info('Users seeded successfully: 1 superuser');
     }
 }

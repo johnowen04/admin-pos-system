@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Enums\UserRoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -24,7 +26,7 @@ class User extends Authenticatable
         'email',
         'username',
         'password',
-        'role_id',
+        'role',
     ];
 
     /**
@@ -45,17 +47,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'role' => UserRoleType::class,
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
 
     // Relationships
-    public function role()
-    {
-        return $this->belongsTo(Role::class, 'role_id');
-    }
-
     public function employee()
     {
         return $this->hasOne(Employee::class, 'user_id');
@@ -68,11 +66,11 @@ class User extends Authenticatable
 
     public function permissions()
     {
-        if ($this->role->name === 'Super User') {
+        if ($this->role->value === 'superuser') {
             return Permission::all();
         }
 
-        if ($this->role->name === 'Employee') {
+        if ($this->role->value === 'employee') {
             if (!$this->employee || !$this->employee->position) {
                 throw new \Exception('Employee must have a position.');
             }

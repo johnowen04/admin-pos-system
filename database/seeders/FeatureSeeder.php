@@ -16,7 +16,6 @@ class FeatureSeeder extends Seeder
             ['name' => 'Feature', 'slug' => 'feature'],
             ['name' => 'Operation', 'slug' => 'operation'],
             ['name' => 'Permission', 'slug' => 'permission'],
-            ['name' => 'Role', 'slug' => 'role'],
             ['name' => 'ACL', 'slug' => 'acl'],
             ['name' => 'Dashboard', 'slug' => 'dashboard'],
             ['name' => 'Outlet', 'slug' => 'outlet'],

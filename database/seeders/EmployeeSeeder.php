@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRoleType;
 use App\Models\Employee;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -15,9 +15,6 @@ class EmployeeSeeder extends Seeder
      */
     public function run(): void
     {
-        $superUserRole = Role::where('name', 'Super User')->first();
-        $employeeRole = Role::where('name', 'Employee')->first();
-
         $employees = [
             [
                 'nip' => 'EMP001',
@@ -26,7 +23,7 @@ class EmployeeSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'username' => 'admin',
                 'password' => 'password123',
-                'role_id' => $employeeRole->id,
+                'role' => UserRoleType::EMPLOYEE->value,
                 'position_id' => 2,
                 'outlets' => [1, 2],
             ],
@@ -37,7 +34,7 @@ class EmployeeSeeder extends Seeder
                 'email' => 'cashier1@example.com',
                 'username' => 'cashier1',
                 'password' => 'password123',
-                'role_id' => $employeeRole->id,
+                'role' => UserRoleType::EMPLOYEE->value,
                 'position_id' => 3,
                 'outlets' => [1],
             ],
@@ -48,7 +45,7 @@ class EmployeeSeeder extends Seeder
                 'email' => 'cashier2@example.com',
                 'username' => 'cashier2',
                 'password' => 'password123',
-                'role_id' => $employeeRole->id,
+                'role' => UserRoleType::EMPLOYEE->value,
                 'position_id' => 3,
                 'outlets' => [2],
             ],
@@ -56,7 +53,7 @@ class EmployeeSeeder extends Seeder
 
         foreach ($employees as $employeeData) {
             $password = $employeeData['password'];
-            $roleId = $employeeData['role_id'];
+            $role = $employeeData['role'];
             $outlets = $employeeData['outlets'];
 
             $userId = User::create([
@@ -64,13 +61,13 @@ class EmployeeSeeder extends Seeder
                 'email' => $employeeData['email'],
                 'username' => $employeeData['username'],
                 'password' => Hash::make($password),
-                'role_id' => $roleId,
+                'role' => $role,
             ])->id;
 
             unset(
                 $employeeData['outlets'],
                 $employeeData['password'],
-                $employeeData['role_id'],
+                $employeeData['role'],
                 $employeeData['username']
             );
 

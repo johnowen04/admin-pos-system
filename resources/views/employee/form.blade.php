@@ -1,4 +1,4 @@
-<form action="{{ $action }}" method="POST">
+<form action="{{ $action }}" method="POST" x-data="employeeForm()">
     @csrf
     @if ($method === 'PUT')
         @method('PUT')
@@ -22,7 +22,7 @@
                     <label for="employeeName">Employee Name</label>
                     <input type="text" class="form-control" id="employeeName" name="name"
                         placeholder="Ex: John Doe, Lorem Ipsum etc" value="{{ old('name', $employee->name ?? '') }}"
-                        required />
+                        x-model="employeeName" required />
                 </div>
 
                 <div class="form-group">
@@ -34,7 +34,8 @@
 
                 <div class="form-group">
                     <label for="defaultSelect">Position</label>
-                    <select class="form-select form-control" id="defaultSelect" name="position_id">
+                    <select class="form-select form-control" id="defaultSelect" name="position_id"
+                        x-model="selectedPosition" x-on:change="checkPosition()">
                         <option value="" disabled selected>Select position</option>
                         @foreach ($positions as $position)
                             <option value="{{ $position->id }}"
@@ -46,6 +47,27 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="outlet-select">Set Outlet</label>
+
+                    <div id="outlet-select" wire:key="outlet-select" x-show="isAdmin">
+                        @livewire('outlet-select', ['selectedOutletIds' => old('outlets', $selectedOutlets ?? [])])
+                    </div>
+
+                    <div x-show="!isAdmin">
+                        <select class="form-control" name="outlets[]" id="regular-outlet-select">
+                            <option value="" disabled selected>Select outlet</option>
+                            @foreach ($outlets ?? [] as $outlet)
+                                <option value="{{ $outlet->id }}"
+                                    {{ in_array($outlet->id, old('outlets', $selectedOutlets ?? [])) ? 'selected' : '' }}>
+                                    {{ $outlet->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted">Non-admin users can only be assigned to one outlet</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label for="employeePhone">Phone</label>
                     <input type="text" class="form-control" id="employeePhone" name="phone"
                         placeholder="Ex: 08123456789, 0322123456" value="{{ old('phone', $employee->phone ?? '') }}"
@@ -53,29 +75,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="outletSelect">Set Outlet</label>
-                    <select class="form-select form-control" id="outletSelect" name="outlets[]" multiple>
-                        @foreach ($outlets as $outlet)
-                            <option value="{{ $outlet->id }}"
-                                {{ in_array($outlet->id, old('outlets', $selectedOutlets ?? [])) ? 'selected' : '' }}>
-                                {{ $outlet->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="form-group">
                     <label for="employeeEmail">Email</label>
                     <div class="input-group">
                         <input type="email" class="form-control" id="employeeEmail" name="email"
                             placeholder="Ex: employee@mail.com" value="{{ old('email', $employee->email ?? '') }}"
-                            @if ($method === 'PUT') readonly @endif />
+                            x-bind:readonly="!emailEditable" />
                         @if ($method === 'PUT')
-                            <button class="btn btn-black btn-border" type="button" id="toggleEmailEdit">
+                            <button class="btn btn-black btn-border" type="button" x-on:click="toggleEmailEdit"
+                                x-text="emailButtonText">
                                 Edit
                             </button>
                         @else
-                            <button class="btn btn-black btn-border" type="button" id="generateEmail">
+                            <button class="btn btn-black btn-border" type="button" x-on:click="generateEmail">
                                 Generate
                             </button>
                         @endif
@@ -92,7 +103,7 @@
                         <div class="col-12">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="createUser"
-                                    name="createUserCheckbox" value="1"
+                                    name="createUserCheckbox" value="1" x-model="createUser"
                                     {{ old('createUserCheckbox') ? 'checked' : '' }}>
                                 <label class="form-check-label" for="createUser">
                                     Create user login?
@@ -105,17 +116,16 @@
                     </div>
                 @endif
 
-                <div id="userCredentialsSection"
-                    style="display: {{ ($method === 'PUT' && isset($employee->user)) || old('createUserCheckbox') ? 'block' : 'none' }};">
+                <div id="userCredentialsSection" x-show="showCredentials">
                     <div class="form-group mt-3">
                         <label for="employeeUsername">Username</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="employeeUsername" name="username"
                                 placeholder="Ex: employee"
                                 value="{{ old('username', $employee->user->username ?? '') }}"
-                                @if ($method === 'PUT') readonly @endif />
+                                x-bind:readonly="!usernameEditable" />
                             @if ($method === 'POST')
-                                <button class="btn btn-black btn-border" type="button" id="generateUsername">
+                                <button class="btn btn-black btn-border" type="button" x-on:click="generateUsername">
                                     Generate
                                 </button>
                             @endif
@@ -126,15 +136,18 @@
                         <label for="employeePassword">Password</label>
 
                         <div class="input-group">
-                            <input type="password" class="form-control" id="employeePassword" name="password"
+                            <input x-bind:type="passwordFieldType" class="form-control" id="employeePassword"
+                                name="password"
                                 placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"
-                                @if ($method === 'PUT') readonly @endif />
+                                x-bind:readonly="!passwordEditable" />
                             @if ($method === 'PUT')
-                                <button class="btn btn-black btn-border" type="button" id="togglePasswordEdit">
+                                <button class="btn btn-black btn-border" type="button"
+                                    x-on:click="togglePasswordEdit" x-text="passwordButtonText">
                                     Edit
                                 </button>
                             @else
-                                <button class="btn btn-black btn-border" type="button" id="generatePassword">
+                                <button class="btn btn-black btn-border" type="button"
+                                    x-on:click="generatePassword">
                                     Generate
                                 </button>
                             @endif
@@ -158,147 +171,97 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get all form elements
-            const createUserCheckbox = document.getElementById('createUser');
-            const userCredentialsSection = document.getElementById('userCredentialsSection');
-            const usernameField = document.getElementById('employeeUsername');
-            const passwordField = document.getElementById('employeePassword');
-            const emailField = document.getElementById('employeeEmail');
+        function employeeForm() {
+            return {
+                employeeName: "{{ old('name', $employee->name ?? '') }}",
+                emailEditable: false,
+                passwordEditable: false,
+                usernameEditable: {{ $method === 'POST' ? 'true' : 'false' }},
+                passwordFieldType: 'password',
+                createUser: {{ old('createUserCheckbox') ? 'true' : 'false' }},
+                showCredentials: {{ ($method === 'PUT' && isset($employee->user)) || old('createUserCheckbox') ? 'true' : 'false' }},
+                emailButtonText: 'Edit',
+                passwordButtonText: 'Edit',
+                selectedPosition: "{{ old('position_id', $employee->position_id ?? '') }}",
+                isAdmin: {{ old('position_id', $employee->position_id ?? '') == config('constants.positions.admin', 2) ? 'true' : 'false' }},
 
-            // Edit buttons
-            const toggleEmailButton = document.getElementById('toggleEmailEdit');
-            const togglePasswordButton = document.getElementById('togglePasswordEdit');
+                checkPosition() {
+                    this.isAdmin = this.selectedPosition == {{ config('constants.positions.admin', 2) }};
+                    console.log(this.isAdmin);
+                },
 
-            // Generate buttons
-            const generateEmailBtn = document.getElementById('generateEmail');
-            const generateUsernameBtn = document.getElementById('generateUsername');
-            const generatePasswordBtn = document.getElementById('generatePassword');
+                toggleEmailEdit() {
+                    this.emailEditable = !this.emailEditable;
+                    this.emailButtonText = this.emailEditable ? 'Cancel' : 'Edit';
+                },
 
-            // Handle toggle password edit button if it exists
-            if (togglePasswordButton) {
-                togglePasswordButton.addEventListener('click', function() {
-                    if (passwordField.hasAttribute('readonly')) {
-                        // Enable the password field and change button text to "Cancel"
-                        passwordField.removeAttribute('readonly');
-                        togglePasswordButton.textContent = 'Cancel';
-                    } else {
-                        // Disable the password field and reset button text to "Edit"
-                        passwordField.setAttribute('readonly', true);
-                        togglePasswordButton.textContent = 'Edit';
-                        passwordField.value = ''; // Clear the password field
+                togglePasswordEdit() {
+                    this.passwordEditable = !this.passwordEditable;
+                    this.passwordButtonText = this.passwordEditable ? 'Cancel' : 'Edit';
+
+                    if (!this.passwordEditable) {
+                        document.getElementById('employeePassword').value = '';
                     }
-                });
-            }
+                },
 
-            // Handle toggle email edit button if it exists
-            if (toggleEmailButton) {
-                toggleEmailButton.addEventListener('click', function() {
-                    if (emailField.hasAttribute('readonly')) {
-                        // Enable the email field and change button text to "Cancel"
-                        emailField.removeAttribute('readonly');
-                        toggleEmailButton.textContent = 'Cancel';
-                    } else {
-                        // Disable the email field and reset button text to "Edit"
-                        emailField.setAttribute('readonly', true);
-                        toggleEmailButton.textContent = 'Edit';
+                generateEmail() {
+                    if (!this.employeeName) {
+                        alert('Please enter employee name first');
+                        return;
                     }
-                });
-            }
 
-            // Handle create user checkbox functionality if it exists
-            if (createUserCheckbox) {
-                // Set initial state
-                function updateFieldsState() {
-                    if (createUserCheckbox.checked) {
-                        userCredentialsSection.style.display = 'block';
-                    } else {
-                        userCredentialsSection.style.display = 'none';
-                        // Clear fields when hiding
-                        usernameField.value = '';
-                        passwordField.value = '';
+                    let emailName = this.employeeName.toLowerCase()
+                        .replace(/\s+/g, '.')
+                        .replace(/[^\w\.]/g, '')
+                        .substring(0, 20);
+
+                    const emailDomain = 'company.com';
+                    document.getElementById('employeeEmail').value = `${emailName}@${emailDomain}`;
+                },
+
+                generateUsername() {
+                    if (!this.employeeName) {
+                        alert('Please enter employee name first');
+                        return;
                     }
-                }
 
-                if (generateEmailBtn) {
-                    generateEmailBtn.addEventListener('click', function() {
-                        const employeeName = document.getElementById('employeeName').value.trim();
-                        if (employeeName) {
-                            // Convert name to lowercase, replace spaces with dots, remove special chars
-                            let emailName = employeeName.toLowerCase()
-                                .replace(/\s+/g, '.')
-                                .replace(/[^\w\.]/g, '')
-                                .substring(0, 20); // Limit to 20 chars
+                    const username = this.employeeName.toLowerCase()
+                        .replace(/\s+/g, '.')
+                        .replace(/[^\w\.]/g, '')
+                        .substring(0, 15);
 
-                            // Add domain - you can change this to your company domain
-                            const emailDomain = 'company.com';
-                            const email = `${emailName}@${emailDomain}`;
+                    document.getElementById('employeeUsername').value = username;
+                },
 
-                            // If in edit mode and field is readonly, first enable it
-                            if (emailField && emailField.hasAttribute('readonly')) {
-                                emailField.removeAttribute('readonly');
-                                if (toggleEmailButton) {
-                                    toggleEmailButton.textContent = 'Cancel';
-                                }
-                            }
+                generatePassword() {
+                    const length = 10;
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+                    let password = '';
 
-                            // Set the email value
-                            if (emailField) {
-                                emailField.value = email;
-                            }
-                        } else {
-                            alert('Please enter employee name first');
+                    for (let i = 0; i < length; i++) {
+                        password += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+
+                    document.getElementById('employeePassword').value = password;
+                    this.passwordFieldType = 'text';
+
+                    setTimeout(() => {
+                        this.passwordFieldType = 'password';
+                    }, 3000);
+                },
+
+                init() {
+                    this.checkPosition();
+                    this.$watch('createUser', value => {
+                        this.showCredentials = value;
+
+                        if (!value) {
+                            document.getElementById('employeeUsername').value = '';
+                            document.getElementById('employeePassword').value = '';
                         }
                     });
                 }
-
-                // Toggle visibility of credentials section based on checkbox
-                createUserCheckbox.addEventListener('change', function() {
-                    updateFieldsState();
-                });
-
-                // Username generation functionality
-                if (generateUsernameBtn) {
-                    generateUsernameBtn.addEventListener('click', function() {
-                        const employeeName = document.getElementById('employeeName').value.trim();
-                        if (employeeName) {
-                            // Convert name to lowercase, replace spaces with dots, remove special chars
-                            let username = employeeName.toLowerCase()
-                                .replace(/\s+/g, '.')
-                                .replace(/[^\w\.]/g, '')
-                                .substring(0, 15); // Limit to 15 chars
-
-                            usernameField.value = username;
-                        } else {
-                            alert('Please enter employee name first');
-                        }
-                    });
-                }
-
-                // Password generation functionality
-                if (generatePasswordBtn) {
-                    generatePasswordBtn.addEventListener('click', function() {
-                        const length = 10;
-                        const chars =
-                            'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
-                        let password = '';
-
-                        for (let i = 0; i < length; i++) {
-                            password += chars.charAt(Math.floor(Math.random() * chars.length));
-                        }
-
-                        passwordField.value = password;
-                        // Show the generated password briefly
-                        passwordField.type = 'text';
-                        setTimeout(() => {
-                            passwordField.type = 'password';
-                        }, 3000);
-                    });
-                }
-
-                // Initialize state on page load
-                updateFieldsState();
             }
-        });
+        }
     </script>
 @endpush

@@ -15,11 +15,6 @@ class Sidebar extends Component
     public function __construct(AccessControlService $accessControl)
     {
         $this->accessControl = $accessControl;
-
-        if (Auth::check()) {
-            $this->accessControl->setUser(Auth::user());
-        }
-
         $this->filteredMenuItems = $this->filterMenuItems($this->menuStructure());
     }
 
@@ -52,13 +47,12 @@ class Sidebar extends Component
                 'name' => 'Super User',
                 'children' => [
                     [
-                        'name' => 'Role & Permission',
-                        'link' => 'role',
+                        'name' => 'Permission',
+                        'link' => 'permission',
                         'icon' => 'fas fa-user-shield',
-                        'route' => 'role.index',
-                        'active' => $this->isActive(['role.*', 'feature.*', 'operation.*', 'permission.*', 'acl.*']),
+                        'route' => 'permission.index',
+                        'active' => $this->isActive(['feature.*', 'operation.*', 'permission.*', 'acl.*']),
                         'children' => [
-                            ['name' => 'Role', 'route' => 'role.index', 'active' => $this->isActive('role')],
                             ['name' => 'Feature', 'route' => 'feature.index', 'active' => $this->isActive('feature')],
                             ['name' => 'Operation', 'route' => 'operation.index', 'active' => $this->isActive('operation')],
                             ['name' => 'Permission', 'route' => 'permission.index', 'active' => $this->isActive('permission')],
