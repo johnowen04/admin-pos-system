@@ -22,14 +22,10 @@ use App\Http\Controllers\SelectOutletController;
 use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 
-// Public redirect routes
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::post('/import-products', [ProductController::class, 'importProducts'])->name('import.products');
-
-// Guest routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -37,16 +33,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// Protected routes
 Route::middleware(['auth'])->group(function () {
-    // Dashboard
     Route::get('/dashboard', function () {
         return view('index');
     })->name('dashboard');
 
     Route::post('/select-outlet', [SelectOutletController::class, 'select'])->name('select-outlet.select');
+    Route::post('/import-products', [ProductController::class, 'importProducts'])->name('import.products');
 
-    // ACL routes
     Route::prefix('acl')->group(function () {
         Route::get('/', [ACLController::class, 'index'])->name('acl.index');
         Route::match(['put', 'patch'], '{acl}', [ACLController::class, 'update'])->name('acl.update');
@@ -55,12 +49,10 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // Permission routes - custom route first
     Route::post('/permission/toggle-superuser', [PermissionController::class, 'toggleSuperUserOnly'])->name('permission.toggle-superuser');
     Route::post('/permission/batch', [PermissionController::class, 'batch'])->name('permission.batch');
     Route::resource('permission', PermissionController::class);
 
-    // POS routes
     Route::prefix('pos')->name('pos.')->group(function () {
         Route::get('/', [POSController::class, 'index'])->name('index');
         Route::get('payment', [POSController::class, 'payment'])->name('payment');
@@ -92,7 +84,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/departments/export', [SalesReportController::class, 'departmentsExport'])->name('departments.export');
     });
 
-    // Standard resource controllers
     Route::resource('bu', BaseUnitController::class);
     Route::resource('category', CategoryController::class);
     Route::resource('department', DepartmentController::class);
@@ -106,6 +97,5 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('role', RoleController::class);
     Route::resource('unit', UnitController::class);
 
-    // Authentication
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

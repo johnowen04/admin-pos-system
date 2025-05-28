@@ -66,7 +66,6 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'sku' => 'required|string|max:50|unique:products,sku',
             'name' => 'required|string|max:100',
@@ -119,7 +118,6 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'sku' => 'required|string|max:50|unique:products,sku,' . $product->id,
             'name' => 'required|string|max:100',
