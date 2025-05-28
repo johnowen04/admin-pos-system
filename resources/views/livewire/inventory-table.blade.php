@@ -1,4 +1,45 @@
 <div>
+    <div class="d-flex row mb-3 gap-0">
+        <div class="col-12 col-sm-4 col-md-auto mb-2" style="width: 150px;">
+            <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
+            <select id="productPerPage" wire:model="perPage" wire:change="resetPage" class="form-control form-select">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-sm-8 col-md mb-2">
+            <label for="productSearch" class="form-label mb-1 fw-bold">Search Products</label>
+            <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
+                placeholder="Search products..." class="form-control" />
+        </div>
+
+        <div class="col-12 col-sm-5 col-md-auto mb-2" style="min-width: 180px;">
+            <label for="startDate" class="form-label mb-1 fw-bold">Start Date</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                <input type="date" id="startDate" wire:model="startDate" wire:change="resetPage" class="form-control"
+                    placeholder="Start date">
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-5 col-md-auto mb-2" style="min-width: 180px;">
+            <label for="endDate" class="form-label mb-1 fw-bold">End Date</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                <input type="date" id="endDate" wire:model="endDate" wire:change="resetPage" class="form-control"
+                    placeholder="End date">
+            </div>
+        </div>
+        <div class="col-auto col-sm-1 d-flex align-items-end mb-2" style="margin-bottom: 1px;">
+            <button title="Reset Filter" type="button" class="btn btn-outline-danger" wire:click="resetFilters">
+                <i class="fa fa-filter me-1"></i>
+            </button>
+        </div>
+    </div>
+
     @if ($inventory->rows()->isEmpty())
         <div class="empty-state text-center py-5">
             <div class="empty-state-icon">
@@ -19,56 +60,9 @@
                 <a href="{{ route('pos.index') }}" class="btn btn-outline-primary me-2">
                     <i class="fas fa-shopping-cart me-1"></i> Go To POS
                 </a>
-                @if ($search || $startDate || $endDate)
-                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
-                        <i class="fa fa-filter me-1"></i> Reset Filters
-                    </button>
-                @endif
             </div>
         </div>
     @else
-        <div class="d-flex row mb-3 gap-0">
-            <div class="col-12 col-sm-4 col-md-auto mb-2" style="width: 150px;">
-                <label for="productPerPage" class="form-label mb-1 fw-bold">Items per page</label>
-                <select id="productPerPage" wire:model="perPage" wire:change="resetPage"
-                    class="form-control form-select">
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-sm-8 col-md mb-2">
-                <label for="productSearch" class="form-label mb-1 fw-bold">Search Products</label>
-                <input type="text" id="productSearch" wire:model="search" wire:keyup='resetPage'
-                    placeholder="Search products..." class="form-control" />
-            </div>
-
-            <div class="col-12 col-sm-5 col-md-auto mb-2" style="min-width: 180px;">
-                <label for="startDate" class="form-label mb-1 fw-bold">Start Date</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                    <input type="date" id="startDate" wire:model="startDate" wire:change="resetPage"
-                        class="form-control" placeholder="Start date">
-                </div>
-            </div>
-
-            <div class="col-12 col-sm-5 col-md-auto mb-2" style="min-width: 180px;">
-                <label for="endDate" class="form-label mb-1 fw-bold">End Date</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
-                    <input type="date" id="endDate" wire:model="endDate" wire:change="resetPage"
-                        class="form-control" placeholder="End date">
-                </div>
-            </div>
-            <div class="col-auto col-sm-1 d-flex align-items-end mb-2" style="margin-bottom: 1px;">
-                <button title="Reset Filter" type="button" class="btn btn-outline-danger" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i>
-                </button>
-            </div>
-        </div>
-
         <div class="table-responsive">
             <table class="display table table-striped table-hover" style="table-layout: fixed;">
                 <thead>

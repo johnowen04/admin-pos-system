@@ -1,4 +1,60 @@
 <div>
+    <div class="row mb-3 g-0">
+        <div class="col-12 col-sm-4 col-md-auto" style="width: 150px;">
+            <label for="categoryPerPage" class="form-label mb-1 fw-bold">Items per page</label>
+            <select id="categoryPerPage" wire:model="perPage" wire:change="resetPage" class="form-control form-select">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div class="col-12 col-sm-8 col-md">
+            <label for="categorySearch" class="form-label mb-1 fw-bold">Search Category</label>
+            <input type="text" id="categorySearch" wire:model="search" wire:keyup='resetPage'
+                placeholder="Search categories..." class="form-control" />
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-2 mb-3 mb-md-0 me-md-2">
+            <label for="departmentFilter" class="form-label mb-1 fw-bold">Filter by Department</label>
+            <select id="departmentFilter" wire:model="departmentFilter" wire:change="resetPage"
+                class="form-control form-select">
+                <option value="">All Departments</option>
+                @foreach ($departments as $department)
+                    <option value="{{ $department->id }}">{{ $department->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="col-12 col-sm-6 col-md-auto mt-3 mt-md-0">
+            <label class="form-label mb-1 fw-bold">Filter by Shown In Menu?</label>
+            <div class="d-flex justify-content-center">
+                <div class="btn-group w-100">
+                    <button type="button" class="btn {{ $filter === 'all' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        wire:click="setFilter('all')">
+                        All
+                    </button>
+                    <button type="button" class="btn {{ $filter === 'shown' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        wire:click="setFilter('shown')">
+                        Shown
+                    </button>
+                    <button type="button"
+                        class="btn {{ $filter === 'not_shown' ? 'btn-primary' : 'btn-outline-primary' }}"
+                        wire:click="setFilter('not_shown')">
+                        Not Shown
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-auto col-sm-1 d-flex align-items-end mb-2" style="margin-bottom: 1px;">
+            <button title="Reset Filter" type="button" class="btn btn-outline-danger" wire:click="resetFilters">
+                <i class="fa fa-filter me-1"></i>
+            </button>
+        </div>
+    </div>
+
     @if ($categories->isEmpty())
         <div class="empty-state text-center py-5">
             <div class="empty-state-icon">
@@ -13,76 +69,9 @@
                 <a href="{{ route('product.create') }}" class="btn btn-primary me-2">
                     <i class="fa fa-plus me-1"></i> Add Category
                 </a>
-                <button type="button" class="btn btn-secondary me-2" data-bs-toggle="modal" data-bs-target="#exportModal">
-                    <i class="fa fa-file-import me-1"></i> Import from Excel
-                </button>
-                @if ($filter !== 'all' || $search || $departmentFilter)
-                    <button type="button" class="btn btn-secondary me-2" wire:click="resetFilters">
-                        <i class="fa fa-filter me-1"></i> Reset Filters
-                    </button>
-                @endif
             </div>
         </div>
     @else
-        <div class="row mb-3 g-0">
-            <div class="col-12 col-sm-4 col-md-auto" style="width: 150px;">
-                <label for="categoryPerPage" class="form-label mb-1 fw-bold">Items per page</label>
-                <select id="categoryPerPage" wire:model="perPage" wire:change="resetPage"
-                    class="form-control form-select">
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                </select>
-            </div>
-
-            <div class="col-12 col-sm-8 col-md">
-                <label for="categorySearch" class="form-label mb-1 fw-bold">Search Category</label>
-                <input type="text" id="categorySearch" wire:model="search" wire:keyup='resetPage'
-                    placeholder="Search categories..." class="form-control" />
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-2 mb-3 mb-md-0 me-md-2">
-                <label for="departmentFilter" class="form-label mb-1 fw-bold">Filter by Department</label>
-                <select id="departmentFilter" wire:model="departmentFilter" wire:change="resetPage"
-                    class="form-control form-select">
-                    <option value="">All Departments</option>
-                    @foreach ($departments as $department)
-                        <option value="{{ $department->id }}">{{ $department->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="col-12 col-sm-6 col-md-auto mt-3 mt-md-0">
-                <label class="form-label mb-1 fw-bold">Filter by Shown In Menu?</label>
-                <div class="d-flex justify-content-center">
-                    <div class="btn-group w-100">
-                        <button type="button"
-                            class="btn {{ $filter === 'all' ? 'btn-primary' : 'btn-outline-primary' }}"
-                            wire:click="setFilter('all')">
-                            All
-                        </button>
-                        <button type="button"
-                            class="btn {{ $filter === 'shown' ? 'btn-primary' : 'btn-outline-primary' }}"
-                            wire:click="setFilter('shown')">
-                            Shown
-                        </button>
-                        <button type="button"
-                            class="btn {{ $filter === 'not_shown' ? 'btn-primary' : 'btn-outline-primary' }}"
-                            wire:click="setFilter('not_shown')">
-                            Not Shown
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-auto col-sm-1 d-flex align-items-end mb-2" style="margin-bottom: 1px;">
-                <button title="Reset Filter" type="button" class="btn btn-outline-danger" wire:click="resetFilters">
-                    <i class="fa fa-filter me-1"></i>
-                </button>
-            </div>
-        </div>
-
         <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>

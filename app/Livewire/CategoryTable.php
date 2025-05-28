@@ -69,8 +69,7 @@ class CategoryTable extends Component
 
         if ($this->search) {
             $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('sku', 'like', '%' . $this->search . '%');
+                $q->where('name', 'like', '%' . $this->search . '%');
             });
         }
 
